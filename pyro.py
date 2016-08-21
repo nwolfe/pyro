@@ -5,10 +5,10 @@ from settings import *
 
 
 class World:
-    def __init__(self, player):
+    def __init__(self, map, player, objects):
+        self.map = map
         self.player = player
-        self.objects = [player]
-        self.map = libmap.make_map(self.player, self.objects)
+        self.objects = objects
 
     def move_player(self, dx, dy):
         self.player.move(self.map, self.objects, dx, dy)
@@ -80,7 +80,9 @@ libtcod.sys_set_fps(LIMIT_FPS)
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True)
-world = World(player)
+objects = [player]
+map = libmap.make_map(player, objects)
+world = World(map, player, objects)
 
 fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 for y in range(MAP_HEIGHT):
