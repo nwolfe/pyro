@@ -58,7 +58,7 @@ def place_objects(room, map, objects):
         x = libtcod.random_get_int(0, room.x1, room.x2)
         y = libtcod.random_get_int(0, room.y1, room.y2)
 
-        if libobj.is_blocked(map, objects, x, y):
+        if not libobj.is_blocked(map, objects, x, y):
             # 80% chance of getting an orc, otherwise troll
             if libtcod.random_get_int(0, 0, 100) < 80:
                 monster = libobj.Object(x, y, 'o', 'orc',
@@ -77,6 +77,18 @@ def room_overlaps_existing(room, existing):
     return False
 
 
+def randomly_placed_rect():
+    # Random width and height
+    w = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+    h = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+
+    # Random position without going out of the boundaries of the map
+    x = libtcod.random_get_int(0, 0, MAP_WIDTH - w - 1)
+    y = libtcod.random_get_int(0, 0, MAP_HEIGHT - h - 1)
+
+    return Rect(x, y, w, h)
+
+
 def make_map(player, objects):
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
@@ -85,15 +97,7 @@ def make_map(player, objects):
     num_rooms = 0
 
     for r in range(MAX_ROOMS):
-        # Random width and height
-        w = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
-        h = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
-
-        # Random position without going out of the boundaries of the map
-        x = libtcod.random_get_int(0, 0, MAP_WIDTH - w - 1)
-        y = libtcod.random_get_int(0, 0, MAP_HEIGHT - h - 1)
-
-        new_room = Rect(x, y, w, h)
+        new_room = randomly_placed_rect()
 
         # Throw the new room away if it overlaps with an existing one
         if room_overlaps_existing(new_room, rooms):

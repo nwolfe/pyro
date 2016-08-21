@@ -24,7 +24,7 @@ class Object:
         self.blocks = blocks
 
     def move(self, map, objects, dx, dy):
-        if not is_blocked(map, objects, self.x + dx, self.y+ dy):
+        if not is_blocked(map, objects, self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
 
