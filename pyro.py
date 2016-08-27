@@ -22,13 +22,12 @@ class World:
         y = self.player.y + dy
         target = None
         for object in self.objects:
-            if object.x == x and object.y == y:
+            if object.fighter and object.x == x and object.y == y:
                 target = object
                 break
 
-        if target is not None:
-            print 'The {0} laughs at your puny efforts to attack him!'.format(
-                target.name)
+        if target:
+            player.fighter.attack(target)
         else:
             self.player.move(self.map, self.objects, dx, dy)
             actions.player_action = 'move'
@@ -85,11 +84,19 @@ def render_all(con, world, fov_map, actions):
                                                         libtcod.BKGND_SET)
                     world.map[x][y].explored = True
 
-    for object in world.objects:
+    render_ordered = sorted(world.objects, key=lambda obj: obj.render_order)
+    for object in render_ordered:
         if libtcod.map_is_in_fov(fov_map, object.x, object.y):
             object.draw(con)
 
     libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+
+    # Show player's stats
+    libtcod.console_set_default_foreground(con, libtcod.white)
+    libtcod.console_print_ex(con, 1, SCREEN_HEIGHT - 2, libtcod.BKGND_NONE,
+                             libtcod.LEFT, 'HP {0}/{1}'.format(
+                                 player.fighter.hp, player.fighter.max_hp))
+
 
 
 ###############################################################################
@@ -101,10 +108,20 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'python/libtcod tutorial'
 libtcod.sys_set_fps(LIMIT_FPS)
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True)
+player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
+                       fighter=libobj.Fighter(hp=30, defense=2, power=5))
 objects = [player]
 map = libmap.make_map(player, objects)
 world = World(map=map, player=player, objects=objects, game_state='playing')
+
+def player_death(player):
+    print 'You died!'
+    world.game_state = 'dead'
+
+    player.char = '%'
+    player.color = libtcod.dark_red
+
+player.fighter.death_fn = player_death
 
 fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 for y in range(MAP_HEIGHT):
@@ -130,6 +147,5 @@ while not libtcod.console_is_window_closed():
 
     if world.game_state == 'playing' and actions.player_action != 'idle':
         for object in world.objects:
-            if object != world.player:
-                print 'The {0} growls!'.format(object.name)
-
+            if object.ai:
+                object.ai.take_turn(world.map, fov_map, world.objects, world.player)

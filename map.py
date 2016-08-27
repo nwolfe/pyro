@@ -49,6 +49,19 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
+def monster_death(monster):
+    # Transform it into a nasty corpse!
+    # It doesn't block, can't be attacked, and doesn't move
+    print '{0} is dead!'.format(monster.name.capitalize())
+    monster.char = '%'
+    monster.color = libtcod.dark_red
+    monster.blocks = False
+    monster.fighter = None
+    monster.ai = None
+    monster.render_order = 0
+    monster.name = 'remains of {0}'.format(monster.name)
+
+
 def place_objects(room, map, objects):
     # Random number of numbers
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
@@ -61,11 +74,19 @@ def place_objects(room, map, objects):
         if not libobj.is_blocked(map, objects, x, y):
             # 80% chance of getting an orc, otherwise troll
             if libtcod.random_get_int(0, 0, 100) < 80:
+                fighter_comp = libobj.Fighter(hp=10, defense=0, power=3,
+                                              death_fn=monster_death)
                 monster = libobj.Object(x, y, 'o', 'orc',
-                                        libtcod.desaturated_green, blocks=True)
+                                        libtcod.desaturated_green, blocks=True,
+                                        ai=libobj.BasicMonster(),
+                                        fighter=fighter_comp)
             else:
+                fighter_comp = libobj.Fighter(hp=16, defense=1, power=4,
+                                              death_fn=monster_death)
                 monster = libobj.Object(x, y, 'T', 'troll',
-                                        libtcod.darker_green, blocks=True)
+                                        libtcod.darker_green, blocks=True,
+                                        ai=libobj.BasicMonster(),
+                                        fighter=fighter_comp)
 
             objects.append(monster)
 
