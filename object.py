@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+import game as libgame
 import math
 
 
@@ -87,20 +88,20 @@ class Fighter(Component):
             self.death_fn(self.owner)
 
 
-    def attack(self, target):
+    def attack(self, target, messages):
         damage = self.power - target.fighter.defense
 
         if damage > 0:
-            print '{0} attacks {1} for {2} hit points.'.format(
-                self.owner.name.capitalize(), target.name, damage)
+            libgame.message(messages, '{0} attacks {1} for {2} hit points.'.
+                            format(self.owner.name.capitalize(), target.name, damage))
             target.fighter.take_damage(damage)
         else:
-            print '{0} attacks {1} but it has no effect!'.format(
-                self.owner.name.capitalize(), target.name)
+            libgame.message(messages, '{0} attacks {1} but it has no effect!'
+                            .format(self.owner.name.capitalize(), target.name))
 
 
 class BasicMonster(Component):
-    def take_turn(self, map, fov_map, objects, player):
+    def take_turn(self, map, fov_map, objects, player, messages):
         monster = self.owner
         if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
             # Move towards player if far away
@@ -109,4 +110,35 @@ class BasicMonster(Component):
 
             # Close enough, attack! (If the player is still alive)
             elif player.fighter.hp > 0:
-                monster.fighter.attack(player)
+                monster.fighter.attack(player, messages)
+
+
+class MonsterFactory:
+    def __init__(self, messages):
+        def monster_death(monster):
+            # Transform it into a nasty corpse!
+            # It doesn't block, can't be attacked, and doesn't move
+            libgame.message(messages, '{0} is dead!'.
+                            format(monster.name.capitalize()))
+            monster.char = '%'
+            monster.color = libtcod.dark_red
+            monster.blocks = False
+            monster.fighter = None
+            monster.ai = None
+            monster.render_order = 0
+            monster.name = 'remains of {0}'.format(monster.name)
+        self.monster_death = monster_death
+
+    def make_orc(self, x, y):
+        ai_comp = BasicMonster()
+        fighter_comp = Fighter(hp=10, defense=0, power=3,
+                               death_fn=self.monster_death)
+        return Object(x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
+                      ai=ai_comp, fighter=fighter_comp)
+
+    def make_troll(self, x, y):
+        ai_comp = BasicMonster()
+        fighter_comp = Fighter(hp=16, defense=1, power=4,
+                               death_fn=self.monster_death)
+        return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
+                      ai=ai_comp, fighter=fighter_comp)
