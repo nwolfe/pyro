@@ -49,7 +49,7 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
-def place_objects(room, map, objects, monster_factory, item_factory):
+def place_objects(room, map, objects):
     # Random number of numbers
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
 
@@ -62,10 +62,10 @@ def place_objects(room, map, objects, monster_factory, item_factory):
             dice = libtcod.random_get_int(0, 0, 100)
             if dice < 80:
                 # Create orc (80% chance)
-                monster = monster_factory.make_orc(x, y)
+                monster = libobj.make_orc(x, y)
             else:
                 # Create troll (20% chance)
-                monster = monster_factory.make_troll(x, y)
+                monster = libobj.make_troll(x, y)
             objects.append(monster)
 
     # Random number of items
@@ -80,13 +80,13 @@ def place_objects(room, map, objects, monster_factory, item_factory):
             dice = libtcod.random_get_int(0, 0, 100)
             if dice < 70:
                 # Create healing potion (70% chance)
-                item = item_factory.make_healing_potion(x, y)
+                item = libobj.make_healing_potion(x, y)
             elif dice < 85:
                 # Create a lightning bolt scroll (15% chance)
-                item = item_factory.make_lightning_scroll(x, y)
+                item = libobj.make_lightning_scroll(x, y)
             else:
                 # Create a confusion scroll (15% chance)
-                item = item_factory.make_confusion_scroll(x, y)
+                item = libobj.make_confusion_scroll(x, y)
             objects.append(item)
 
 
@@ -109,7 +109,7 @@ def randomly_placed_rect():
     return Rect(x, y, w, h)
 
 
-def make_map(player, objects, monster_factory, item_factory):
+def make_map(player, objects):
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
            for x in range(MAP_WIDTH)]
@@ -148,7 +148,7 @@ def make_map(player, objects, monster_factory, item_factory):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
-        place_objects(new_room, map, objects, monster_factory, item_factory)
+        place_objects(new_room, map, objects)
         rooms.append(new_room)
         num_rooms += 1
 

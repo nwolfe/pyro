@@ -164,6 +164,7 @@ class ConfusedMonster(Component, AI):
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             game.message(msg, libtcod.red)
 
+
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
@@ -176,20 +177,19 @@ def monster_death(monster, game):
     monster.render_order = 0
     monster.name = 'remains of {0}'.format(monster.name)
 
-class MonsterFactory:
-    def make_orc(self, x, y):
-        ai_comp = BasicMonster()
-        fighter_comp = Fighter(hp=10, defense=0, power=3,
-                               death_fn=monster_death)
-        return Object(x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
-                      ai=ai_comp, fighter=fighter_comp)
 
-    def make_troll(self, x, y):
-        ai_comp = BasicMonster()
-        fighter_comp = Fighter(hp=16, defense=1, power=4,
-                               death_fn=monster_death)
-        return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
-                      ai=ai_comp, fighter=fighter_comp)
+def make_orc(x, y):
+    ai_comp = BasicMonster()
+    fighter_comp = Fighter(hp=10, defense=0, power=3, death_fn=monster_death)
+    return Object(x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
+                  ai=ai_comp, fighter=fighter_comp)
+
+
+def make_troll(x, y):
+    ai_comp = BasicMonster()
+    fighter_comp = Fighter(hp=16, defense=1, power=4, death_fn=monster_death)
+    return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
+                  ai=ai_comp, fighter=fighter_comp)
 
 
 class Item(Component):
@@ -219,54 +219,58 @@ class Item(Component):
                 game.inventory.remove(self.owner)
 
 
-class ItemFactory:
-    def make_healing_potion(self, x, y):
-        def cast_heal(player, game):
-            # Heal the player
-            if game.player.fighter.hp == game.player.fighter.max_hp:
-                game.message('You are already at full health.', libtcod.red)
-                return 'cancelled'
+def cast_heal(player, game):
+    # Heal the player
+    if game.player.fighter.hp == game.player.fighter.max_hp:
+        game.message('You are already at full health.', libtcod.red)
+        return 'cancelled'
 
-            game.message('Your wounds start to feel better!',
-                         libtcod.light_violet)
-            game.player.fighter.heal(HEAL_AMOUNT)
+    game.message('Your wounds start to feel better!',
+                 libtcod.light_violet)
+    game.player.fighter.heal(HEAL_AMOUNT)
 
-        item_comp = Item(use_fn=cast_heal)
-        return Object(x, y, '!', 'healing potion', libtcod.violet,
-                      render_order=0, item=item_comp)
 
-    def make_lightning_scroll(self, x, y):
-        def cast_lightning(player, game):
-            # Find the closest enemy (inside a maximum range) and damage it
-            monster = closest_monster(LIGHTNING_RANGE, game)
-            if monster is None:
-                game.message('No enemy is close enough to strike.', libtcod.red)
-                return 'cancelled'
+def make_healing_potion(x, y):
+    item_comp = Item(use_fn=cast_heal)
+    return Object(x, y, '!', 'healing potion', libtcod.violet,
+                  render_order=0, item=item_comp)
 
-            # Zap it!
-            msg = 'A lightning bolt strikes the {0} with a loud thunder! The damage is {1} hit points.'.format(monster.name, LIGHTNING_DAMAGE)
-            game.message(msg, libtcod.light_blue)
-            monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
 
-        item_comp = Item(use_fn=cast_lightning)
-        return Object(x, y, '#', 'scroll of lightning bolt',
-                      libtcod.light_yellow, render_order=0, item=item_comp)
+def cast_lightning(player, game):
+    # Find the closest enemy (inside a maximum range) and damage it
+    monster = closest_monster(LIGHTNING_RANGE, game)
+    if monster is None:
+        game.message('No enemy is close enough to strike.', libtcod.red)
+        return 'cancelled'
 
-    def make_confusion_scroll(self, x, y):
-        def cast_confuse(player, game):
-            # Find closest enemy in range and confuse it
-            monster = closest_monster(CONFUSE_RANGE, game)
-            if monster is None:
-                game.message('No enemy is close enough to confuse.',
-                             libtcod.red)
-                return 'cancelled'
+    # Zap it!
+    msg = 'A lightning bolt strikes the {0} with a loud thunder! The damage is {1} hit points.'.format(monster.name, LIGHTNING_DAMAGE)
+    game.message(msg, libtcod.light_blue)
+    monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
 
-            old_ai = monster.ai
-            monster.ai = ConfusedMonster(old_ai)
-            monster.ai.owner = monster
-            msg = 'The eyes of the {0} look vacant as he starts to stumble around!'.format(monster.name)
-            game.message(msg, libtcod.light_green)
 
-        item_comp = Item(use_fn=cast_confuse)
-        return Object(x, y, '#', 'scroll of confusion',
-                      libtcod.light_yellow, render_order=0, item=item_comp)
+def make_lightning_scroll(x, y):
+    item_comp = Item(use_fn=cast_lightning)
+    return Object(x, y, '#', 'scroll of lightning bolt',
+                  libtcod.light_yellow, render_order=0, item=item_comp)
+
+
+def cast_confuse(player, game):
+    # Find closest enemy in range and confuse it
+    monster = closest_monster(CONFUSE_RANGE, game)
+    if monster is None:
+        game.message('No enemy is close enough to confuse.',
+                     libtcod.red)
+        return 'cancelled'
+
+    old_ai = monster.ai
+    monster.ai = ConfusedMonster(old_ai)
+    monster.ai.owner = monster
+    msg = 'The eyes of the {0} look vacant as he starts to stumble around!'.format(monster.name)
+    game.message(msg, libtcod.light_green)
+
+
+def make_confusion_scroll(x, y):
+    item_comp = Item(use_fn=cast_confuse)
+    return Object(x, y, '#', 'scroll of confusion',
+                  libtcod.light_yellow, render_order=0, item=item_comp)
