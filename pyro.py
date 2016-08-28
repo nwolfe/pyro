@@ -90,11 +90,11 @@ player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
                                               death_fn=player_death))
 objects = [player]
 inventory = []
+fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 map = libmap.make_map(player, objects,
                       libobj.MonsterFactory(messages),
-                      libobj.ItemFactory(messages))
+                      libobj.ItemFactory(messages, objects, fov_map))
 
-fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 for y in range(MAP_HEIGHT):
     for x in range(MAP_WIDTH):
         libtcod.map_set_properties(fov_map, x, y,

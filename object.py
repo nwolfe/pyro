@@ -17,6 +17,23 @@ def is_blocked(map, objects, x, y):
     return False
 
 
+def closest_monster(player, objects, fov_map, max_range):
+    # Find closest enemy, up to a maximum range, and in the player's FOV
+    closest_enemy = None
+    closest_dist = max_range + 1
+
+    for object in objects:
+        if object.fighter and object != player and libtcod.map_is_in_fov(
+                fov_map, object.x, object.y):
+            # Calculate distance between this object and the player
+            dist = player.distance_to(object)
+            if dist < closest_dist:
+                closest_dist = dist
+                closest_enemy = object
+
+    return closest_enemy
+
+
 class Object:
     def __init__(self, x, y, char, name, color, blocks=False, render_order=1,
                  fighter=None, ai=None, item=None):
@@ -185,7 +202,7 @@ class Item(Component):
 
 
 class ItemFactory:
-    def __init__(self, messages):
+    def __init__(self, messages, objects, fov_map):
         def cast_heal(player):
             # Heal the player
             if player.fighter.hp == player.fighter.max_hp:
@@ -198,9 +215,26 @@ class ItemFactory:
             player.fighter.heal(HEAL_AMOUNT)
         self.cast_heal = cast_heal
 
+        def cast_lightning(player):
+            # Find the closest enemy (inside a maximum range) and damage it
+            monster = closest_monster(player, objects, fov_map, LIGHTNING_RANGE)
+            if monster is None:
+                libgame.message(messages, 'No enemy is close enough to strike.',
+                                libtcod.red)
+                return 'cancelled'
+
+            # Zap it!
+            msg = 'A lightning bolt strikes the {0} with a loud thunder! The damage is {1} hit points.'.format(monster.name, LIGHTNING_DAMAGE)
+            libgame.message(messages, msg, libtcod.light_blue)
+            monster.fighter.take_damage(LIGHTNING_DAMAGE)
+        self.cast_lightning = cast_lightning
 
     def make_healing_potion(self, x, y):
-        # Items appear below other objects
         item_comp = Item(use_fn=self.cast_heal)
         return Object(x, y, '!', 'healing potion', libtcod.violet,
                       render_order=0, item=item_comp)
+
+    def make_lightning_scroll(self, x, y):
+        item_comp = Item(use_fn=self.cast_lightning)
+        return Object(x, y, '#', 'scroll of lightning bolt',
+                      libtcod.light_yellow, render_order=0, item=item_comp)

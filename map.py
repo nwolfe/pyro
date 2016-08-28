@@ -59,10 +59,12 @@ def place_objects(room, map, objects, monster_factory, item_factory):
         y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
 
         if not libobj.is_blocked(map, objects, x, y):
-            # 80% chance of getting an orc, otherwise troll
+            dice = libtcod.random_get_int(0, 0, 100)
             if libtcod.random_get_int(0, 0, 100) < 80:
+                # Create orc (80% chance)
                 monster = monster_factory.make_orc(x, y)
             else:
+                # Create troll (20% chance)
                 monster = monster_factory.make_troll(x, y)
             objects.append(monster)
 
@@ -75,8 +77,13 @@ def place_objects(room, map, objects, monster_factory, item_factory):
         y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
 
         if not libobj.is_blocked(map, objects, x, y):
-            # Create healing potion
-            item = item_factory.make_healing_potion(x, y)
+            dice = libtcod.random_get_int(0, 0, 100)
+            if dice < 70:
+                # Create healing potion (70% chance)
+                item = item_factory.make_healing_potion(x, y)
+            else:
+                # Create a lightning bolt scroll (30% chance)
+                item = item_factory.make_lightning_scroll(x, y)
             objects.append(item)
 
 
