@@ -23,26 +23,26 @@ def move_player_or_attack(dx, dy, game):
         return (True, 'move')
 
 
-def handle_keys(key, con, game):
-    if key.vk == libtcod.KEY_ENTER and key.lalt:
+def handle_keys(game):
+    if game.key.vk == libtcod.KEY_ENTER and game.key.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-    elif key.vk == libtcod.KEY_ESCAPE:
+    elif game.key.vk == libtcod.KEY_ESCAPE:
         # Exit game
         return (False, 'exit')
 
     if game.state != 'playing':
         return (False, None)
 
-    if libtcod.KEY_UP == key.vk:
+    if libtcod.KEY_UP == game.key.vk:
         return move_player_or_attack(0, -1, game)
-    elif libtcod.KEY_DOWN == key.vk:
+    elif libtcod.KEY_DOWN == game.key.vk:
         return move_player_or_attack(0, 1, game)
-    elif libtcod.KEY_LEFT == key.vk:
+    elif libtcod.KEY_LEFT == game.key.vk:
         return move_player_or_attack(-1, 0, game)
-    elif libtcod.KEY_RIGHT == key.vk:
+    elif libtcod.KEY_RIGHT == game.key.vk:
         return move_player_or_attack(1, 0, game)
-    elif 'g' == chr(key.c):
+    elif 'g' == chr(game.key.c):
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
             if object.item:
@@ -50,12 +50,19 @@ def handle_keys(key, con, game):
                     object.item.pick_up(game)
                     break
         return (False, None)
-    elif 'i' == chr(key.c):
+    elif 'i' == chr(game.key.c):
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(con, game.inventory, msg)
+        selected_item = libui.inventory_menu(game.console, game.inventory, msg)
         if selected_item:
             selected_item.use(game)
+        return (False, None)
+    elif 'd' == chr(game.key.c):
+        # Show the inventory; if an item is selected, drop it
+        msg = 'Select an item to drop it, or any other key to cancel.\n'
+        selected_item = libui.inventory_menu(game.console, game.inventory, msg)
+        if selected_item:
+            selected_item.drop(game)
         return (False, None)
     else:
         return (False, 'idle')
@@ -98,27 +105,24 @@ for y in range(MAP_HEIGHT):
                                    not map[x][y].block_sight,
                                    not map[x][y].blocked)
 
-game = libgame.Game('playing', map, fov_map,
-                    objects, player, inventory, messages)
-
-mouse = libtcod.Mouse()
-key = libtcod.Key()
+game = libgame.Game('playing', con, panel, libtcod.Mouse(), libtcod.Key(),
+                    map, fov_map, objects, player, inventory, messages)
 
 msg = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
 game.message(msg, libtcod.red)
 
 while not libtcod.console_is_window_closed():
     libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
-                                key, mouse)
+                                game.key, game.mouse)
 
-    libui.render_all(con, panel, game, mouse, fov_recompute)
+    libui.render_all(game, fov_recompute)
 
     libtcod.console_flush()
 
     for object in game.objects:
         object.clear(con)
 
-    (fov_recompute, player_action) = handle_keys(key, con, game)
+    (fov_recompute, player_action) = handle_keys(game)
 
     if player_action == 'exit':
         break

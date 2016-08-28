@@ -86,6 +86,9 @@ class Object:
         dy = other.y - self.y
         return math.sqrt(dx ** 2 + dy ** 2)
 
+    def distance(self, x, y):
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+
 
 class Component:
     def __init__(self):
@@ -210,6 +213,16 @@ class Item(Component):
             game.message('You picked up a {0}!'.format(self.owner.name),
                          libtcod.green)
 
+    def drop(self, game):
+        # Remove from the inventory and add to the map.
+        # Place at player's coordinates.
+        game.inventory.remove(self.owner)
+        game.objects.append(self.owner)
+        self.owner.x = game.player.x
+        self.owner.y = game.player.y
+        game.message('You dropped a {0}.'.format(self.owner.name),
+                     libtcod.yellow)
+
     def use(self, game):
         # Call the use_fn if we have one
         if self.use_fn is None:
@@ -246,8 +259,8 @@ def cast_lightning(player, game):
 
     # Zap it!
     msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
-    msg += 'The damage is {1} hit points.'.format(monster.name,
-                                                  LIGHTNING_DAMAGE)
+    msg += 'The damage is {1} hit points.'
+    msg = msg.format(monster.name, LIGHTNING_DAMAGE)
     game.message(msg, libtcod.light_blue)
     monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
 
@@ -259,22 +272,45 @@ def make_lightning_scroll(x, y):
 
 
 def cast_confuse(player, game):
-    # Find closest enemy in range and confuse it
-    monster = closest_monster(CONFUSE_RANGE, game)
+    # Ask the player for a target to confuse
+    game.message('Left-click an enemy to confuse it, or right-click to cancel.',
+                 libtcod.light_cyan)
+    monster = game.target_monster(CONFUSE_RANGE)
     if monster is None:
-        game.message('No enemy is close enough to confuse.',
-                     libtcod.red)
         return 'cancelled'
 
     old_ai = monster.ai
     monster.ai = ConfusedMonster(old_ai)
     monster.ai.owner = monster
-    msg = 'The eyes of the {0} look vacant as '
-    msg += 'he starts to stumble around!'.format(monster.name)
-    game.message(msg, libtcod.light_green)
+    msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
+    game.message(msg.format(monster.name), libtcod.light_green)
 
 
 def make_confusion_scroll(x, y):
     item_comp = Item(use_fn=cast_confuse)
     return Object(x, y, '#', 'scroll of confusion',
+                  libtcod.light_yellow, render_order=0, item=item_comp)
+
+
+def cast_fireball(player, game):
+    # Ask the player for a target tile to throw a fireball at
+    msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
+    game.message(msg, libtcod.light_cyan)
+    (x, y) = game.target_tile()
+    if x is None:
+        return 'cancelled'
+
+    game.message('The fireball explodes, burning everything within {0} tiles!'.
+                 format(FIREBALL_RADIUS), libtcod.orange)
+
+    for object in game.objects:
+        if object.distance(x, y) <= FIREBALL_RADIUS and object.fighter:
+            game.message('The {0} gets burned for {1} hit points.'.format(
+                object.name, FIREBALL_DAMAGE), libtcod.orange)
+            object.fighter.take_damage(FIREBALL_DAMAGE, game)
+
+
+def make_fireball_scroll(x, y):
+    item_comp = Item(use_fn=cast_fireball)
+    return Object(x, y, '#', 'scroll of fireball',
                   libtcod.light_yellow, render_order=0, item=item_comp)

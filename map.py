@@ -81,11 +81,14 @@ def place_objects(room, map, objects):
             if dice < 70:
                 # Create healing potion (70% chance)
                 item = libobj.make_healing_potion(x, y)
-            elif dice < 85:
-                # Create a lightning bolt scroll (15% chance)
+            elif dice < 80:
+                # Create a lightning bolt scroll (10% chance)
                 item = libobj.make_lightning_scroll(x, y)
+            elif dice < 90:
+                # Create a fireball scroll (10% chance)
+                item = libobj.make_fireball_scroll(x, y)
             else:
-                # Create a confusion scroll (15% chance)
+                # Create a confusion scroll (10% chance)
                 item = libobj.make_confusion_scroll(x, y)
             objects.append(item)
 
