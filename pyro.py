@@ -52,9 +52,10 @@ def handle_keys(key, con, game, actions):
     elif 'g' == chr(key.c):
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
-            if object.item and object.x == game.player.x and object.y == game.player.y:
-                object.item.pick_up(game)
-                break
+            if object.item:
+                if object.x == game.player.x and object.y == game.player.y:
+                    object.item.pick_up(game)
+                    break
     elif 'i' == chr(key.c):
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
@@ -77,8 +78,11 @@ def player_death(player, game):
 # Initialization & Main Loop                                                  #
 ###############################################################################
 
-libtcod.console_set_custom_font('terminal8x12_gs_tc.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'python/libtcod tutorial', False)
+libtcod.console_set_custom_font('terminal8x12_gs_tc.png',
+                                libtcod.FONT_TYPE_GREYSCALE |
+                                libtcod.FONT_LAYOUT_TCOD)
+libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
+                          'python/libtcod tutorial', False)
 libtcod.sys_set_fps(LIMIT_FPS)
 
 con = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
@@ -98,14 +102,16 @@ for y in range(MAP_HEIGHT):
                                    not map[x][y].block_sight,
                                    not map[x][y].blocked)
 
-game = libgame.Game('playing', map, fov_map, objects, player, inventory, messages)
+game = libgame.Game('playing', map, fov_map,
+                    objects, player, inventory, messages)
 
 actions = Actions(fov_recompute=True)
 
 mouse = libtcod.Mouse()
 key = libtcod.Key()
 
-game.message('Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!', libtcod.red)
+msg = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
+game.message(msg, libtcod.red)
 
 while not libtcod.console_is_window_closed():
     libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,

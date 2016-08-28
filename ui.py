@@ -146,7 +146,8 @@ def render_all(con, panel, game, mouse, actions):
     # Display names of objects under the mouse
     names = get_names_under_mouse(mouse, game.objects, game.fov_map)
     libtcod.console_set_default_foreground(panel, libtcod.light_gray)
-    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, names)
+    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+                             names)
 
     # Blit the contents of the GUI panel to the root console
     libtcod.console_blit(panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0, PANEL_Y)

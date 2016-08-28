@@ -62,7 +62,8 @@ class Object:
         # Set the color and then draw the character that
         # represents this object at its position
         libtcod.console_set_default_foreground(con, self.color)
-        libtcod.console_put_char(con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+        libtcod.console_put_char(con, self.x, self.y, self.char,
+                                 libtcod.BKGND_NONE)
 
     def clear(self, con):
         # Erase the character that represents this object
@@ -244,7 +245,9 @@ def cast_lightning(player, game):
         return 'cancelled'
 
     # Zap it!
-    msg = 'A lightning bolt strikes the {0} with a loud thunder! The damage is {1} hit points.'.format(monster.name, LIGHTNING_DAMAGE)
+    msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
+    msg += 'The damage is {1} hit points.'.format(monster.name,
+                                                  LIGHTNING_DAMAGE)
     game.message(msg, libtcod.light_blue)
     monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
 
@@ -266,7 +269,8 @@ def cast_confuse(player, game):
     old_ai = monster.ai
     monster.ai = ConfusedMonster(old_ai)
     monster.ai.owner = monster
-    msg = 'The eyes of the {0} look vacant as he starts to stumble around!'.format(monster.name)
+    msg = 'The eyes of the {0} look vacant as '
+    msg += 'he starts to stumble around!'.format(monster.name)
     game.message(msg, libtcod.light_green)
 
 
