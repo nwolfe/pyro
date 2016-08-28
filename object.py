@@ -1,5 +1,4 @@
 import libtcodpy as libtcod
-import game as libgame
 import math
 from settings import *
 
@@ -17,16 +16,16 @@ def is_blocked(map, objects, x, y):
     return False
 
 
-def closest_monster(player, objects, fov_map, max_range):
+def closest_monster(max_range, game):
     # Find closest enemy, up to a maximum range, and in the player's FOV
     closest_enemy = None
     closest_dist = max_range + 1
 
-    for object in objects:
-        if object.fighter and object != player and libtcod.map_is_in_fov(
-                fov_map, object.x, object.y):
+    for object in game.objects:
+        if object.fighter and object != game.player and libtcod.map_is_in_fov(
+                game.fov_map, object.x, object.y):
             # Calculate distance between this object and the player
-            dist = player.distance_to(object)
+            dist = game.player.distance_to(object)
             if dist < closest_dist:
                 closest_dist = dist
                 closest_enemy = object
@@ -101,13 +100,13 @@ class Fighter(Component):
         self.power = power
         self.death_fn = death_fn
 
-    def take_damage(self, damage):
+    def take_damage(self, damage, game):
         if damage > 0:
             self.hp -= damage
 
         # Check for death and call the death function if there is one
         if self.hp <= 0 and self.death_fn:
-            self.death_fn(self.owner)
+            self.death_fn(self.owner, game)
 
     def heal(self, amount):
         # Heal by the given amount, without going over the maximum
@@ -115,17 +114,16 @@ class Fighter(Component):
         if self.hp > self.max_hp:
             self.hp = self.max_hp
 
-    def attack(self, target, messages):
+    def attack(self, target, game):
         damage = self.power - target.fighter.defense
 
         if damage > 0:
-            libgame.message(messages, '{0} attacks {1} for {2} hit points.'.
-                            format(self.owner.name.capitalize(), target.name,
-                                   damage))
-            target.fighter.take_damage(damage)
+            game.message('{0} attacks {1} for {2} hit points.'.format(
+                self.owner.name.capitalize(), target.name, damage))
+            target.fighter.take_damage(damage, game)
         else:
-            libgame.message(messages, '{0} attacks {1} but it has no effect!'
-                            .format(self.owner.name.capitalize(), target.name))
+            game.message('{0} attacks {1} but it has no effect!'.format(
+                self.owner.name.capitalize(), target.name))
 
 
 class AI:
@@ -145,7 +143,7 @@ class BasicMonster(Component, AI):
 
             # Close enough, attack! (If the player is still alive)
             elif game.player.fighter.hp > 0:
-                monster.fighter.attack(game.player, game.messages)
+                monster.fighter.attack(game.player, game)
 
 
 class ConfusedMonster(Component, AI):
@@ -164,36 +162,32 @@ class ConfusedMonster(Component, AI):
             # Restore normal AI
             self.owner.ai = self.restore_ai
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
-            libgame.message(game.messages, msg, libtcod.red)
+            game.message(msg, libtcod.red)
 
+def monster_death(monster, game):
+    # Transform it into a nasty corpse!
+    # It doesn't block, can't be attacked, and doesn't move
+    game.message('{0} is dead!'.format(monster.name.capitalize()))
+    monster.char = '%'
+    monster.color = libtcod.dark_red
+    monster.blocks = False
+    monster.fighter = None
+    monster.ai = None
+    monster.render_order = 0
+    monster.name = 'remains of {0}'.format(monster.name)
 
 class MonsterFactory:
-    def __init__(self, messages):
-        def monster_death(monster):
-            # Transform it into a nasty corpse!
-            # It doesn't block, can't be attacked, and doesn't move
-            libgame.message(messages, '{0} is dead!'.
-                            format(monster.name.capitalize()))
-            monster.char = '%'
-            monster.color = libtcod.dark_red
-            monster.blocks = False
-            monster.fighter = None
-            monster.ai = None
-            monster.render_order = 0
-            monster.name = 'remains of {0}'.format(monster.name)
-        self.monster_death = monster_death
-
     def make_orc(self, x, y):
         ai_comp = BasicMonster()
         fighter_comp = Fighter(hp=10, defense=0, power=3,
-                               death_fn=self.monster_death)
+                               death_fn=monster_death)
         return Object(x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
                       ai=ai_comp, fighter=fighter_comp)
 
     def make_troll(self, x, y):
         ai_comp = BasicMonster()
         fighter_comp = Fighter(hp=16, defense=1, power=4,
-                               death_fn=self.monster_death)
+                               death_fn=monster_death)
         return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
                       ai=ai_comp, fighter=fighter_comp)
 
@@ -203,84 +197,76 @@ class Item(Component):
         self.use_fn = use_fn
         self.item_owner = None
 
-    def pick_up(self, inventory, player, objects, messages):
+    def pick_up(self, game):
         # Add to player's inventory and remove from the map
-        if len(inventory) >= 26:
-            libgame.message(messages,
-                            'Your inventory is full, cannot pick up {0}.'.
-                            format(self.owner.name), libtcod.red)
+        if len(game.inventory) >= 26:
+            game.message('Your inventory is full, cannot pick up {0}.'.format(
+                self.owner.name), libtcod.red)
         else:
-            self.item_owner = player
-            inventory.append(self.owner)
-            objects.remove(self.owner)
-            libgame.message(messages, 'You picked up a {0}!'.
-                            format(self.owner.name), libtcod.green)
+            self.item_owner = game.player
+            game.inventory.append(self.owner)
+            game.objects.remove(self.owner)
+            game.message('You picked up a {0}!'.format(self.owner.name),
+                         libtcod.green)
 
-    def use(self, inventory, messages):
+    def use(self, game):
         # Call the use_fn if we have one
         if self.use_fn is None:
-            libgame.message(messages, 'The {0} cannot be used.'.
-                            format(self.owner.name))
+            game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            if self.use_fn(self.item_owner) != 'cancelled':
-                inventory.remove(self.owner)
+            if self.use_fn(self.item_owner, game) != 'cancelled':
+                game.inventory.remove(self.owner)
 
 
 class ItemFactory:
-    def __init__(self, messages, objects, fov_map):
-        def cast_heal(player):
+    def make_healing_potion(self, x, y):
+        def cast_heal(player, game):
             # Heal the player
-            if player.fighter.hp == player.fighter.max_hp:
-                libgame.message(messages, 'You are already at full health.',
-                                libtcod.red)
+            if game.player.fighter.hp == game.player.fighter.max_hp:
+                game.message('You are already at full health.', libtcod.red)
                 return 'cancelled'
 
-            libgame.message(messages, 'Your wounds start to feel better!',
-                            libtcod.light_violet)
-            player.fighter.heal(HEAL_AMOUNT)
-        self.cast_heal = cast_heal
+            game.message('Your wounds start to feel better!',
+                         libtcod.light_violet)
+            game.player.fighter.heal(HEAL_AMOUNT)
 
-        def cast_lightning(player):
+        item_comp = Item(use_fn=cast_heal)
+        return Object(x, y, '!', 'healing potion', libtcod.violet,
+                      render_order=0, item=item_comp)
+
+    def make_lightning_scroll(self, x, y):
+        def cast_lightning(player, game):
             # Find the closest enemy (inside a maximum range) and damage it
-            monster = closest_monster(player, objects, fov_map, LIGHTNING_RANGE)
+            monster = closest_monster(LIGHTNING_RANGE, game)
             if monster is None:
-                libgame.message(messages, 'No enemy is close enough to strike.',
-                                libtcod.red)
+                game.message('No enemy is close enough to strike.', libtcod.red)
                 return 'cancelled'
 
             # Zap it!
             msg = 'A lightning bolt strikes the {0} with a loud thunder! The damage is {1} hit points.'.format(monster.name, LIGHTNING_DAMAGE)
-            libgame.message(messages, msg, libtcod.light_blue)
-            monster.fighter.take_damage(LIGHTNING_DAMAGE)
-        self.cast_lightning = cast_lightning
+            game.message(msg, libtcod.light_blue)
+            monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
 
-        def cast_confuse(player):
+        item_comp = Item(use_fn=cast_lightning)
+        return Object(x, y, '#', 'scroll of lightning bolt',
+                      libtcod.light_yellow, render_order=0, item=item_comp)
+
+    def make_confusion_scroll(self, x, y):
+        def cast_confuse(player, game):
             # Find closest enemy in range and confuse it
-            monster = closest_monster(player, objects, fov_map, CONFUSE_RANGE)
+            monster = closest_monster(CONFUSE_RANGE, game)
             if monster is None:
-                libgame.message(messages, 'No enemy is close enough to confuse.',
-                                libtcod.red)
+                game.message('No enemy is close enough to confuse.',
+                             libtcod.red)
                 return 'cancelled'
 
             old_ai = monster.ai
             monster.ai = ConfusedMonster(old_ai)
             monster.ai.owner = monster
-            msg = 'The eyes of the {0} look vacant, as he starts to stumble around!'.format(monster.name)
-            libgame.message(messages, msg, libtcod.light_green)
-        self.cast_confuse = cast_confuse
+            msg = 'The eyes of the {0} look vacant as he starts to stumble around!'.format(monster.name)
+            game.message(msg, libtcod.light_green)
 
-    def make_healing_potion(self, x, y):
-        item_comp = Item(use_fn=self.cast_heal)
-        return Object(x, y, '!', 'healing potion', libtcod.violet,
-                      render_order=0, item=item_comp)
-
-    def make_lightning_scroll(self, x, y):
-        item_comp = Item(use_fn=self.cast_lightning)
-        return Object(x, y, '#', 'scroll of lightning bolt',
-                      libtcod.light_yellow, render_order=0, item=item_comp)
-
-    def make_confusion_scroll(self, x, y):
-        item_comp = Item(use_fn=self.cast_confuse)
+        item_comp = Item(use_fn=cast_confuse)
         return Object(x, y, '#', 'scroll of confusion',
                       libtcod.light_yellow, render_order=0, item=item_comp)

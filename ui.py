@@ -95,21 +95,20 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def render_all(con, panel, map, player, objects, messages, fov_map, mouse,
-               actions):
+def render_all(con, panel, game, mouse, actions):
     if actions.fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
         actions.fov_recompute = False
-        libtcod.map_compute_fov(fov_map, player.x, player.y,
+        libtcod.map_compute_fov(game.fov_map, game.player.x, game.player.y,
                                 TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
 
         # Set tile background colors according to FOV
         for y in range(MAP_HEIGHT):
             for x in range(MAP_WIDTH):
-                visible = libtcod.map_is_in_fov(fov_map, x, y)
-                wall = map[x][y].block_sight
+                visible = libtcod.map_is_in_fov(game.fov_map, x, y)
+                wall = game.map[x][y].block_sight
                 if not visible:
-                    if map[x][y].explored:
+                    if game.map[x][y].explored:
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
                         libtcod.console_set_char_background(con, x, y, color,
                                                             libtcod.BKGND_SET)
@@ -117,11 +116,11 @@ def render_all(con, panel, map, player, objects, messages, fov_map, mouse,
                     color = COLOR_LIGHT_WALL if wall else COLOR_LIGHT_GROUND
                     libtcod.console_set_char_background(con, x, y, color,
                                                         libtcod.BKGND_SET)
-                    map[x][y].explored = True
+                    game.map[x][y].explored = True
 
-    render_ordered = sorted(objects, key=lambda obj: obj.render_order)
+    render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
     for object in render_ordered:
-        if libtcod.map_is_in_fov(fov_map, object.x, object.y):
+        if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
             object.draw(con)
 
     # Blit the contents of the game (non-GUI) console to the root console
@@ -133,18 +132,19 @@ def render_all(con, panel, map, player, objects, messages, fov_map, mouse,
 
     # Print game messages, one line at a time
     y = 1
-    for (line, color) in messages:
+    for (line, color) in game.messages:
         libtcod.console_set_default_foreground(panel, color)
         libtcod.console_print_ex(panel, MSG_X, y, libtcod.BKGND_NONE,
                                  libtcod.LEFT, line)
         y += 1
 
     # Show player's stats
-    render_ui_bar(panel, 1, 1, BAR_WIDTH, 'HP', player.fighter.hp,
-                  player.fighter.max_hp, libtcod.light_red, libtcod.darker_red)
+    render_ui_bar(panel, 1, 1, BAR_WIDTH, 'HP',
+                  game.player.fighter.hp, game.player.fighter.max_hp,
+                  libtcod.light_red, libtcod.darker_red)
 
     # Display names of objects under the mouse
-    names = get_names_under_mouse(mouse, objects, fov_map)
+    names = get_names_under_mouse(mouse, game.objects, game.fov_map)
     libtcod.console_set_default_foreground(panel, libtcod.light_gray)
     libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, names)
 

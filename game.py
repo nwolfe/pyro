@@ -22,10 +22,15 @@ class Game:
                  fov_map=None,
                  objects=None,
                  player=None,
+                 inventory=None,
                  messages=None):
         self.state = state
         self.map = map
         self.fov_map = fov_map
         self.objects = objects
         self.player = player
+        self.inventory = inventory
         self.messages = messages
+
+    def message(self, text, color=libtcod.white):
+        message(self.messages, text, color)
