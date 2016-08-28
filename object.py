@@ -128,17 +128,43 @@ class Fighter(Component):
                             .format(self.owner.name.capitalize(), target.name))
 
 
-class BasicMonster(Component):
-    def take_turn(self, map, fov_map, objects, player, messages):
+class AI:
+    def take_turn(self, game):
+        # Children must implement
+        return
+
+
+class BasicMonster(Component, AI):
+    def take_turn(self, game):
         monster = self.owner
-        if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
+        if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):
             # Move towards player if far away
-            if monster.distance_to(player) >= 2:
-                monster.move_towards(map, objects, player.x, player.y)
+            if monster.distance_to(game.player) >= 2:
+                monster.move_towards(game.map, game.objects,
+                                     game.player.x, game.player.y)
 
             # Close enough, attack! (If the player is still alive)
-            elif player.fighter.hp > 0:
-                monster.fighter.attack(player, messages)
+            elif game.player.fighter.hp > 0:
+                monster.fighter.attack(game.player, game.messages)
+
+
+class ConfusedMonster(Component, AI):
+    def __init__(self, restore_ai, num_turns=CONFUSE_NUM_TURNS):
+        self.restore_ai = restore_ai
+        self.num_turns = num_turns
+
+    def take_turn(self, game):
+        if self.num_turns > 0:
+            # Move in a random direction
+            self.owner.move(game.map, game.objects,
+                            libtcod.random_get_int(0, -1, 1),
+                            libtcod.random_get_int(0, -1, 1))
+            self.num_turns -= 1
+        else:
+            # Restore normal AI
+            self.owner.ai = self.restore_ai
+            msg = 'The {0} is no longer confused!'.format(self.owner.name)
+            libgame.message(game.messages, msg, libtcod.red)
 
 
 class MonsterFactory:
@@ -229,6 +255,21 @@ class ItemFactory:
             monster.fighter.take_damage(LIGHTNING_DAMAGE)
         self.cast_lightning = cast_lightning
 
+        def cast_confuse(player):
+            # Find closest enemy in range and confuse it
+            monster = closest_monster(player, objects, fov_map, CONFUSE_RANGE)
+            if monster is None:
+                libgame.message(messages, 'No enemy is close enough to confuse.',
+                                libtcod.red)
+                return 'cancelled'
+
+            old_ai = monster.ai
+            monster.ai = ConfusedMonster(old_ai)
+            monster.ai.owner = monster
+            msg = 'The eyes of the {0} look vacant, as he starts to stumble around!'.format(monster.name)
+            libgame.message(messages, msg, libtcod.light_green)
+        self.cast_confuse = cast_confuse
+
     def make_healing_potion(self, x, y):
         item_comp = Item(use_fn=self.cast_heal)
         return Object(x, y, '!', 'healing potion', libtcod.violet,
@@ -237,4 +278,9 @@ class ItemFactory:
     def make_lightning_scroll(self, x, y):
         item_comp = Item(use_fn=self.cast_lightning)
         return Object(x, y, '#', 'scroll of lightning bolt',
+                      libtcod.light_yellow, render_order=0, item=item_comp)
+
+    def make_confusion_scroll(self, x, y):
+        item_comp = Item(use_fn=self.cast_confuse)
+        return Object(x, y, '#', 'scroll of confusion',
                       libtcod.light_yellow, render_order=0, item=item_comp)

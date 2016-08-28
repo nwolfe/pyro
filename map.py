@@ -60,7 +60,7 @@ def place_objects(room, map, objects, monster_factory, item_factory):
 
         if not libobj.is_blocked(map, objects, x, y):
             dice = libtcod.random_get_int(0, 0, 100)
-            if libtcod.random_get_int(0, 0, 100) < 80:
+            if dice < 80:
                 # Create orc (80% chance)
                 monster = monster_factory.make_orc(x, y)
             else:
@@ -81,9 +81,12 @@ def place_objects(room, map, objects, monster_factory, item_factory):
             if dice < 70:
                 # Create healing potion (70% chance)
                 item = item_factory.make_healing_potion(x, y)
-            else:
-                # Create a lightning bolt scroll (30% chance)
+            elif dice < 85:
+                # Create a lightning bolt scroll (15% chance)
                 item = item_factory.make_lightning_scroll(x, y)
+            else:
+                # Create a confusion scroll (15% chance)
+                item = item_factory.make_confusion_scroll(x, y)
             objects.append(item)
 
 

@@ -76,7 +76,7 @@ con = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
 messages = []
 
-game = libgame.Game(state='playing')
+game = libgame.Game(state='playing', messages=messages)
 
 def player_death(player):
     libgame.message(messages, 'You died!')
@@ -100,6 +100,11 @@ for y in range(MAP_HEIGHT):
         libtcod.map_set_properties(fov_map, x, y,
                                    not map[x][y].block_sight,
                                    not map[x][y].blocked)
+
+game.map = map
+game.fov_map = fov_map
+game.player = player
+game.objects = objects
 
 actions = Actions(fov_recompute=True)
 
@@ -127,4 +132,4 @@ while not libtcod.console_is_window_closed():
     if game.state == 'playing' and actions.player_action != 'idle':
         for object in objects:
             if object.ai:
-                object.ai.take_turn(map, fov_map, objects, player, messages)
+                object.ai.take_turn(game)

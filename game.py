@@ -16,5 +16,16 @@ def message(messages, new_msg, color=libtcod.white):
 
 
 class Game:
-    def __init__(self, state=None):
+    def __init__(self,
+                 state=None,
+                 map=None,
+                 fov_map=None,
+                 objects=None,
+                 player=None,
+                 messages=None):
         self.state = state
+        self.map = map
+        self.fov_map = fov_map
+        self.objects = objects
+        self.player = player
+        self.messages = messages
