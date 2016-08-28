@@ -1,6 +1,7 @@
 import libtcodpy as libtcod
 import game as libgame
 import math
+from settings import *
 
 
 def is_blocked(map, objects, x, y):
@@ -17,13 +18,14 @@ def is_blocked(map, objects, x, y):
 
 
 class Object:
-    def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None):
+    def __init__(self, x, y, char, name, color, blocks=False, render_order=1,
+                 fighter=None, ai=None, item=None):
         self.x = x
         self.y = y
         self.char = char
         self.color = color
         self.name = name
-        self.render_order = 1
+        self.render_order = render_order
         self.blocks = blocks
         self.fighter = fighter
         if self.fighter:
@@ -31,6 +33,9 @@ class Object:
         self.ai = ai
         if self.ai:
             self.ai.owner = self
+        self.item = item
+        if self.item:
+            self.item.owner = self
 
     def move(self, map, objects, dx, dy):
         if not is_blocked(map, objects, self.x + dx, self.y + dy):
@@ -87,13 +92,19 @@ class Fighter(Component):
         if self.hp <= 0 and self.death_fn:
             self.death_fn(self.owner)
 
+    def heal(self, amount):
+        # Heal by the given amount, without going over the maximum
+        self.hp += amount
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
 
     def attack(self, target, messages):
         damage = self.power - target.fighter.defense
 
         if damage > 0:
             libgame.message(messages, '{0} attacks {1} for {2} hit points.'.
-                            format(self.owner.name.capitalize(), target.name, damage))
+                            format(self.owner.name.capitalize(), target.name,
+                                   damage))
             target.fighter.take_damage(damage)
         else:
             libgame.message(messages, '{0} attacks {1} but it has no effect!'
@@ -142,3 +153,54 @@ class MonsterFactory:
                                death_fn=self.monster_death)
         return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
                       ai=ai_comp, fighter=fighter_comp)
+
+
+class Item(Component):
+    def __init__(self, use_fn=None):
+        self.use_fn = use_fn
+        self.item_owner = None
+
+    def pick_up(self, inventory, player, objects, messages):
+        # Add to player's inventory and remove from the map
+        if len(inventory) >= 26:
+            libgame.message(messages,
+                            'Your inventory is full, cannot pick up {0}.'.
+                            format(self.owner.name), libtcod.red)
+        else:
+            self.item_owner = player
+            inventory.append(self.owner)
+            objects.remove(self.owner)
+            libgame.message(messages, 'You picked up a {0}!'.
+                            format(self.owner.name), libtcod.green)
+
+    def use(self, inventory, messages):
+        # Call the use_fn if we have one
+        if self.use_fn is None:
+            libgame.message(messages, 'The {0} cannot be used.'.
+                            format(self.owner.name))
+        else:
+            # Destroy after use, unless it was cancelled for some reason
+            if self.use_fn(self.item_owner) != 'cancelled':
+                inventory.remove(self.owner)
+
+
+class ItemFactory:
+    def __init__(self, messages):
+        def cast_heal(player):
+            # Heal the player
+            if player.fighter.hp == player.fighter.max_hp:
+                libgame.message(messages, 'You are already at full health.',
+                                libtcod.red)
+                return 'cancelled'
+
+            libgame.message(messages, 'Your wounds start to feel better!',
+                            libtcod.light_violet)
+            player.fighter.heal(HEAL_AMOUNT)
+        self.cast_heal = cast_heal
+
+
+    def make_healing_potion(self, x, y):
+        # Items appear below other objects
+        item_comp = Item(use_fn=self.cast_heal)
+        return Object(x, y, '!', 'healing potion', libtcod.violet,
+                      render_order=0, item=item_comp)

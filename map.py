@@ -49,16 +49,14 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
-
-
-def place_objects(room, map, objects, monster_factory):
+def place_objects(room, map, objects, monster_factory, item_factory):
     # Random number of numbers
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
 
     for i in range(num_monsters):
         # Random position for monster
-        x = libtcod.random_get_int(0, room.x1, room.x2)
-        y = libtcod.random_get_int(0, room.y1, room.y2)
+        x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
+        y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
 
         if not libobj.is_blocked(map, objects, x, y):
             # 80% chance of getting an orc, otherwise troll
@@ -67,6 +65,19 @@ def place_objects(room, map, objects, monster_factory):
             else:
                 monster = monster_factory.make_troll(x, y)
             objects.append(monster)
+
+    # Random number of items
+    num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
+
+    for i in range(num_items):
+        # Random position for item
+        x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
+        y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+
+        if not libobj.is_blocked(map, objects, x, y):
+            # Create healing potion
+            item = item_factory.make_healing_potion(x, y)
+            objects.append(item)
 
 
 def room_overlaps_existing(room, existing):
@@ -88,7 +99,7 @@ def randomly_placed_rect():
     return Rect(x, y, w, h)
 
 
-def make_map(player, objects, monster_factory):
+def make_map(player, objects, monster_factory, item_factory):
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
            for x in range(MAP_WIDTH)]
@@ -127,7 +138,7 @@ def make_map(player, objects, monster_factory):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
-        place_objects(new_room, map, objects, monster_factory)
+        place_objects(new_room, map, objects, monster_factory, item_factory)
         rooms.append(new_room)
         num_rooms += 1
 
