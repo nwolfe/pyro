@@ -6,13 +6,7 @@ import ui as libui
 from settings import *
 
 
-class Actions:
-    def __init__(self, fov_recompute=None, player_action=None):
-        self.fov_recompute = fov_recompute
-        self.player_action = player_action
-
-
-def move_player_or_attack(game, dx, dy, actions):
+def move_player_or_attack(dx, dy, game):
     x = game.player.x + dx
     y = game.player.y + dy
     target = None
@@ -23,32 +17,31 @@ def move_player_or_attack(game, dx, dy, actions):
 
     if target:
         game.player.fighter.attack(target, game)
+        return (False, None)
     else:
         game.player.move(game.map, game.objects, dx, dy)
-        actions.player_action = 'move'
-        actions.fov_recompute = True
+        return (True, 'move')
 
 
-def handle_keys(key, con, game, actions):
+def handle_keys(key, con, game):
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
     elif key.vk == libtcod.KEY_ESCAPE:
         # Exit game
-        actions.player_action = 'exit'
-        return
+        return (False, 'exit')
 
     if game.state != 'playing':
-        return
+        return (False, None)
 
     if libtcod.KEY_UP == key.vk:
-        move_player_or_attack(game, 0, -1, actions)
+        return move_player_or_attack(0, -1, game)
     elif libtcod.KEY_DOWN == key.vk:
-        move_player_or_attack(game, 0, 1, actions)
+        return move_player_or_attack(0, 1, game)
     elif libtcod.KEY_LEFT == key.vk:
-        move_player_or_attack(game, -1, 0, actions)
+        return move_player_or_attack(-1, 0, game)
     elif libtcod.KEY_RIGHT == key.vk:
-        move_player_or_attack(game, 1, 0, actions)
+        return move_player_or_attack(1, 0, game)
     elif 'g' == chr(key.c):
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
@@ -56,14 +49,16 @@ def handle_keys(key, con, game, actions):
                 if object.x == game.player.x and object.y == game.player.y:
                     object.item.pick_up(game)
                     break
+        return (False, None)
     elif 'i' == chr(key.c):
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
         selected_item = libui.inventory_menu(con, game.inventory, msg)
         if selected_item:
             selected_item.use(game)
+        return (False, None)
     else:
-        actions.player_action = 'idle'
+        return (False, 'idle')
 
 
 def player_death(player, game):
@@ -95,6 +90,7 @@ player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
 objects = [player]
 map = libmap.make_map(player, objects)
 
+fov_recompute = True
 fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 for y in range(MAP_HEIGHT):
     for x in range(MAP_WIDTH):
@@ -104,8 +100,6 @@ for y in range(MAP_HEIGHT):
 
 game = libgame.Game('playing', map, fov_map,
                     objects, player, inventory, messages)
-
-actions = Actions(fov_recompute=True)
 
 mouse = libtcod.Mouse()
 key = libtcod.Key()
@@ -117,19 +111,19 @@ while not libtcod.console_is_window_closed():
     libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
                                 key, mouse)
 
-    libui.render_all(con, panel, game, mouse, actions)
+    libui.render_all(con, panel, game, mouse, fov_recompute)
 
     libtcod.console_flush()
 
     for object in game.objects:
         object.clear(con)
 
-    handle_keys(key, con, game, actions)
+    (fov_recompute, player_action) = handle_keys(key, con, game)
 
-    if actions.player_action == 'exit':
+    if player_action == 'exit':
         break
 
-    if game.state == 'playing' and actions.player_action != 'idle':
+    if game.state == 'playing' and player_action != 'idle':
         for object in game.objects:
             if object.ai:
                 object.ai.take_turn(game)

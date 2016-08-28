@@ -95,10 +95,9 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def render_all(con, panel, game, mouse, actions):
-    if actions.fov_recompute:
+def render_all(con, panel, game, mouse, fov_recompute):
+    if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
-        actions.fov_recompute = False
         libtcod.map_compute_fov(game.fov_map, game.player.x, game.player.y,
                                 TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
 
