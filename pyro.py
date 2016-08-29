@@ -94,8 +94,7 @@ inventory = []
 player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
                        fighter=libobj.Fighter(hp=30, defense=2, power=5,
                                               death_fn=player_death))
-objects = [player]
-map = libmap.make_map(player, objects)
+(map, objects) = libmap.make_map(player)
 
 fov_recompute = True
 fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)

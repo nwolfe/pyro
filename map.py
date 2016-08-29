@@ -112,7 +112,8 @@ def randomly_placed_rect():
     return Rect(x, y, w, h)
 
 
-def make_map(player, objects):
+def make_map(player):
+    objects = [player]
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
            for x in range(MAP_WIDTH)]
@@ -155,4 +156,4 @@ def make_map(player, objects):
         rooms.append(new_room)
         num_rooms += 1
 
-    return map
+    return (map, objects)
