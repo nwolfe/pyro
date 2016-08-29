@@ -115,6 +115,7 @@ def new_game(console, panel):
 
 def play_game(game):
     fov_recompute = True
+    libtcod.console_clear(game.console)
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, game.key, game.mouse)
@@ -137,6 +138,36 @@ def play_game(game):
                     object.ai.take_turn(game)
 
 
+def main_menu(console, panel):
+    background = libtcod.image_load('menu_background.png')
+
+    while not libtcod.console_is_window_closed():
+        # Show the image at twice the regular console resolution
+        libtcod.image_blit_2x(background, 0, 0, 0)
+
+        # Show the game's title and credits
+        libtcod.console_set_default_foreground(console, libtcod.light_yellow)
+        libtcod.console_print_ex(console, SCREEN_WIDTH/2, (SCREEN_HEIGHT/2)-4,
+                                 libtcod.BKGND_NONE, libtcod.CENTER,
+                                 'TOMBS OF THE ANCIENT KINGS')
+        libtcod.console_print_ex(console, SCREEN_WIDTH/2, SCREEN_HEIGHT-2,
+                                 libtcod.BKGND_NONE, libtcod.CENTER,
+                                 'By N. Wolfe')
+
+        libtcod.console_wait_for_keypress(False)
+
+        # Show options and wait for the player's choice
+        options = ['Play a new game', 'Continue last game', 'Quit']
+        choice = libui.menu(console, '', options, 24)
+
+        if choice == 0:
+            # New game
+            play_game(new_game(console, panel))
+        elif choice == 2:
+            # Quit
+            break
+
+
 ###############################################################################
 # Initialization & Main Loop                                                  #
 ###############################################################################
@@ -145,10 +176,10 @@ libtcod.console_set_custom_font('terminal8x12_gs_tc.png',
                                 libtcod.FONT_TYPE_GREYSCALE |
                                 libtcod.FONT_LAYOUT_TCOD)
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
-                          'python/libtcod tutorial', False)
+                          'Tombs Of The Ancient Kings', False)
 libtcod.sys_set_fps(LIMIT_FPS)
 
 console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-game = new_game(console, panel)
-play_game(game)
+
+main_menu(console, panel)

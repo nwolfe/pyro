@@ -8,8 +8,11 @@ def menu(con, header, options, width):
 
     # Calculate total height for header (after auto-wrap),
     # and one line per option
-    header_height = libtcod.console_get_height_rect(con, 0, 0, width,
-                                                    SCREEN_HEIGHT, header)
+    if header == '':
+        header_height = 0
+    else:
+        header_height = libtcod.console_get_height_rect(con, 0, 0, width,
+                                                        SCREEN_HEIGHT, header)
     height = len(options) + header_height
 
     # Create an off-screen console that represents the menu's window
@@ -38,6 +41,10 @@ def menu(con, header, options, width):
     # Present the root console to the player and wait for a key press
     libtcod.console_flush()
     key = libtcod.console_wait_for_keypress(True)
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        # Alt-Enter toggles fullscreen
+        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
     # Convert ASCII code to an index; if it corresponds to an option, return it
     index = key.c - ord('a')
