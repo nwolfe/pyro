@@ -113,6 +113,30 @@ def new_game(console, panel):
     return game
 
 
+def play_game(game):
+    fov_recompute = True
+    while not libtcod.console_is_window_closed():
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
+                                    libtcod.EVENT_MOUSE, game.key, game.mouse)
+
+        libui.render_all(game, fov_recompute)
+
+        libtcod.console_flush()
+
+        for object in game.objects:
+            object.clear(game.console)
+
+        (fov_recompute, player_action) = handle_keys(game)
+
+        if player_action == 'exit':
+            break
+
+        if game.state == 'playing' and player_action != 'idle':
+            for object in game.objects:
+                if object.ai:
+                    object.ai.take_turn(game)
+
+
 ###############################################################################
 # Initialization & Main Loop                                                  #
 ###############################################################################
@@ -124,30 +148,7 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
                           'python/libtcod tutorial', False)
 libtcod.sys_set_fps(LIMIT_FPS)
 
-con = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
+console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-
-game = new_game(con, panel)
-
-fov_recompute = True
-
-while not libtcod.console_is_window_closed():
-    libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
-                                game.key, game.mouse)
-
-    libui.render_all(game, fov_recompute)
-
-    libtcod.console_flush()
-
-    for object in game.objects:
-        object.clear(con)
-
-    (fov_recompute, player_action) = handle_keys(game)
-
-    if player_action == 'exit':
-        break
-
-    if game.state == 'playing' and player_action != 'idle':
-        for object in game.objects:
-            if object.ai:
-                object.ai.take_turn(game)
+game = new_game(console, panel)
+play_game(game)
