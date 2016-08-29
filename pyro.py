@@ -3,6 +3,7 @@ import object as libobj
 import map as libmap
 import game as libgame
 import ui as libui
+import shelve
 from settings import *
 
 
@@ -130,12 +131,44 @@ def play_game(game):
         (fov_recompute, player_action) = handle_keys(game)
 
         if player_action == 'exit':
+            save_game(game)
             break
 
         if game.state == 'playing' and player_action != 'idle':
             for object in game.objects:
                 if object.ai:
                     object.ai.take_turn(game)
+
+
+def save_game(game):
+    # Open an empty shelve (possibly overwriting an old one) to write the data
+    file = shelve.open('savegame', 'n')
+    file['map'] = game.map
+    file['objects'] = game.objects
+    file['player_index'] = game.objects.index(game.player)
+    file['inventory'] = game.inventory
+    file['messages'] = game.messages
+    file['state'] = game.state
+    file.close()
+
+
+def load_game(console, panel):
+    # Open the previously saved shelve and load the game data
+    file = shelve.open('savegame', 'r')
+    map = file['map']
+    objects = file['objects']
+    player = objects[file['player_index']]
+    inventory = file['inventory']
+    messages = file['messages']
+    state = file['state']
+    file.close()
+
+    fov_map = make_fov_map(map)
+    mouse = libtcod.Mouse()
+    key = libtcod.Key()
+
+    return libgame.Game(state, console, panel, mouse, key, map, fov_map,
+                        objects, player, inventory, messages)
 
 
 def main_menu(console, panel):
@@ -162,7 +195,16 @@ def main_menu(console, panel):
 
         if choice == 0:
             # New game
-            play_game(new_game(console, panel))
+            game = new_game(console, panel)
+            play_game(game)
+        elif choice == 1:
+            # Load last game
+            try:
+                game = load_game(console, panel)
+                play_game(game)
+            except:
+                libui.messagebox('\n No saved game to load.\n', 24)
+                continue
         elif choice == 2:
             # Quit
             break

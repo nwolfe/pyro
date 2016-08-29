@@ -54,6 +54,10 @@ def menu(con, header, options, width):
         return None
 
 
+def messagebox(con, text, width=50):
+    return menu(con, text, [], width)
+
+
 def inventory_menu(con, inventory, header):
     # Show a menu with each item of the inventory as an option
     if len(inventory) == 0:
