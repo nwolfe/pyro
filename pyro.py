@@ -76,6 +76,43 @@ def player_death(player, game):
     player.color = libtcod.dark_red
 
 
+def make_fov_map(map):
+    # Create the FOV map according to the generated map
+    fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
+    for y in range(MAP_HEIGHT):
+        for x in range(MAP_WIDTH):
+            libtcod.map_set_properties(fov_map, x, y,
+                                       not map[x][y].block_sight,
+                                       not map[x][y].blocked)
+    return fov_map
+
+
+def new_game(console, panel):
+    # Create the player
+    fighter_comp = libobj.Fighter(hp=30, defense=2, power=5,
+                                  death_fn=player_death)
+    player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
+                           fighter=fighter_comp)
+
+    # Generate map (not drawn to the screen yet)
+    (map, objects) = libmap.make_map(player)
+    fov_map = make_fov_map(map)
+
+    mouse = libtcod.Mouse()
+    key = libtcod.Key()
+
+    inventory = []
+    messages = []
+
+    game = libgame.Game('playing', console, panel, mouse, key, map, fov_map,
+                        objects, player, inventory, messages)
+
+    m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
+    game.message(m, libtcod.red)
+
+    return game
+
+
 ###############################################################################
 # Initialization & Main Loop                                                  #
 ###############################################################################
@@ -89,26 +126,10 @@ libtcod.sys_set_fps(LIMIT_FPS)
 
 con = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-messages = []
-inventory = []
-player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
-                       fighter=libobj.Fighter(hp=30, defense=2, power=5,
-                                              death_fn=player_death))
-(map, objects) = libmap.make_map(player)
+
+game = new_game(con, panel)
 
 fov_recompute = True
-fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
-for y in range(MAP_HEIGHT):
-    for x in range(MAP_WIDTH):
-        libtcod.map_set_properties(fov_map, x, y,
-                                   not map[x][y].block_sight,
-                                   not map[x][y].blocked)
-
-game = libgame.Game('playing', con, panel, libtcod.Mouse(), libtcod.Key(),
-                    map, fov_map, objects, player, inventory, messages)
-
-msg = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
-game.message(msg, libtcod.red)
 
 while not libtcod.console_is_window_closed():
     libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
