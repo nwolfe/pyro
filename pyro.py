@@ -35,6 +35,8 @@ def handle_keys(game):
     if game.state != 'playing':
         return (False, None)
 
+    key_char = chr(game.key.c)
+
     if libtcod.KEY_UP == game.key.vk:
         return move_player_or_attack(0, -1, game)
     elif libtcod.KEY_DOWN == game.key.vk:
@@ -43,7 +45,7 @@ def handle_keys(game):
         return move_player_or_attack(-1, 0, game)
     elif libtcod.KEY_RIGHT == game.key.vk:
         return move_player_or_attack(1, 0, game)
-    elif 'g' == chr(game.key.c):
+    elif 'g' == key_char:
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
             if object.item:
@@ -51,20 +53,26 @@ def handle_keys(game):
                     object.item.pick_up(game)
                     break
         return (False, None)
-    elif 'i' == chr(game.key.c):
+    elif 'i' == key_char:
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
         selected_item = libui.inventory_menu(game.console, game.inventory, msg)
         if selected_item:
             selected_item.use(game)
         return (False, None)
-    elif 'd' == chr(game.key.c):
+    elif 'd' == key_char:
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
         selected_item = libui.inventory_menu(game.console, game.inventory, msg)
         if selected_item:
             selected_item.drop(game)
         return (False, None)
+    elif '>' == key_char:
+        # Go down the stairs to the next level
+        if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
+            next_dungeon_level(game)
+            libtcod.console_clear(game.console)
+        return (True, None)
     else:
         return (False, 'idle')
 
@@ -96,7 +104,7 @@ def new_game(console, panel):
                            fighter=fighter_comp)
 
     # Generate map (not drawn to the screen yet)
-    (map, objects) = libmap.make_map(player)
+    (map, objects, stairs) = libmap.make_map(player)
     fov_map = make_fov_map(map)
 
     mouse = libtcod.Mouse()
@@ -106,12 +114,33 @@ def new_game(console, panel):
     messages = []
 
     game = libgame.Game('playing', console, panel, mouse, key, map, fov_map,
-                        objects, player, inventory, messages)
+                        objects, stairs, player, inventory, messages)
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
 
     return game
+
+
+def next_dungeon_level(game):
+    # Advance to the next level
+    # Heal the player by 50%
+    game.message('You take a moment to rest, and recover your strength.',
+                 libtcod.light_violet)
+    game.player.fighter.heal(game.player.fighter.max_hp / 2)
+
+    msg = 'After a rare moment of peace, you descend deeper into the heart '
+    msg += 'of the dungeon...'
+    game.message(msg, libtcod.red)
+    game.dungeon_level += 1
+
+    (map, objects, stairs) = libmap.make_map(game.player)
+    fov_map = make_fov_map(map)
+
+    game.map = map
+    game.fov_map = fov_map
+    game.objects = objects
+    game.stairs = stairs
 
 
 def play_game(game):
@@ -149,6 +178,8 @@ def save_game(game):
     file['inventory'] = game.inventory
     file['messages'] = game.messages
     file['state'] = game.state
+    file['stairs_index'] = game.objects.index(game.stairs)
+    file['dungeon_level'] = game.dungeon_level
     file.close()
 
 
@@ -161,6 +192,8 @@ def load_game(console, panel):
     inventory = file['inventory']
     messages = file['messages']
     state = file['state']
+    stairs = objects[file['stairs_index']]
+    dungeon_level = file['dungeon_level']
     file.close()
 
     fov_map = make_fov_map(map)
@@ -168,7 +201,8 @@ def load_game(console, panel):
     key = libtcod.Key()
 
     return libgame.Game(state, console, panel, mouse, key, map, fov_map,
-                        objects, player, inventory, messages)
+                        objects, stairs, player, inventory, messages,
+                        dungeon_level)
 
 
 def main_menu(console, panel):
@@ -186,8 +220,6 @@ def main_menu(console, panel):
         libtcod.console_print_ex(console, SCREEN_WIDTH/2, SCREEN_HEIGHT-2,
                                  libtcod.BKGND_NONE, libtcod.CENTER,
                                  'By N. Wolfe')
-
-        libtcod.console_wait_for_keypress(False)
 
         # Show options and wait for the player's choice
         options = ['Play a new game', 'Continue last game', 'Quit']

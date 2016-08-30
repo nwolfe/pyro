@@ -34,6 +34,7 @@ def closest_monster(max_range, game):
 
 
 class Object:
+    # REMIND: Consider adding the 'always_visible' property from Part 11
     def __init__(self, x, y, char, name, color, blocks=False, render_order=1,
                  fighter=None, ai=None, item=None):
         self.x = x
@@ -98,8 +99,8 @@ class Component:
 class Fighter(Component):
     """Combat-related properties and methods (monster, player, NPC)."""
     def __init__(self, hp, defense, power, death_fn=None):
-        self.max_hp = hp
         self.hp = hp
+        self.max_hp = hp
         self.defense = defense
         self.power = power
         self.death_fn = death_fn

@@ -26,9 +26,11 @@ class Game:
                  map=None,
                  fov_map=None,
                  objects=None,
+                 stairs=None,
                  player=None,
                  inventory=None,
-                 messages=None):
+                 messages=None,
+                 dungeon_level=1):
         self.state = state
         self.console = console
         self.panel = panel
@@ -36,10 +38,12 @@ class Game:
         self.key = key
         self.map = map
         self.fov_map = fov_map
+        self.stairs = stairs
         self.objects = objects
         self.player = player
         self.inventory = inventory
         self.messages = messages
+        self.dungeon_level = dungeon_level
 
     def message(self, text, color=libtcod.white):
         message(self.messages, text, color)

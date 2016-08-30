@@ -155,6 +155,10 @@ def render_all(game, fov_recompute):
                   game.player.fighter.hp, game.player.fighter.max_hp,
                   libtcod.light_red, libtcod.darker_red)
 
+    # Show the dungeon level
+    libtcod.console_print_ex(game.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Dungeon Level {}'.format(game.dungeon_level))
+
     # Display names of objects under the mouse
     names = get_names_under_mouse(game.mouse, game.objects, game.fov_map)
     libtcod.console_set_default_foreground(game.panel, libtcod.light_gray)

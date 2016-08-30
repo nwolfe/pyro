@@ -156,4 +156,9 @@ def make_map(player):
         rooms.append(new_room)
         num_rooms += 1
 
-    return (map, objects)
+    # Create stairs at the center of the last room
+    stairs = libobj.Object(new_x, new_y, '>', 'stairs', libtcod.white,
+                           render_order=0)
+    objects.append(stairs)
+
+    return (map, objects, stairs)
