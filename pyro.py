@@ -24,6 +24,24 @@ def move_player_or_attack(dx, dy, game):
         return (True, 'move')
 
 
+def show_character_info(game):
+    msg = """Character Information
+
+Level: {0}
+Experience: {1}
+Next Level: {2}
+
+Current HP: {3}
+Maximum HP: {4}
+Attack: {5}
+Defense: {6}
+"""
+    msg = msg.format(game.player.exp.level,
+                     game.player.exp.xp, game.player.exp.requiredForLevelUp(),
+                     game.player.fighter.hp, game.player.fighter.max_hp,
+                     game.player.fighter.power, game.player.fighter.defense)
+    libui.messagebox(game.console, msg, CHARACTER_SCREEN_WIDTH)
+
 def handle_keys(game):
     if game.key.vk == libtcod.KEY_ENTER and game.key.lalt:
         # Alt-Enter toggles fullscreen
@@ -37,15 +55,26 @@ def handle_keys(game):
 
     key_char = chr(game.key.c)
 
-    if libtcod.KEY_UP == game.key.vk:
+    if libtcod.KEY_UP == game.key.vk or key_char == 'w':
         return move_player_or_attack(0, -1, game)
-    elif libtcod.KEY_DOWN == game.key.vk:
+    elif libtcod.KEY_DOWN == game.key.vk or key_char == 's':
         return move_player_or_attack(0, 1, game)
-    elif libtcod.KEY_LEFT == game.key.vk:
+    elif libtcod.KEY_LEFT == game.key.vk or key_char == 'a':
         return move_player_or_attack(-1, 0, game)
-    elif libtcod.KEY_RIGHT == game.key.vk:
+    elif libtcod.KEY_RIGHT == game.key.vk or key_char == 'd':
         return move_player_or_attack(1, 0, game)
-    elif 'g' == key_char:
+    elif key_char == 'q': # up-left
+        return move_player_or_attack(-1, -1, game)
+    elif key_char == 'e': # up-right
+        return move_player_or_attack(1, -1, game)
+    elif key_char == 'z': # down-left
+        return move_player_or_attack(-1, 1, game)
+    elif key_char == 'x': # down-right
+        return move_player_or_attack(1, 1, game)
+    elif key_char == 'f':
+        # Don't move, let the monsters come to you
+        return (False, None)
+    elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
             if object.item:
@@ -53,26 +82,29 @@ def handle_keys(game):
                     object.item.pick_up(game)
                     break
         return (False, None)
-    elif 'i' == key_char:
+    elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
         selected_item = libui.inventory_menu(game.console, game.inventory, msg)
         if selected_item:
             selected_item.use(game)
         return (False, None)
-    elif 'd' == key_char:
+    elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
         selected_item = libui.inventory_menu(game.console, game.inventory, msg)
         if selected_item:
             selected_item.drop(game)
         return (False, None)
-    elif '>' == key_char:
+    elif key_char == '>':
         # Go down the stairs to the next level
         if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
             next_dungeon_level(game)
             libtcod.console_clear(game.console)
         return (True, None)
+    elif key_char == 'c':
+        show_character_info(game)
+        return (False, None)
     else:
         return (False, 'idle')
 
@@ -96,12 +128,41 @@ def make_fov_map(map):
     return fov_map
 
 
+def check_player_level_up(game):
+    player = game.player
+
+    # See if the player's XP is enough to level up
+    if player.exp.canLevelUp():
+        return
+
+    # Ding! Level up!
+    player.exp.levelUp()
+    msg = 'Your battle skills grow stronger! You reached level {}!'
+    game.message(msg.format(player.exp.level), libtcod.yellow)
+
+    choice = None
+    while choice is None:
+        options = ['Constitution (+20 HP, from {})'.format(player.fighter.max_hp),
+                   'Strength (+1 attack, from {})'.format(player.fighter.power),
+                   'Agility (+1 defense, from {})'.format(player.fighter.defense)]
+        choice = libui.menu(game.console, 'Level up! Choose a stat to raise:\n',
+                            options, LEVEL_SCREEN_WIDTH)
+        if choice == 0:
+            player.fighter.max_hp += 20
+            player.fighter.hp += 20
+        elif choice == 1:
+            player.fighter.power += 1
+        elif choice == 2:
+            player.fighter.defense += 1
+
+
 def new_game(console, panel):
     # Create the player
+    exp_comp = libobj.Experience(xp=0, level=1)
     fighter_comp = libobj.Fighter(hp=30, defense=2, power=5,
                                   death_fn=player_death)
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
-                           fighter=fighter_comp)
+                           fighter=fighter_comp, exp=exp_comp)
 
     # Generate map (not drawn to the screen yet)
     (map, objects, stairs) = libmap.make_map(player)
@@ -153,6 +214,8 @@ def play_game(game):
         libui.render_all(game, fov_recompute)
 
         libtcod.console_flush()
+
+        check_player_level_up(game)
 
         for object in game.objects:
             object.clear(game.console)

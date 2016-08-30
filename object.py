@@ -36,7 +36,7 @@ def closest_monster(max_range, game):
 class Object:
     # REMIND: Consider adding the 'always_visible' property from Part 11
     def __init__(self, x, y, char, name, color, blocks=False, render_order=1,
-                 fighter=None, ai=None, item=None):
+                 fighter=None, ai=None, item=None, exp=None):
         self.x = x
         self.y = y
         self.char = char
@@ -44,15 +44,23 @@ class Object:
         self.name = name
         self.render_order = render_order
         self.blocks = blocks
+
         self.fighter = fighter
         if self.fighter:
             self.fighter.owner = self
+
         self.ai = ai
         if self.ai:
             self.ai.owner = self
+
         self.item = item
         if self.item:
             self.item.owner = self
+
+        self.exp = exp
+        if self.exp:
+            self.exp.owner = self
+
 
     def move(self, map, objects, dx, dy):
         if not is_blocked(map, objects, self.x + dx, self.y + dy):
@@ -94,6 +102,23 @@ class Object:
 class Component:
     def __init__(self):
         self.owner = None
+
+
+class Experience(Component):
+    def __init__(self, xp=0, level=0):
+        self.xp = xp
+        self.level = level
+
+    def requiredForLevelUp(self):
+        return LEVEL_UP_BASE + self.level * LEVEL_UP_FACTOR
+
+    def canLevelUp(self):
+        return self.xp <= self.requiredForLevelUp()
+
+    def levelUp(self):
+        required = self.requiredForLevelUp()
+        self.level += 1
+        self.xp -= required
 
 
 class Fighter(Component):
@@ -173,7 +198,10 @@ class ConfusedMonster(Component, AI):
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
-    game.message('{0} is dead!'.format(monster.name.capitalize()))
+    game.message('The {0} is dead! You gain {1} experience points.'.
+                 format(monster.name.capitalize(), monster.exp.xp),
+                 libtcod.orange)
+    game.player.exp.xp += monster.exp.xp
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
@@ -185,16 +213,18 @@ def monster_death(monster, game):
 
 def make_orc(x, y):
     ai_comp = BasicMonster()
+    exp_comp = Experience(35)
     fighter_comp = Fighter(hp=10, defense=0, power=3, death_fn=monster_death)
     return Object(x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
-                  ai=ai_comp, fighter=fighter_comp)
+                  ai=ai_comp, fighter=fighter_comp, exp=exp_comp)
 
 
 def make_troll(x, y):
     ai_comp = BasicMonster()
+    exp_comp = Experience(100)
     fighter_comp = Fighter(hp=16, defense=1, power=4, death_fn=monster_death)
     return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
-                  ai=ai_comp, fighter=fighter_comp)
+                  ai=ai_comp, fighter=fighter_comp, exp=exp_comp)
 
 
 class Item(Component):
