@@ -1,0 +1,17 @@
+
+
+* TODO Standardize on 'console' over 'con'
+* TODO Convert # comments to proper """docstrings"""
+* TODO Remove console and panel from Game
+** Pass it in alongside game argument
+* TODO Fix vanishing doppleganger casting bug
+* DONE Eliminate objects parameter from map.make_map
+** Instead return list of objects that were created
+* DONE Get rid of Actions?
+* DONE Introduce Game#message for convenience?
+* DONE Add inventory to Game?
+* DONE Collapse parameters of Item#pick_up to Game?
+* DONE Collapse parameters of Item#use to Game?
+** DONE Expand use_fn to take Game parameter
+*** DONE Delete ItemFactory constructor!
+* DONE Delete MonsterFactory constructor somehow
