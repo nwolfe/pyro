@@ -1,42 +1,13 @@
 import libtcodpy as libtcod
 import math
+import json
 from settings import *
-
-
-def is_blocked(map, objects, x, y):
-    # First test the map tile
-    if map[x][y].blocked:
-        return True
-
-    # Now check for any blocking objects
-    for object in objects:
-        if object.blocks and object.x == x and object.y == y:
-            return True
-
-    return False
-
-
-def closest_monster(max_range, game):
-    # Find closest enemy, up to a maximum range, and in the player's FOV
-    closest_enemy = None
-    closest_dist = max_range + 1
-
-    for object in game.objects:
-        if object.fighter and object != game.player and libtcod.map_is_in_fov(
-                game.fov_map, object.x, object.y):
-            # Calculate distance between this object and the player
-            dist = game.player.distance_to(object)
-            if dist < closest_dist:
-                closest_dist = dist
-                closest_enemy = object
-
-    return closest_enemy
 
 
 class Object:
     # REMIND: Consider adding the 'always_visible' property from Part 11
-    def __init__(self, x, y, char, name, color, blocks=False, render_order=1,
-                 fighter=None, ai=None, item=None, exp=None):
+    def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
+                 render_order=1, fighter=None, ai=None, item=None, exp=None):
         self.x = x
         self.y = y
         self.char = char
@@ -156,13 +127,13 @@ class Fighter(Component):
                 self.owner.name.capitalize(), target.name))
 
 
-class AI:
+class AI(Component):
     def take_turn(self, game):
         # Children must implement
         return
 
 
-class BasicMonster(Component, AI):
+class BasicMonster(AI):
     def take_turn(self, game):
         monster = self.owner
         if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):
@@ -176,7 +147,7 @@ class BasicMonster(Component, AI):
                 monster.fighter.attack(game.player, game)
 
 
-class ConfusedMonster(Component, AI):
+class ConfusedMonster(AI):
     def __init__(self, restore_ai, num_turns=CONFUSE_NUM_TURNS):
         self.restore_ai = restore_ai
         self.num_turns = num_turns
@@ -195,6 +166,36 @@ class ConfusedMonster(Component, AI):
             game.message(msg, libtcod.red)
 
 
+def is_blocked(map, objects, x, y):
+    # First test the map tile
+    if map[x][y].blocked:
+        return True
+
+    # Now check for any blocking objects
+    for object in objects:
+        if object.blocks and object.x == x and object.y == y:
+            return True
+
+    return False
+
+
+def closest_monster(max_range, game):
+    # Find closest enemy, up to a maximum range, and in the player's FOV
+    closest_enemy = None
+    closest_dist = max_range + 1
+
+    for object in game.objects:
+        if object.fighter and object != game.player and libtcod.map_is_in_fov(
+                game.fov_map, object.x, object.y):
+            # Calculate distance between this object and the player
+            dist = game.player.distance_to(object)
+            if dist < closest_dist:
+                closest_dist = dist
+                closest_enemy = object
+
+    return closest_enemy
+
+
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
@@ -211,20 +212,34 @@ def monster_death(monster, game):
     monster.name = 'remains of {0}'.format(monster.name)
 
 
-def make_orc(x, y):
+def instantiate_monster(template):
+    name = template['name']
+    char = template['symbol']
+    color = getattr(libtcod, template['color'])
     ai_comp = BasicMonster()
-    exp_comp = Experience(35)
-    fighter_comp = Fighter(hp=10, defense=0, power=3, death_fn=monster_death)
-    return Object(x, y, 'o', 'orc', libtcod.desaturated_green, blocks=True,
-                  ai=ai_comp, fighter=fighter_comp, exp=exp_comp)
+    exp_comp = Experience(template['experience'])
+    fighter_comp = Fighter(template['hp'], template['defense'],
+                           template['power'], death_fn=monster_death)
+    return Object(char=char, name=name, color=color, blocks=True,
+                  fighter=fighter_comp, ai=ai_comp, exp=exp_comp)
 
 
-def make_troll(x, y):
-    ai_comp = BasicMonster()
-    exp_comp = Experience(100)
-    fighter_comp = Fighter(hp=16, defense=1, power=4, death_fn=monster_death)
-    return Object(x, y, 'T', 'troll', libtcod.darker_green, blocks=True,
-                  ai=ai_comp, fighter=fighter_comp, exp=exp_comp)
+def make_monster(name, monsters):
+    for template in monsters:
+        if template['name'] == name:
+            return instantiate_monster(template)
+
+
+def load_monsters_file():
+    with open('monsters.json') as file:
+        templates = json.load(file)
+
+        # For some reason the UI renderer can't handle Unicode strings so we
+        # need to convert the character symbol to UTF-8 for it to be rendered
+        for monster in templates:
+            monster['symbol'] = str(monster['symbol'])
+
+        return templates
 
 
 class Item(Component):

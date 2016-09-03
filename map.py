@@ -49,7 +49,7 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
-def place_objects(room, map, objects):
+def place_objects(room, map, objects, monsters):
     # Random number of numbers
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
 
@@ -62,10 +62,12 @@ def place_objects(room, map, objects):
             dice = libtcod.random_get_int(0, 0, 100)
             if dice < 80:
                 # Create orc (80% chance)
-                monster = libobj.make_orc(x, y)
+                monster = libobj.make_monster('orc', monsters)
             else:
                 # Create troll (20% chance)
-                monster = libobj.make_troll(x, y)
+                monster = libobj.make_monster('troll', monsters)
+            monster.x = x
+            monster.y = y
             objects.append(monster)
 
     # Random number of items
@@ -119,6 +121,7 @@ def make_map(player):
            for x in range(MAP_WIDTH)]
     rooms = []
     num_rooms = 0
+    monsters = libobj.load_monsters_file()
 
     for r in range(MAX_ROOMS):
         new_room = randomly_placed_rect()
@@ -152,7 +155,7 @@ def make_map(player):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
-        place_objects(new_room, map, objects)
+        place_objects(new_room, map, objects, monsters)
         rooms.append(new_room)
         num_rooms += 1
 
