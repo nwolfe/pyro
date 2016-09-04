@@ -29,6 +29,26 @@ class Tile:
         self.explored = False
 
 
+def random_choice_index(chances):
+    # Choose an option from the list, returning its index
+    dice = libtcod.random_get_int(0, 1, sum(chances))
+
+    running_sum = 0
+    choice = 0
+    for i in chances:
+        running_sum += i
+        if dice <= running_sum:
+            return choice
+        choice += 1
+
+
+def random_choice(chances_dict):
+    # Choose one option from dictionary of chances, returning its key
+    choices = chances_dict.keys()
+    chances = chances_dict.values()
+    return choices[random_choice_index(chances)]
+
+
 def create_room(map, room):
     # Go through the tiles in the rectangle and make them passable
     for x in range(room.x1 + 1, room.x2):
@@ -50,8 +70,10 @@ def create_v_tunnel(map, y1, y2, x):
 
 
 def place_objects(room, map, objects, monster_templates, item_templates):
-    # Random number of numbers
+    # Random number of monsters
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
+    monster_chances = {'orc': 80,
+                       'troll': 20}
 
     for i in range(num_monsters):
         # Random position for monster
@@ -59,19 +81,18 @@ def place_objects(room, map, objects, monster_templates, item_templates):
         y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
 
         if not libobj.is_blocked(map, objects, x, y):
-            dice = libtcod.random_get_int(0, 0, 100)
-            if dice < 80:
-                # Create orc (80% chance)
-                monster = libobj.make_monster('orc', monster_templates)
-            else:
-                # Create troll (20% chance)
-                monster = libobj.make_monster('troll', monster_templates)
+            choice = random_choice(monster_chances)
+            monster = libobj.make_monster(choice, monster_templates)
             monster.x = x
             monster.y = y
             objects.append(monster)
 
     # Random number of items
     num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
+    item_chances = {'healing potion': 70,
+                    'scroll of lightning bolt': 10,
+                    'scroll of fireball': 10,
+                    'scroll of confusion': 10}
 
     for i in range(num_items):
         # Random position for item
@@ -79,19 +100,8 @@ def place_objects(room, map, objects, monster_templates, item_templates):
         y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
 
         if not libobj.is_blocked(map, objects, x, y):
-            dice = libtcod.random_get_int(0, 0, 100)
-            if dice < 70:
-                # Create healing potion (70% chance)
-                item = libobj.make_item('healing potion', item_templates)
-            elif dice < 80:
-                # Create a lightning bolt scroll (10% chance)
-                item = libobj.make_item('scroll of lightning bolt', item_templates)
-            elif dice < 90:
-                # Create a fireball scroll (10% chance)
-                item = libobj.make_item('scroll of fireball', item_templates)
-            else:
-                # Create a confusion scroll (10% chance)
-                item = libobj.make_item('scroll of confusion', item_templates)
+            choice = random_choice(item_chances)
+            item = libobj.make_item(choice, item_templates)
             item.x = x
             item.y = y
             objects.append(item)
