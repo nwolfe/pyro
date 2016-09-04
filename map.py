@@ -49,6 +49,15 @@ def random_choice(chances_dict):
     return choices[random_choice_index(chances)]
 
 
+def from_dungeon_level(table, dungeon_level):
+    # Returns a value that depends on the dungeon level. The table specifies
+    # what value occurs after each level. Default is 0.
+    for (value, level) in reversed(table):
+        if dungeon_level >= level:
+            return value
+    return 0
+
+
 def create_room(map, room):
     # Go through the tiles in the rectangle and make them passable
     for x in range(room.x1 + 1, room.x2):
@@ -69,11 +78,14 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
-def place_monsters(room, map, objects, monster_templates):
+def place_monsters(room, map, objects, monster_templates, dungeon_level):
     # Random number of monsters
-    num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
-    monster_chances = {'orc': 80,
-                       'troll': 20}
+    max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]], dungeon_level)
+    num_monsters = libtcod.random_get_int(0, 0, max_monsters)
+
+    monster_chances = {'orc': 80}
+    monster_chances['troll'] = from_dungeon_level([[15, 3], [30, 5], [60, 7]],
+                                                  dungeon_level)
 
     for i in range(num_monsters):
         # Random position for monster
@@ -88,13 +100,18 @@ def place_monsters(room, map, objects, monster_templates):
             objects.append(monster)
 
 
-def place_items(room, map, objects, item_templates):
+def place_items(room, map, objects, item_templates, dungeon_level):
     # Random number of items
-    num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
-    item_chances = {'healing potion': 70,
-                    'scroll of lightning bolt': 10,
-                    'scroll of fireball': 10,
-                    'scroll of confusion': 10}
+    max_items = from_dungeon_level([[1, 1], [2, 4]], dungeon_level)
+    num_items = libtcod.random_get_int(0, 0, max_items)
+
+    item_chances = {'healing potion': 35}
+    item_chances['scroll of lightning bolt'] = from_dungeon_level([[25, 4]],
+                                                                  dungeon_level)
+    item_chances['scroll of fireball'] = from_dungeon_level([[25, 6]],
+                                                            dungeon_level)
+    item_chances['scroll of confusion'] = from_dungeon_level([[10, 2]],
+                                                             dungeon_level)
 
     for i in range(num_items):
         # Random position for item
@@ -128,7 +145,7 @@ def randomly_placed_rect():
     return Rect(x, y, w, h)
 
 
-def make_map(player):
+def make_map(player, dungeon_level):
     objects = [player]
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
@@ -170,8 +187,8 @@ def make_map(player):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
-        place_monsters(new_room, map, objects, monster_templates)
-        place_items(new_room, map, objects, item_templates)
+        place_monsters(new_room, map, objects, monster_templates, dungeon_level)
+        place_items(new_room, map, objects, item_templates, dungeon_level)
         rooms.append(new_room)
         num_rooms += 1
 

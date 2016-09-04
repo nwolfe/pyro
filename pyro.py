@@ -159,13 +159,14 @@ def check_player_level_up(game):
 def new_game(console, panel):
     # Create the player
     exp_comp = libobj.Experience(xp=0, level=1)
-    fighter_comp = libobj.Fighter(hp=30, defense=2, power=5,
+    fighter_comp = libobj.Fighter(hp=100, defense=1, power=4,
                                   death_fn=player_death)
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
                            fighter=fighter_comp, exp=exp_comp)
 
     # Generate map (not drawn to the screen yet)
-    (map, objects, stairs) = libmap.make_map(player)
+    dungeon_level = 1
+    (map, objects, stairs) = libmap.make_map(player, dungeon_level)
     fov_map = make_fov_map(map)
 
     mouse = libtcod.Mouse()
@@ -175,7 +176,8 @@ def new_game(console, panel):
     messages = []
 
     game = libgame.Game('playing', console, panel, mouse, key, map, fov_map,
-                        objects, stairs, player, inventory, messages)
+                        objects, stairs, player, inventory, messages,
+                        dungeon_level)
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
@@ -195,7 +197,7 @@ def next_dungeon_level(game):
     game.message(msg, libtcod.red)
     game.dungeon_level += 1
 
-    (map, objects, stairs) = libmap.make_map(game.player)
+    (map, objects, stairs) = libmap.make_map(game.player, game.dungeon_level)
     fov_map = make_fov_map(map)
 
     game.map = map

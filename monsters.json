@@ -4,17 +4,17 @@
         "symbol": "o",
         "color": "desaturated_green",
         "experience": 35,
-        "hp": 10,
+        "hp": 20,
         "defense": 0,
-        "power": 3
+        "power": 4
     },
     {
         "name": "troll",
         "symbol": "T",
         "color": "darker_green",
         "experience": 100,
-        "hp": 16,
-        "defense": 1,
-        "power": 4
+        "hp": 30,
+        "defense": 2,
+        "power": 8
     }
 ]
