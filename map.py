@@ -69,7 +69,7 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
-def place_objects(room, map, objects, monster_templates, item_templates):
+def place_monsters(room, map, objects, monster_templates):
     # Random number of monsters
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
     monster_chances = {'orc': 80,
@@ -87,6 +87,8 @@ def place_objects(room, map, objects, monster_templates, item_templates):
             monster.y = y
             objects.append(monster)
 
+
+def place_items(room, map, objects, item_templates):
     # Random number of items
     num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
     item_chances = {'healing potion': 70,
@@ -168,7 +170,8 @@ def make_map(player):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
-        place_objects(new_room, map, objects, monster_templates, item_templates)
+        place_monsters(new_room, map, objects, monster_templates)
+        place_items(new_room, map, objects, item_templates)
         rooms.append(new_room)
         num_rooms += 1
 
