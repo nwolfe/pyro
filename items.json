@@ -1,0 +1,26 @@
+[
+    {
+        "name": "healing potion",
+        "symbol": "!",
+        "color": "violet",
+        "on_use": "cast_heal"
+    },
+    {
+        "name": "scroll of lightning bolt",
+        "symbol": "#",
+        "color": "light_yellow",
+        "on_use": "cast_lightning"
+    },
+    {
+        "name": "scroll of confusion",
+        "symbol": "#",
+        "color": "light_yellow",
+        "on_use": "cast_confuse"
+    },
+    {
+        "name": "scroll of fireball",
+        "symbol": "#",
+        "color": "light_yellow",
+        "on_use": "cast_fireball"
+    }
+]

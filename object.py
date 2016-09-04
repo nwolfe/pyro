@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+import abilities
 import math
 import json
 from settings import *
@@ -224,20 +225,20 @@ def instantiate_monster(template):
                   fighter=fighter_comp, ai=ai_comp, exp=exp_comp)
 
 
-def make_monster(name, monsters):
-    for template in monsters:
+def make_monster(name, monster_templates):
+    for template in monster_templates:
         if template['name'] == name:
             return instantiate_monster(template)
 
 
-def load_monsters_file():
-    with open('monsters.json') as file:
-        templates = json.load(file)
+def load_templates(file):
+    with open(file) as f:
+        templates = json.load(f)
 
         # For some reason the UI renderer can't handle Unicode strings so we
         # need to convert the character symbol to UTF-8 for it to be rendered
-        for monster in templates:
-            monster['symbol'] = str(monster['symbol'])
+        for t in templates:
+            t['symbol'] = str(t['symbol'])
 
         return templates
 
@@ -279,84 +280,16 @@ class Item(Component):
                 game.inventory.remove(self.owner)
 
 
-def cast_heal(player, game):
-    # Heal the player
-    if game.player.fighter.hp == game.player.fighter.max_hp:
-        game.message('You are already at full health.', libtcod.red)
-        return 'cancelled'
-
-    game.message('Your wounds start to feel better!',
-                 libtcod.light_violet)
-    game.player.fighter.heal(HEAL_AMOUNT)
+def instantiate_item(template):
+    name = template['name']
+    char = template['symbol']
+    color = getattr(libtcod, template['color'])
+    use_fn = getattr(abilities, template['on_use'])
+    return Object(char=char, name=name, color=color,
+                  render_order=0, item=Item(use_fn=use_fn))
 
 
-def make_healing_potion(x, y):
-    item_comp = Item(use_fn=cast_heal)
-    return Object(x, y, '!', 'healing potion', libtcod.violet,
-                  render_order=0, item=item_comp)
-
-
-def cast_lightning(player, game):
-    # Find the closest enemy (inside a maximum range) and damage it
-    monster = closest_monster(LIGHTNING_RANGE, game)
-    if monster is None:
-        game.message('No enemy is close enough to strike.', libtcod.red)
-        return 'cancelled'
-
-    # Zap it!
-    msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
-    msg += 'The damage is {1} hit points.'
-    msg = msg.format(monster.name, LIGHTNING_DAMAGE)
-    game.message(msg, libtcod.light_blue)
-    monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
-
-
-def make_lightning_scroll(x, y):
-    item_comp = Item(use_fn=cast_lightning)
-    return Object(x, y, '#', 'scroll of lightning bolt',
-                  libtcod.light_yellow, render_order=0, item=item_comp)
-
-
-def cast_confuse(player, game):
-    # Ask the player for a target to confuse
-    game.message('Left-click an enemy to confuse it, or right-click to cancel.',
-                 libtcod.light_cyan)
-    monster = game.target_monster(CONFUSE_RANGE)
-    if monster is None:
-        return 'cancelled'
-
-    old_ai = monster.ai
-    monster.ai = ConfusedMonster(old_ai)
-    monster.ai.owner = monster
-    msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
-    game.message(msg.format(monster.name), libtcod.light_green)
-
-
-def make_confusion_scroll(x, y):
-    item_comp = Item(use_fn=cast_confuse)
-    return Object(x, y, '#', 'scroll of confusion',
-                  libtcod.light_yellow, render_order=0, item=item_comp)
-
-
-def cast_fireball(player, game):
-    # Ask the player for a target tile to throw a fireball at
-    msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
-    game.message(msg, libtcod.light_cyan)
-    (x, y) = game.target_tile()
-    if x is None:
-        return 'cancelled'
-
-    game.message('The fireball explodes, burning everything within {0} tiles!'.
-                 format(FIREBALL_RADIUS), libtcod.orange)
-
-    for object in game.objects:
-        if object.distance(x, y) <= FIREBALL_RADIUS and object.fighter:
-            game.message('The {0} gets burned for {1} hit points.'.format(
-                object.name, FIREBALL_DAMAGE), libtcod.orange)
-            object.fighter.take_damage(FIREBALL_DAMAGE, game)
-
-
-def make_fireball_scroll(x, y):
-    item_comp = Item(use_fn=cast_fireball)
-    return Object(x, y, '#', 'scroll of fireball',
-                  libtcod.light_yellow, render_order=0, item=item_comp)
+def make_item(name, item_templates):
+    for template in item_templates:
+        if template['name'] == name:
+            return instantiate_item(template)

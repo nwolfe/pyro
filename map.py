@@ -49,7 +49,7 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
-def place_objects(room, map, objects, monsters):
+def place_objects(room, map, objects, monster_templates, item_templates):
     # Random number of numbers
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
 
@@ -62,10 +62,10 @@ def place_objects(room, map, objects, monsters):
             dice = libtcod.random_get_int(0, 0, 100)
             if dice < 80:
                 # Create orc (80% chance)
-                monster = libobj.make_monster('orc', monsters)
+                monster = libobj.make_monster('orc', monster_templates)
             else:
                 # Create troll (20% chance)
-                monster = libobj.make_monster('troll', monsters)
+                monster = libobj.make_monster('troll', monster_templates)
             monster.x = x
             monster.y = y
             objects.append(monster)
@@ -82,16 +82,18 @@ def place_objects(room, map, objects, monsters):
             dice = libtcod.random_get_int(0, 0, 100)
             if dice < 70:
                 # Create healing potion (70% chance)
-                item = libobj.make_healing_potion(x, y)
+                item = libobj.make_item('healing potion', item_templates)
             elif dice < 80:
                 # Create a lightning bolt scroll (10% chance)
-                item = libobj.make_lightning_scroll(x, y)
+                item = libobj.make_item('scroll of lightning bolt', item_templates)
             elif dice < 90:
                 # Create a fireball scroll (10% chance)
-                item = libobj.make_fireball_scroll(x, y)
+                item = libobj.make_item('scroll of fireball', item_templates)
             else:
                 # Create a confusion scroll (10% chance)
-                item = libobj.make_confusion_scroll(x, y)
+                item = libobj.make_item('scroll of confusion', item_templates)
+            item.x = x
+            item.y = y
             objects.append(item)
 
 
@@ -121,7 +123,8 @@ def make_map(player):
            for x in range(MAP_WIDTH)]
     rooms = []
     num_rooms = 0
-    monsters = libobj.load_monsters_file()
+    monster_templates = libobj.load_templates('monsters.json')
+    item_templates = libobj.load_templates('items.json')
 
     for r in range(MAX_ROOMS):
         new_room = randomly_placed_rect()
@@ -155,7 +158,7 @@ def make_map(player):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
-        place_objects(new_room, map, objects, monsters)
+        place_objects(new_room, map, objects, monster_templates, item_templates)
         rooms.append(new_room)
         num_rooms += 1
 
