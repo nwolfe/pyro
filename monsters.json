@@ -6,7 +6,8 @@
         "experience": 35,
         "hp": 20,
         "defense": 0,
-        "power": 4
+        "power": 4,
+        "spawn": 80
     },
     {
         "name": "troll",
@@ -15,6 +16,9 @@
         "experience": 100,
         "hp": 30,
         "defense": 2,
-        "power": 8
+        "power": 8,
+        "spawn": [[15, 3],
+                  [30, 5],
+                  [60, 7]]
     }
 ]

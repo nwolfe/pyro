@@ -78,14 +78,22 @@ def create_v_tunnel(map, y1, y2, x):
         map[x][y].block_sight = False
 
 
+def get_spawn_chances(templates, dungeon_level):
+    chances = {}
+    for t in templates:
+        chance = t['spawn']
+        if isinstance(chance, list):
+            chances[t['name']] = from_dungeon_level(chance, dungeon_level)
+        else:
+            chances[t['name']] = chance
+    return chances
+
+
 def place_monsters(room, map, objects, monster_templates, dungeon_level):
     # Random number of monsters
     max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]], dungeon_level)
     num_monsters = libtcod.random_get_int(0, 0, max_monsters)
-
-    monster_chances = {'orc': 80}
-    monster_chances['troll'] = from_dungeon_level([[15, 3], [30, 5], [60, 7]],
-                                                  dungeon_level)
+    monster_chances = get_spawn_chances(monster_templates, dungeon_level)
 
     for i in range(num_monsters):
         # Random position for monster
@@ -104,14 +112,7 @@ def place_items(room, map, objects, item_templates, dungeon_level):
     # Random number of items
     max_items = from_dungeon_level([[1, 1], [2, 4]], dungeon_level)
     num_items = libtcod.random_get_int(0, 0, max_items)
-
-    item_chances = {'healing potion': 35}
-    item_chances['scroll of lightning bolt'] = from_dungeon_level([[25, 4]],
-                                                                  dungeon_level)
-    item_chances['scroll of fireball'] = from_dungeon_level([[25, 6]],
-                                                            dungeon_level)
-    item_chances['scroll of confusion'] = from_dungeon_level([[10, 2]],
-                                                             dungeon_level)
+    item_chances = get_spawn_chances(item_templates, dungeon_level)
 
     for i in range(num_items):
         # Random position for item
