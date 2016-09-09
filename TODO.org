@@ -1,9 +1,9 @@
 
-* TODO Verify the monster chance table works
+* TODO Object has Component List instead of many fields
+* TODO Move monster AI into JSON
 * TODO Split object.py into smaller modules
 * TODO Standardize on 'console' over 'con'
 * TODO Convert # comments to proper """docstrings"""
 * TODO Remove console and panel from Game
 ** Pass it in alongside game argument
 * TODO Fix vanishing doppleganger casting bug
-* DONE Move monster definitions into configuration file(s)
