@@ -26,5 +26,12 @@
         "color": "light_yellow",
         "on_use": "cast_fireball",
         "spawn": [[25, 6]]
+    },
+    {
+        "name": "sword",
+        "symbol": "/",
+        "color": "sky",
+        "slot": "right hand",
+        "spawn": 25
     }
 ]

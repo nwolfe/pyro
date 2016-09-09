@@ -8,7 +8,8 @@ from settings import *
 class Object:
     # REMIND: Consider adding the 'always_visible' property from Part 11
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
-                 render_order=1, fighter=None, ai=None, item=None, exp=None):
+                 render_order=1, fighter=None, ai=None, item=None, exp=None,
+                 equipment=None):
         self.x = x
         self.y = y
         self.char = char
@@ -33,6 +34,11 @@ class Object:
         if self.exp:
             self.exp.owner = self
 
+        self.equipment = equipment
+        if self.equipment:
+            self.equipment.owner = self
+            self.item = Item()
+            self.item.owner = self
 
     def move(self, map, objects, dx, dy):
         if not is_blocked(map, objects, self.x + dx, self.y + dy):
@@ -91,6 +97,36 @@ class Experience(Component):
         required = self.requiredForLevelUp()
         self.level += 1
         self.xp -= required
+
+
+class Equipment(Component):
+    """An object that can be equipped, yielding bonuses. Automatically adds
+    the Item component."""
+
+    def __init__(self, slot):
+        self.slot = slot
+        self.is_equipped = False
+
+    def toggle_equip(self, game):
+        if self.is_equipped:
+            self.unequip(game)
+        else:
+            self.equip(game)
+
+    def equip(self, game):
+        """Equip object and show a message about it."""
+        self.is_equipped = True
+        game.message('Equipped {0} on {1}.'.format(self.owner.name, self.slot),
+                     libtcod.light_green)
+
+    def unequip(self, game):
+        """Unequip object and show a message about it."""
+        if not self.is_equipped:
+            return
+        self.is_equipped = False
+        game.message('Unequipped {0} from {1}.'.format(self.owner.name,
+                                                       self.slot),
+                     libtcod.light_yellow)
 
 
 class Fighter(Component):
@@ -272,7 +308,10 @@ class Item(Component):
 
     def use(self, game):
         # Call the use_fn if we have one
-        if self.use_fn is None:
+        if self.owner.equipment:
+            # Special case: the "use" action is to equip/unequip
+            self.owner.equipment.toggle_equip(game)
+        elif self.use_fn is None:
             game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
@@ -284,9 +323,13 @@ def instantiate_item(template):
     name = template['name']
     char = template['symbol']
     color = getattr(libtcod, template['color'])
-    use_fn = getattr(abilities, template['on_use'])
-    return Object(char=char, name=name, color=color,
-                  render_order=0, item=Item(use_fn=use_fn))
+    if 'slot' in template:
+        return Object(char=char, name=name, color=color, render_order=0,
+                      equipment=Equipment(slot=template['slot']))
+    elif 'on_use' in template:
+        use_fn = getattr(abilities, template['on_use'])
+        return Object(char=char, name=name, color=color, render_order=0,
+                      item=Item(use_fn=use_fn))
 
 
 def make_item(name, item_templates):
