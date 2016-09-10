@@ -5,13 +5,13 @@ from settings import *
 
 def cast_heal(player, game):
     # Heal the player
-    if game.player.fighter.hp == game.player.fighter.max_hp:
+    if game.player.fighter.hp == game.player.fighter.max_hp(game):
         game.message('You are already at full health.', libtcod.red)
         return 'cancelled'
 
     game.message('Your wounds start to feel better!',
                  libtcod.light_violet)
-    game.player.fighter.heal(HEAL_AMOUNT)
+    game.player.fighter.heal(HEAL_AMOUNT, game)
 
 
 def cast_lightning(player, game):

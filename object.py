@@ -107,12 +107,26 @@ def get_equipped_in_slot(slot, game):
     return None
 
 
+def get_all_equipped(obj, game):
+    if obj == game.player:
+        equipped = []
+        for item in game.inventory:
+            if item.equipment and item.equipment.is_equipped:
+                equipped.append(item.equipment)
+        return equipped
+    else:
+        return []
+
+
 class Equipment(Component):
     """An object that can be equipped, yielding bonuses. Automatically adds
     the Item component."""
 
-    def __init__(self, slot):
+    def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
         self.slot = slot
+        self.power_bonus = power_bonus
+        self.defense_bonus = defense_bonus
+        self.max_hp_bonus = max_hp_bonus
         self.is_equipped = False
 
     def toggle_equip(self, game):
@@ -142,12 +156,27 @@ class Equipment(Component):
 
 class Fighter(Component):
     """Combat-related properties and methods (monster, player, NPC)."""
-    def __init__(self, hp, defense, power, death_fn=None):
+    def __init__(self, hp, base_defense, base_power, death_fn=None):
         self.hp = hp
-        self.max_hp = hp
-        self.defense = defense
-        self.power = power
+        self.base_max_hp = hp
+        self.base_defense = base_defense
+        self.base_power = base_power
         self.death_fn = death_fn
+
+    def power(self, game):
+        equipped = get_all_equipped(self.owner, game)
+        bonus = sum(equipment.power_bonus for equipment in equipped)
+        return self.base_power + bonus
+
+    def defense(self, game):
+        equipped = get_all_equipped(self.owner, game)
+        bonus = sum(equipment.defense_bonus for equipment in equipped)
+        return self.base_defense + bonus
+
+    def max_hp(self, game):
+        equipped = get_all_equipped(self.owner, game)
+        bonus = sum(equipment.max_hp_bonus for equipment in equipped)
+        return self.base_max_hp + bonus
 
     def take_damage(self, damage, game):
         if damage > 0:
@@ -157,14 +186,14 @@ class Fighter(Component):
         if self.hp <= 0 and self.death_fn:
             self.death_fn(self.owner, game)
 
-    def heal(self, amount):
+    def heal(self, amount, game):
         # Heal by the given amount, without going over the maximum
         self.hp += amount
-        if self.hp > self.max_hp:
-            self.hp = self.max_hp
+        if self.hp > self.max_hp(game):
+            self.hp = self.max_hp(game)
 
     def attack(self, target, game):
-        damage = self.power - target.fighter.defense
+        damage = self.power(game) - target.fighter.defense(game)
 
         if damage > 0:
             game.message('{0} attacks {1} for {2} hit points.'.format(

@@ -157,7 +157,7 @@ def render_all(game, fov_recompute):
 
     # Show player's stats
     render_ui_bar(game.panel, 1, 1, BAR_WIDTH, 'HP',
-                  game.player.fighter.hp, game.player.fighter.max_hp,
+                  game.player.fighter.hp, game.player.fighter.max_hp(game),
                   libtcod.light_red, libtcod.darker_red)
 
     # Show the dungeon level

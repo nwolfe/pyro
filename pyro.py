@@ -37,9 +37,12 @@ Attack: {5}
 Defense: {6}
 """
     msg = msg.format(game.player.exp.level,
-                     game.player.exp.xp, game.player.exp.requiredForLevelUp(),
-                     game.player.fighter.hp, game.player.fighter.max_hp,
-                     game.player.fighter.power, game.player.fighter.defense)
+                     game.player.exp.xp,
+                     game.player.exp.requiredForLevelUp(),
+                     game.player.fighter.hp,
+                     game.player.fighter.max_hp(game),
+                     game.player.fighter.power(game),
+                     game.player.fighter.defense(game))
     libui.messagebox(game.console, msg, CHARACTER_SCREEN_WIDTH)
 
 def handle_keys(game):
@@ -142,18 +145,18 @@ def check_player_level_up(game):
 
     choice = None
     while choice is None:
-        options = ['Constitution (+20 HP, from {})'.format(player.fighter.max_hp),
-                   'Strength (+1 attack, from {})'.format(player.fighter.power),
-                   'Agility (+1 defense, from {})'.format(player.fighter.defense)]
+        options = ['Constitution (+20 HP, from {})'.format(player.fighter.base_max_hp),
+                   'Strength (+1 attack, from {})'.format(player.fighter.base_power),
+                   'Agility (+1 defense, from {})'.format(player.fighter.base_defense)]
         choice = libui.menu(game.console, 'Level up! Choose a stat to raise:\n',
                             options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
-            player.fighter.max_hp += 20
+            player.fighter.base_max_hp += 20
             player.fighter.hp += 20
         elif choice == 1:
-            player.fighter.power += 1
+            player.fighter.base_power += 1
         elif choice == 2:
-            player.fighter.defense += 1
+            player.fighter.base_defense += 1
 
 
 def new_game(console, panel):
@@ -190,7 +193,7 @@ def next_dungeon_level(game):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    game.player.fighter.heal(game.player.fighter.max_hp / 2)
+    game.player.fighter.heal(game.player.fighter.max_hp(game) / 2, game)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
     msg += 'of the dungeon...'
