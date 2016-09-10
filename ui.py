@@ -63,7 +63,12 @@ def inventory_menu(con, inventory, header):
     if len(inventory) == 0:
         options = ['Inventory is empty']
     else:
-        options = [item.name for item in inventory]
+        options = []
+        for item in inventory:
+            text = item.name
+            if item.equipment and item.equipment.is_equipped:
+                text = '{0} (on {1})'.format(text, item.equipment.slot)
+            options.append(text)
     selection_index = menu(con, header, options, INVENTORY_WIDTH)
     if selection_index is None or len(inventory) == 0:
         return None

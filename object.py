@@ -99,6 +99,14 @@ class Experience(Component):
         self.xp -= required
 
 
+def get_equipped_in_slot(slot, game):
+    for obj in game.inventory:
+        item = obj.equipment
+        if item and item.slot == slot and item.is_equipped:
+            return item
+    return None
+
+
 class Equipment(Component):
     """An object that can be equipped, yielding bonuses. Automatically adds
     the Item component."""
@@ -115,6 +123,9 @@ class Equipment(Component):
 
     def equip(self, game):
         """Equip object and show a message about it."""
+        replacing = get_equipped_in_slot(self.slot, game)
+        if replacing is not None:
+            replacing.unequip(game)
         self.is_equipped = True
         game.message('Equipped {0} on {1}.'.format(self.owner.name, self.slot),
                      libtcod.light_green)
@@ -295,6 +306,10 @@ class Item(Component):
             game.objects.remove(self.owner)
             game.message('You picked up a {0}!'.format(self.owner.name),
                          libtcod.green)
+            # Special case: automatically equip if slot is empty
+            equipment = self.owner.equipment
+            if equipment and get_equipped_in_slot(equipment.slot, game) is None:
+                equipment.equip(game)
 
     def drop(self, game):
         # Remove from the inventory and add to the map.
@@ -303,6 +318,9 @@ class Item(Component):
         game.objects.append(self.owner)
         self.owner.x = game.player.x
         self.owner.y = game.player.y
+        # Special case: unequip before dropping
+        if self.owner.equipment:
+            self.owner.equipment.unequip(game)
         game.message('You dropped a {0}.'.format(self.owner.name),
                      libtcod.yellow)
 
