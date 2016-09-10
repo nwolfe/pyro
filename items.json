@@ -32,6 +32,15 @@
         "symbol": "/",
         "color": "sky",
         "slot": "right hand",
-        "spawn": 25
+        "power": 3,
+        "spawn": [[5, 4]]
+    },
+    {
+        "name": "shield",
+        "symbol": "[",
+        "color": "darker_orange",
+        "slot": "left hand",
+        "defense": 1,
+        "spawn": [[15, 8]]
     }
 ]

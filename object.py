@@ -156,11 +156,11 @@ class Equipment(Component):
 
 class Fighter(Component):
     """Combat-related properties and methods (monster, player, NPC)."""
-    def __init__(self, hp, base_defense, base_power, death_fn=None):
+    def __init__(self, hp, defense, power, death_fn=None):
         self.hp = hp
         self.base_max_hp = hp
-        self.base_defense = base_defense
-        self.base_power = base_power
+        self.base_defense = defense
+        self.base_power = power
         self.death_fn = death_fn
 
     def power(self, game):
@@ -371,8 +371,15 @@ def instantiate_item(template):
     char = template['symbol']
     color = getattr(libtcod, template['color'])
     if 'slot' in template:
+        equipment = Equipment(slot=template['slot'])
+        if 'power' in template:
+            equipment.power_bonus = template['power']
+        if 'defense' in template:
+            equipment.defense_bonus = template['defense']
+        if 'hp' in template:
+            equipment.max_hp_bonus = template['hp']
         return Object(char=char, name=name, color=color, render_order=0,
-                      equipment=Equipment(slot=template['slot']))
+                      equipment=equipment)
     elif 'on_use' in template:
         use_fn = getattr(abilities, template['on_use'])
         return Object(char=char, name=name, color=color, render_order=0,

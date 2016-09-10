@@ -162,7 +162,7 @@ def check_player_level_up(game):
 def new_game(console, panel):
     # Create the player
     exp_comp = libobj.Experience(xp=0, level=1)
-    fighter_comp = libobj.Fighter(hp=100, defense=1, power=4,
+    fighter_comp = libobj.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
                            fighter=fighter_comp, exp=exp_comp)
@@ -184,6 +184,13 @@ def new_game(console, panel):
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
+
+    # Initial equipment: a dagger
+    equipment_comp = libobj.Equipment(slot='right hand', power_bonus=2)
+    dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky,
+                           equipment=equipment_comp)
+    inventory.append(dagger)
+    equipment_comp.equip(game)
 
     return game
 
