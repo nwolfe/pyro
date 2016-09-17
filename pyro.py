@@ -41,7 +41,7 @@ Defense: {6}
     fighter = game.player.get_component(libobj.Fighter)
     msg = msg.format(exp.level,
                      exp.xp,
-                     exp.requiredForLevelUp(),
+                     exp.required_for_level_up(),
                      fighter.hp,
                      fighter.max_hp(game),
                      fighter.power(game),
@@ -140,11 +140,11 @@ def check_player_level_up(game, console):
     exp = player.get_component(libobj.Experience)
 
     # See if the player's XP is enough to level up
-    if exp.canLevelUp():
+    if exp.can_level_up():
         return
 
     # Ding! Level up!
-    exp.levelUp()
+    exp.level_up()
     msg = 'Your battle skills grow stronger! You reached level {}!'
     game.message(msg.format(exp.level), libtcod.yellow)
 

@@ -85,14 +85,14 @@ class Experience(Component):
         self.xp = xp
         self.level = level
 
-    def requiredForLevelUp(self):
+    def required_for_level_up(self):
         return LEVEL_UP_BASE + self.level * LEVEL_UP_FACTOR
 
-    def canLevelUp(self):
-        return self.xp <= self.requiredForLevelUp()
+    def can_level_up(self):
+        return self.xp <= self.required_for_level_up()
 
-    def levelUp(self):
-        required = self.requiredForLevelUp()
+    def level_up(self):
+        required = self.required_for_level_up()
         self.level += 1
         self.xp -= required
 
