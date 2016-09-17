@@ -2,6 +2,12 @@ import libtcodpy as libtcod
 from settings import *
 
 
+class UserInterface:
+    def __init__(self, console, panel):
+        self.console = console
+        self.panel = panel
+
+
 def menu(console, header, options, width):
     if len(options) > 26:
         raise ValueError('Cannot have a menu with more than 26 options.')
@@ -111,7 +117,7 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def render_all(console, panel, game, fov_recompute):
+def render_all(ui, game, fov_recompute):
     if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
         libtcod.map_compute_fov(game.fov_map, game.player.x, game.player.y,
@@ -125,12 +131,12 @@ def render_all(console, panel, game, fov_recompute):
                 if not visible:
                     if game.map[x][y].explored:
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
-                        libtcod.console_set_char_background(console,
+                        libtcod.console_set_char_background(ui.console,
                                                             x, y, color,
                                                             libtcod.BKGND_SET)
                 else:
                     color = COLOR_LIGHT_WALL if wall else COLOR_LIGHT_GROUND
-                    libtcod.console_set_char_background(console,
+                    libtcod.console_set_char_background(ui.console,
                                                         x, y, color,
                                                         libtcod.BKGND_SET)
                     game.map[x][y].explored = True
@@ -138,38 +144,38 @@ def render_all(console, panel, game, fov_recompute):
     render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
     for object in render_ordered:
         if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
-            object.draw(console)
+            object.draw(ui.console)
 
     # Blit the contents of the game (non-GUI) console to the root console
-    libtcod.console_blit(console, 0, 0, MAP_WIDTH, MAP_HEIGHT, 0, 0, 0)
+    libtcod.console_blit(ui.console, 0, 0, MAP_WIDTH, MAP_HEIGHT, 0, 0, 0)
 
     # Prepare to render the GUI panel
-    libtcod.console_set_default_background(panel, libtcod.black)
-    libtcod.console_clear(panel)
+    libtcod.console_set_default_background(ui.panel, libtcod.black)
+    libtcod.console_clear(ui.panel)
 
     # Print game messages, one line at a time
     y = 1
     for (line, color) in game.messages:
-        libtcod.console_set_default_foreground(panel, color)
-        libtcod.console_print_ex(panel, MSG_X, y, libtcod.BKGND_NONE,
+        libtcod.console_set_default_foreground(ui.panel, color)
+        libtcod.console_print_ex(ui.panel, MSG_X, y, libtcod.BKGND_NONE,
                                  libtcod.LEFT, line)
         y += 1
 
     # Show player's stats
-    render_ui_bar(panel, 1, 1, BAR_WIDTH, 'HP', game.player.fighter.hp,
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.fighter.hp,
                   game.player.fighter.max_hp(game), libtcod.light_red,
                   libtcod.darker_red)
 
     # Show the dungeon level
-    libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+    libtcod.console_print_ex(ui.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
     names = get_names_under_mouse(game.mouse, game.objects, game.fov_map)
-    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
-    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+    libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
+    libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                              names)
 
     # Blit the contents of the GUI panel to the root console
-    libtcod.console_blit(panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
+    libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
                          PANEL_Y)

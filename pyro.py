@@ -45,7 +45,7 @@ Defense: {6}
                      game.player.fighter.defense(game))
     libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
-def handle_keys(console, panel, game):
+def handle_keys(ui, game):
     if game.key.vk == libtcod.KEY_ENTER and game.key.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -88,14 +88,14 @@ def handle_keys(console, panel, game):
     elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(console, game.inventory, msg)
+        selected_item = libui.inventory_menu(ui.console, game.inventory, msg)
         if selected_item:
-            selected_item.use(game, console, panel)
+            selected_item.use(game, ui)
         return (False, None)
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(console, game.inventory, msg)
+        selected_item = libui.inventory_menu(ui.console, game.inventory, msg)
         if selected_item:
             selected_item.drop(game)
         return (False, None)
@@ -103,10 +103,10 @@ def handle_keys(console, panel, game):
         # Go down the stairs to the next level
         if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
             next_dungeon_level(game)
-            libtcod.console_clear(console)
+            libtcod.console_clear(ui.console)
         return (True, None)
     elif key_char == 'c':
-        show_character_info(console, game)
+        show_character_info(ui.console, game)
         return (False, None)
     else:
         return (False, 'idle')
@@ -218,23 +218,23 @@ def next_dungeon_level(game):
     game.stairs = stairs
 
 
-def play_game(game, console, panel):
+def play_game(game, ui):
     fov_recompute = True
-    libtcod.console_clear(console)
+    libtcod.console_clear(ui.console)
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, game.key, game.mouse)
 
-        libui.render_all(console, panel, game, fov_recompute)
+        libui.render_all(ui, game, fov_recompute)
 
         libtcod.console_flush()
 
-        check_player_level_up(game, console)
+        check_player_level_up(game, ui.console)
 
         for object in game.objects:
-            object.clear(console)
+            object.clear(ui.console)
 
-        (fov_recompute, player_action) = handle_keys(console, panel, game)
+        (fov_recompute, player_action) = handle_keys(ui, game)
 
         if player_action == 'exit':
             save_game(game)
@@ -281,7 +281,7 @@ def load_game():
                         player, inventory, messages, dungeon_level)
 
 
-def main_menu(console, panel):
+def main_menu(ui):
     background = libtcod.image_load('menu_background.png')
 
     while not libtcod.console_is_window_closed():
@@ -289,27 +289,27 @@ def main_menu(console, panel):
         libtcod.image_blit_2x(background, 0, 0, 0)
 
         # Show the game's title and credits
-        libtcod.console_set_default_foreground(console, libtcod.light_yellow)
-        libtcod.console_print_ex(console, SCREEN_WIDTH/2, (SCREEN_HEIGHT/2)-4,
+        libtcod.console_set_default_foreground(ui.console, libtcod.light_yellow)
+        libtcod.console_print_ex(ui.console, SCREEN_WIDTH/2, (SCREEN_HEIGHT/2)-4,
                                  libtcod.BKGND_NONE, libtcod.CENTER,
                                  'TOMBS OF THE ANCIENT KINGS')
-        libtcod.console_print_ex(console, SCREEN_WIDTH/2, SCREEN_HEIGHT-2,
+        libtcod.console_print_ex(ui.console, SCREEN_WIDTH/2, SCREEN_HEIGHT-2,
                                  libtcod.BKGND_NONE, libtcod.CENTER,
                                  'By N. Wolfe')
 
         # Show options and wait for the player's choice
         options = ['Play a new game', 'Continue last game', 'Quit']
-        choice = libui.menu(console, '', options, 24)
+        choice = libui.menu(ui.console, '', options, 24)
 
         if choice == 0:
             # New game
             game = new_game()
-            play_game(game, console, panel)
+            play_game(game, ui)
         elif choice == 1:
             # Load last game
             try:
                 game = load_game()
-                play_game(game, console, panel)
+                play_game(game, ui)
             except:
                 libui.messagebox('\n No saved game to load.\n', 24)
                 continue
@@ -331,5 +331,6 @@ libtcod.sys_set_fps(LIMIT_FPS)
 
 console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
+ui = libui.UserInterface(console, panel)
 
-main_menu(console, panel)
+main_menu(ui)
