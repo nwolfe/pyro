@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+import object as libobj
 from settings import *
 
 
@@ -72,14 +73,15 @@ def inventory_menu(console, inventory, header):
         options = []
         for item in inventory:
             text = item.name
-            if item.equipment and item.equipment.is_equipped:
-                text = '{0} (on {1})'.format(text, item.equipment.slot)
+            equipment = item.get_component(libobj.Equipment)
+            if equipment and equipment.is_equipped:
+                text = '{0} (on {1})'.format(text, equipment.slot)
             options.append(text)
     selection_index = menu(console, header, options, INVENTORY_WIDTH)
     if selection_index is None or len(inventory) == 0:
         return None
     else:
-        return inventory[selection_index].item
+        return inventory[selection_index].get_component(libobj.Item)
 
 
 def get_names_under_mouse(mouse, objects, fov_map):
@@ -162,9 +164,9 @@ def render_all(ui, game, fov_recompute):
         y += 1
 
     # Show player's stats
-    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.fighter.hp,
-                  game.player.fighter.max_hp(game), libtcod.light_red,
-                  libtcod.darker_red)
+    fighter = game.player.get_component(libobj.Fighter)
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
+                  fighter.max_hp(game), libtcod.light_red, libtcod.darker_red)
 
     # Show the dungeon level
     libtcod.console_print_ex(ui.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,

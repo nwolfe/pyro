@@ -12,12 +12,13 @@ def move_player_or_attack(dx, dy, game):
     y = game.player.y + dy
     target = None
     for object in game.objects:
-        if object.fighter and object.x == x and object.y == y:
-            target = object
-            break
+        if object.get_component(libobj.Fighter):
+            if object.x == x and object.y == y:
+                target = object
+                break
 
     if target:
-        game.player.fighter.attack(target, game)
+        game.player.get_component(libobj.Fighter).attack(target, game)
         return (False, None)
     else:
         game.player.move(game.map, game.objects, dx, dy)
@@ -36,13 +37,15 @@ Maximum HP: {4}
 Attack: {5}
 Defense: {6}
 """
-    msg = msg.format(game.player.exp.level,
-                     game.player.exp.xp,
-                     game.player.exp.requiredForLevelUp(),
-                     game.player.fighter.hp,
-                     game.player.fighter.max_hp(game),
-                     game.player.fighter.power(game),
-                     game.player.fighter.defense(game))
+    exp = game.player.get_component(libobj.Experience)
+    fighter = game.player.get_component(libobj.Fighter)
+    msg = msg.format(exp.level,
+                     exp.xp,
+                     exp.requiredForLevelUp(),
+                     fighter.hp,
+                     fighter.max_hp(game),
+                     fighter.power(game),
+                     fighter.defense(game))
     libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
 def handle_keys(ui, game):
@@ -80,9 +83,10 @@ def handle_keys(ui, game):
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
-            if object.item:
+            item = object.get_component(libobj.Item)
+            if item:
                 if object.x == game.player.x and object.y == game.player.y:
-                    object.item.pick_up(game)
+                    item.pick_up(game)
                     break
         return (False, None)
     elif key_char == 'i':
@@ -133,33 +137,32 @@ def make_fov_map(map):
 
 def check_player_level_up(game, console):
     player = game.player
+    exp = player.get_component(libobj.Experience)
 
     # See if the player's XP is enough to level up
-    if player.exp.canLevelUp():
+    if exp.canLevelUp():
         return
 
     # Ding! Level up!
-    player.exp.levelUp()
+    exp.levelUp()
     msg = 'Your battle skills grow stronger! You reached level {}!'
-    game.message(msg.format(player.exp.level), libtcod.yellow)
+    game.message(msg.format(exp.level), libtcod.yellow)
 
     choice = None
     while choice is None:
-        options = ['Constitution (+20 HP, from {})'.format(
-                       player.fighter.base_max_hp),
-                   'Strength (+1 attack, from {})'.format(
-                       player.fighter.base_power),
-                   'Agility (+1 defense, from {})'.format(
-                       player.fighter.base_defense)]
+        fighter = player.get_component(libobj.Fighter)
+        options = ['Constitution (+20 HP, from {})'.format(fighter.base_max_hp),
+                   'Strength (+1 attack, from {})'.format(fighter.base_power),
+                   'Agility (+1 defense, from {})'.format(fighter.base_defense)]
         choice = libui.menu(console, 'Level up! Choose a stat to raise:\n',
                             options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
-            player.fighter.base_max_hp += 20
-            player.fighter.hp += 20
+            fighter.base_max_hp += 20
+            fighter.hp += 20
         elif choice == 1:
-            player.fighter.base_power += 1
+            fighter.base_power += 1
         elif choice == 2:
-            player.fighter.base_defense += 1
+            fighter.base_defense += 1
 
 
 def new_game():
@@ -168,7 +171,7 @@ def new_game():
     fighter_comp = libobj.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
-                           fighter=fighter_comp, exp=exp_comp)
+                           components=[fighter_comp, exp_comp])
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
@@ -190,7 +193,7 @@ def new_game():
     # Initial equipment: a dagger
     equipment_comp = libobj.Equipment(slot='right hand', power_bonus=2)
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky,
-                           equipment=equipment_comp)
+                           components=[equipment_comp])
     inventory.append(dagger)
     equipment_comp.equip(game)
 
@@ -202,7 +205,8 @@ def next_dungeon_level(game):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    game.player.fighter.heal(game.player.fighter.max_hp(game) / 2, game)
+    fighter = game.player.get_component(libobj.Fighter)
+    fighter.heal(fighter.max_hp(game) / 2, game)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
     msg += 'of the dungeon...'
@@ -242,8 +246,9 @@ def play_game(game, ui):
 
         if game.state == 'playing' and player_action != 'idle':
             for object in game.objects:
-                if object.ai:
-                    object.ai.take_turn(game)
+                ai = object.get_component(libobj.AI)
+                if ai:
+                    ai.take_turn(game)
 
 
 def save_game(game):
@@ -311,7 +316,7 @@ def main_menu(ui):
                 game = load_game()
                 play_game(game, ui)
             except:
-                libui.messagebox('\n No saved game to load.\n', 24)
+                libui.messagebox(ui.console, '\n No saved game to load.\n', 24)
                 continue
         elif choice == 2:
             # Quit

@@ -8,8 +8,7 @@ from settings import *
 class Object:
     # REMIND: Consider adding the 'always_visible' property from Part 11
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
-                 render_order=1, fighter=None, ai=None, item=None, exp=None,
-                 equipment=None):
+                 render_order=1, components=[]):
         self.x = x
         self.y = y
         self.char = char
@@ -18,27 +17,22 @@ class Object:
         self.render_order = render_order
         self.blocks = blocks
 
-        self.fighter = fighter
-        if self.fighter:
-            self.fighter.owner = self
+        self.components = []
+        for component in components:
+            self.add_component(component)
 
-        self.ai = ai
-        if self.ai:
-            self.ai.owner = self
+    def add_component(self, component):
+        self.components.append(component)
+        component.initialize(self)
 
-        self.item = item
-        if self.item:
-            self.item.owner = self
+    def remove_component(self, component_class):
+        self.components.remove(self.get_component(component_class))
 
-        self.exp = exp
-        if self.exp:
-            self.exp.owner = self
-
-        self.equipment = equipment
-        if self.equipment:
-            self.equipment.owner = self
-            self.item = Item()
-            self.item.owner = self
+    def get_component(self, component_class):
+        for component in self.components:
+            if isinstance(component, component_class):
+                return component
+        return None
 
     def move(self, map, objects, dx, dy):
         if not is_blocked(map, objects, self.x + dx, self.y + dy):
@@ -82,6 +76,9 @@ class Component:
     def __init__(self):
         self.owner = None
 
+    def initialize(self, object):
+        self.owner = object
+
 
 class Experience(Component):
     def __init__(self, xp=0, level=0):
@@ -102,7 +99,7 @@ class Experience(Component):
 
 def get_equipped_in_slot(slot, game):
     for obj in game.inventory:
-        item = obj.equipment
+        item = obj.get_component(Equipment)
         if item and item.slot == slot and item.is_equipped:
             return item
     return None
@@ -112,8 +109,9 @@ def get_all_equipped(obj, game):
     if obj == game.player:
         equipped = []
         for item in game.inventory:
-            if item.equipment and item.equipment.is_equipped:
-                equipped.append(item.equipment)
+            equipment = item.get_component(Equipment)
+            if equipment and equipment.is_equipped:
+                equipped.append(equipment)
         return equipped
     else:
         return []
@@ -129,6 +127,10 @@ class Equipment(Component):
         self.defense_bonus = defense_bonus
         self.max_hp_bonus = max_hp_bonus
         self.is_equipped = False
+
+    def initialize(self, object):
+        self.owner = object
+        object.add_component(Item())
 
     def toggle_equip(self, game):
         if self.is_equipped:
@@ -194,12 +196,13 @@ class Fighter(Component):
             self.hp = self.max_hp(game)
 
     def attack(self, target, game):
-        damage = self.power(game) - target.fighter.defense(game)
+        fighter = target.get_component(Fighter)
+        damage = self.power(game) - fighter.defense(game)
 
         if damage > 0:
             game.message('{0} attacks {1} for {2} hit points.'.format(
                 self.owner.name.capitalize(), target.name, damage))
-            target.fighter.take_damage(damage, game)
+            fighter.take_damage(damage, game)
         else:
             game.message('{0} attacks {1} but it has no effect!'.format(
                 self.owner.name.capitalize(), target.name))
@@ -221,8 +224,8 @@ class BasicMonster(AI):
                                      game.player.x, game.player.y)
 
             # Close enough, attack! (If the player is still alive)
-            elif game.player.fighter.hp > 0:
-                monster.fighter.attack(game.player, game)
+            elif game.player.get_component(Fighter).hp > 0:
+                monster.get_component(Fighter).attack(game.player, game)
 
 
 class ConfusedMonster(AI):
@@ -239,7 +242,8 @@ class ConfusedMonster(AI):
             self.num_turns -= 1
         else:
             # Restore normal AI
-            self.owner.ai = self.restore_ai
+            self.owner.remove_component(AI)
+            self.owner.add_component(self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             game.message(msg, libtcod.red)
 
@@ -263,13 +267,13 @@ def closest_monster(max_range, game):
     closest_dist = max_range + 1
 
     for object in game.objects:
-        if object.fighter and object != game.player and libtcod.map_is_in_fov(
-                game.fov_map, object.x, object.y):
-            # Calculate distance between this object and the player
-            dist = game.player.distance_to(object)
-            if dist < closest_dist:
-                closest_dist = dist
-                closest_enemy = object
+        if object != game.player and object.get_component(Fighter):
+            if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
+                # Calculate distance between this object and the player
+                dist = game.player.distance_to(object)
+                if dist < closest_dist:
+                    closest_dist = dist
+                    closest_enemy = object
 
     return closest_enemy
 
@@ -277,17 +281,18 @@ def closest_monster(max_range, game):
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
+    exp = monster.get_component(Experience)
     game.message('The {0} is dead! You gain {1} experience points.'.
-                 format(monster.name.capitalize(), monster.exp.xp),
+                 format(monster.name.capitalize(), exp.xp),
                  libtcod.orange)
-    game.player.exp.xp += monster.exp.xp
+    game.player.get_component(Experience).xp += exp.xp
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
-    monster.fighter = None
-    monster.ai = None
     monster.render_order = 0
     monster.name = 'remains of {0}'.format(monster.name)
+    monster.remove_component(Fighter)
+    monster.remove_component(AI)
 
 
 def instantiate_monster(template):
@@ -299,7 +304,7 @@ def instantiate_monster(template):
     fighter_comp = Fighter(template['hp'], template['defense'],
                            template['power'], death_fn=monster_death)
     return Object(char=char, name=name, color=color, blocks=True,
-                  fighter=fighter_comp, ai=ai_comp, exp=exp_comp)
+                  components=[fighter_comp, ai_comp, exp_comp])
 
 
 def make_monster(name, monster_templates):
@@ -337,7 +342,7 @@ class Item(Component):
             game.message('You picked up a {0}!'.format(self.owner.name),
                          libtcod.green)
             # Special case: automatically equip if slot is empty
-            equipment = self.owner.equipment
+            equipment = self.owner.get_component(Equipment)
             if equipment and get_equipped_in_slot(equipment.slot, game) is None:
                 equipment.equip(game)
 
@@ -349,16 +354,18 @@ class Item(Component):
         self.owner.x = game.player.x
         self.owner.y = game.player.y
         # Special case: unequip before dropping
-        if self.owner.equipment:
-            self.owner.equipment.unequip(game)
+        equipment = self.owner.get_component(Equipment)
+        if equipment:
+            equipment.unequip(game)
         game.message('You dropped a {0}.'.format(self.owner.name),
                      libtcod.yellow)
 
     def use(self, game, ui):
         # Call the use_fn if we have one
-        if self.owner.equipment:
+        equipment = self.owner.get_component(Equipment)
+        if equipment:
             # Special case: the "use" action is to equip/unequip
-            self.owner.equipment.toggle_equip(game)
+            equipment.toggle_equip(game)
         elif self.use_fn is None:
             game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
@@ -381,11 +388,11 @@ def instantiate_item(template):
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
         return Object(char=char, name=name, color=color, render_order=0,
-                      equipment=equipment)
+                      components=[equipment])
     elif 'on_use' in template:
         use_fn = getattr(abilities, template['on_use'])
         return Object(char=char, name=name, color=color, render_order=0,
-                      item=Item(use_fn=use_fn))
+                      components=[Item(use_fn=use_fn)])
 
 
 def make_item(name, item_templates):

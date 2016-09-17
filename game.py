@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import ui as libui
+import object as libobj
 import textwrap
 from settings import *
 
@@ -76,6 +77,7 @@ class Game:
 
             # Return the first clicked monster, otherwise continue looking
             for object in self.objects:
-                if object.fighter and object != self.player:
-                    if object.x == x and object.y == y:
-                        return object
+                if object != self.player:
+                    if object.get_component(libobj.Fighter):
+                        if object.x == x and object.y == y:
+                            return object
