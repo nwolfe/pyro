@@ -2,7 +2,7 @@ import libtcodpy as libtcod
 from settings import *
 
 
-def menu(con, header, options, width):
+def menu(console, header, options, width):
     if len(options) > 26:
         raise ValueError('Cannot have a menu with more than 26 options.')
 
@@ -11,7 +11,7 @@ def menu(con, header, options, width):
     if header == '':
         header_height = 0
     else:
-        header_height = libtcod.console_get_height_rect(con, 0, 0, width,
+        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
                                                         SCREEN_HEIGHT, header)
     height = len(options) + header_height
 
@@ -54,11 +54,11 @@ def menu(con, header, options, width):
         return None
 
 
-def messagebox(con, text, width=50):
-    return menu(con, text, [], width)
+def messagebox(console, text, width=50):
+    return menu(console, text, [], width)
 
 
-def inventory_menu(con, inventory, header):
+def inventory_menu(console, inventory, header):
     # Show a menu with each item of the inventory as an option
     if len(inventory) == 0:
         options = ['Inventory is empty']
@@ -69,7 +69,7 @@ def inventory_menu(con, inventory, header):
             if item.equipment and item.equipment.is_equipped:
                 text = '{0} (on {1})'.format(text, item.equipment.slot)
             options.append(text)
-    selection_index = menu(con, header, options, INVENTORY_WIDTH)
+    selection_index = menu(console, header, options, INVENTORY_WIDTH)
     if selection_index is None or len(inventory) == 0:
         return None
     else:

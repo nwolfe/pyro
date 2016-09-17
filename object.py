@@ -45,16 +45,17 @@ class Object:
             self.x += dx
             self.y += dy
 
-    def draw(self, con):
+    def draw(self, console):
         # Set the color and then draw the character that
         # represents this object at its position
-        libtcod.console_set_default_foreground(con, self.color)
-        libtcod.console_put_char(con, self.x, self.y, self.char,
+        libtcod.console_set_default_foreground(console, self.color)
+        libtcod.console_put_char(console, self.x, self.y, self.char,
                                  libtcod.BKGND_NONE)
 
-    def clear(self, con):
+    def clear(self, console):
         # Erase the character that represents this object
-        libtcod.console_put_char(con, self.x, self.y, ' ', libtcod.BKGND_NONE)
+        libtcod.console_put_char(console, self.x, self.y, ' ',
+                                 libtcod.BKGND_NONE)
 
     def move_towards(self, map, objects, target_x, target_y):
         # Vector from this object to the target, and distance
