@@ -78,6 +78,6 @@ class Game:
             # Return the first clicked monster, otherwise continue looking
             for object in self.objects:
                 if object != self.player:
-                    if object.get_component(libobj.Fighter):
+                    if object.components.get(libobj.Fighter):
                         if object.x == x and object.y == y:
                             return object

@@ -8,7 +8,7 @@ from settings import *
 class Object:
     # REMIND: Consider adding the 'always_visible' property from Part 11
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
-                 render_order=1, components=[]):
+                 render_order=1, components={}):
         self.x = x
         self.y = y
         self.char = char
@@ -17,22 +17,9 @@ class Object:
         self.render_order = render_order
         self.blocks = blocks
 
-        self.components = []
-        for component in components:
-            self.add_component(component)
-
-    def add_component(self, component):
-        self.components.append(component)
-        component.initialize(self)
-
-    def remove_component(self, component_class):
-        self.components.remove(self.get_component(component_class))
-
-    def get_component(self, component_class):
-        for component in self.components:
-            if isinstance(component, component_class):
-                return component
-        return None
+        self.components = components
+        for component in self.components.values():
+            component.initialize(self)
 
     def move(self, map, objects, dx, dy):
         if not is_blocked(map, objects, self.x + dx, self.y + dy):
@@ -99,7 +86,7 @@ class Experience(Component):
 
 def get_equipped_in_slot(slot, game):
     for obj in game.inventory:
-        item = obj.get_component(Equipment)
+        item = obj.components.get(Equipment)
         if item and item.slot == slot and item.is_equipped:
             return item
     return None
@@ -109,7 +96,7 @@ def get_all_equipped(obj, game):
     if obj == game.player:
         equipped = []
         for item in game.inventory:
-            equipment = item.get_component(Equipment)
+            equipment = item.components.get(Equipment)
             if equipment and equipment.is_equipped:
                 equipped.append(equipment)
         return equipped
@@ -130,7 +117,9 @@ class Equipment(Component):
 
     def initialize(self, object):
         self.owner = object
-        object.add_component(Item())
+        item = Item()
+        item.initialize(object)
+        object.components[Item] = item
 
     def toggle_equip(self, game):
         if self.is_equipped:
@@ -196,7 +185,7 @@ class Fighter(Component):
             self.hp = self.max_hp(game)
 
     def attack(self, target, game):
-        fighter = target.get_component(Fighter)
+        fighter = target.components.get(Fighter)
         damage = self.power(game) - fighter.defense(game)
 
         if damage > 0:
@@ -224,8 +213,8 @@ class BasicMonster(AI):
                                      game.player.x, game.player.y)
 
             # Close enough, attack! (If the player is still alive)
-            elif game.player.get_component(Fighter).hp > 0:
-                monster.get_component(Fighter).attack(game.player, game)
+            elif game.player.components.get(Fighter).hp > 0:
+                monster.components.get(Fighter).attack(game.player, game)
 
 
 class ConfusedMonster(AI):
@@ -242,8 +231,7 @@ class ConfusedMonster(AI):
             self.num_turns -= 1
         else:
             # Restore normal AI
-            self.owner.remove_component(AI)
-            self.owner.add_component(self.restore_ai)
+            self.owner.components[AI] = restore_ai
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             game.message(msg, libtcod.red)
 
@@ -267,7 +255,7 @@ def closest_monster(max_range, game):
     closest_dist = max_range + 1
 
     for object in game.objects:
-        if object != game.player and object.get_component(Fighter):
+        if object != game.player and object.components.get(Fighter):
             if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
                 # Calculate distance between this object and the player
                 dist = game.player.distance_to(object)
@@ -281,18 +269,18 @@ def closest_monster(max_range, game):
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.get_component(Experience)
+    exp = monster.components.get(Experience)
     game.message('The {0} is dead! You gain {1} experience points.'.
                  format(monster.name.capitalize(), exp.xp),
                  libtcod.orange)
-    game.player.get_component(Experience).xp += exp.xp
+    game.player.components.get(Experience).xp += exp.xp
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
     monster.render_order = 0
     monster.name = 'remains of {0}'.format(monster.name)
-    monster.remove_component(Fighter)
-    monster.remove_component(AI)
+    monster.components.pop(Fighter)
+    monster.components.pop(AI)
 
 
 def instantiate_monster(template):
@@ -304,7 +292,9 @@ def instantiate_monster(template):
     fighter_comp = Fighter(template['hp'], template['defense'],
                            template['power'], death_fn=monster_death)
     return Object(char=char, name=name, color=color, blocks=True,
-                  components=[fighter_comp, ai_comp, exp_comp])
+                  components={Fighter: fighter_comp,
+                              AI: ai_comp,
+                              Experience: exp_comp})
 
 
 def make_monster(name, monster_templates):
@@ -342,7 +332,7 @@ class Item(Component):
             game.message('You picked up a {0}!'.format(self.owner.name),
                          libtcod.green)
             # Special case: automatically equip if slot is empty
-            equipment = self.owner.get_component(Equipment)
+            equipment = self.owner.components.get(Equipment)
             if equipment and get_equipped_in_slot(equipment.slot, game) is None:
                 equipment.equip(game)
 
@@ -354,7 +344,7 @@ class Item(Component):
         self.owner.x = game.player.x
         self.owner.y = game.player.y
         # Special case: unequip before dropping
-        equipment = self.owner.get_component(Equipment)
+        equipment = self.owner.components.get(Equipment)
         if equipment:
             equipment.unequip(game)
         game.message('You dropped a {0}.'.format(self.owner.name),
@@ -362,7 +352,7 @@ class Item(Component):
 
     def use(self, game, ui):
         # Call the use_fn if we have one
-        equipment = self.owner.get_component(Equipment)
+        equipment = self.owner.components.get(Equipment)
         if equipment:
             # Special case: the "use" action is to equip/unequip
             equipment.toggle_equip(game)
@@ -388,11 +378,11 @@ def instantiate_item(template):
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
         return Object(char=char, name=name, color=color, render_order=0,
-                      components=[equipment])
+                      components={Equipment: equipment})
     elif 'on_use' in template:
         use_fn = getattr(abilities, template['on_use'])
         return Object(char=char, name=name, color=color, render_order=0,
-                      components=[Item(use_fn=use_fn)])
+                      components={Item: Item(use_fn=use_fn)})
 
 
 def make_item(name, item_templates):
