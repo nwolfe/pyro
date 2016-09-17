@@ -1,4 +1,4 @@
-
+* TODO Include .exe builds in GitHub repo
 * TODO Object has Component List instead of many fields
 * TODO Move monster AI into JSON
 * TODO Split object.py into smaller modules
