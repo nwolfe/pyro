@@ -3,5 +3,4 @@
 * TODO Move monster AI into JSON
 * TODO Split object.py into smaller modules
 * TODO Convert # comments to proper """docstrings"""
-* TODO Combine console+panel into UI class
 * TODO Fix vanishing doppleganger casting bug
