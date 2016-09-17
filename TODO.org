@@ -1,3 +1,4 @@
+* TODO Implement 'always visible' property from Step 11
 * TODO Include .exe builds in GitHub repo
 * TODO Move monster AI into JSON
 * TODO Split object.py into smaller modules
