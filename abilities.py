@@ -3,7 +3,7 @@ import object as libobj
 from settings import *
 
 
-def cast_heal(player, game):
+def cast_heal(player, game, console, panel):
     # Heal the player
     if game.player.fighter.hp == game.player.fighter.max_hp(game):
         game.message('You are already at full health.', libtcod.red)
@@ -14,7 +14,7 @@ def cast_heal(player, game):
     game.player.fighter.heal(HEAL_AMOUNT, game)
 
 
-def cast_lightning(player, game):
+def cast_lightning(player, game, console, panel):
     # Find the closest enemy (inside a maximum range) and damage it
     monster = libobj.closest_monster(LIGHTNING_RANGE, game)
     if monster is None:
@@ -29,11 +29,11 @@ def cast_lightning(player, game):
     monster.fighter.take_damage(LIGHTNING_DAMAGE, game)
 
 
-def cast_confuse(player, game):
+def cast_confuse(player, game, console, panel):
     # Ask the player for a target to confuse
     game.message('Left-click an enemy to confuse it, or right-click to cancel.',
                  libtcod.light_cyan)
-    monster = game.target_monster(CONFUSE_RANGE)
+    monster = game.target_monster(console, panel, CONFUSE_RANGE)
     if monster is None:
         return 'cancelled'
 
@@ -44,11 +44,11 @@ def cast_confuse(player, game):
     game.message(msg.format(monster.name), libtcod.light_green)
 
 
-def cast_fireball(player, game):
+def cast_fireball(player, game, console, panel):
     # Ask the player for a target tile to throw a fireball at
     msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
     game.message(msg, libtcod.light_cyan)
-    (x, y) = game.target_tile()
+    (x, y) = game.target_tile(console, panel)
     if x is None:
         return 'cancelled'
 

@@ -19,8 +19,6 @@ def message(messages, new_msg, color=libtcod.white):
 class Game:
     def __init__(self,
                  state=None,
-                 console=None,
-                 panel=None,
                  mouse=None,
                  key=None,
                  map=None,
@@ -32,8 +30,6 @@ class Game:
                  messages=None,
                  dungeon_level=1):
         self.state = state
-        self.console = console
-        self.panel = panel
         self.mouse = mouse
         self.key = key
         self.map = map
@@ -48,7 +44,7 @@ class Game:
     def message(self, text, color=libtcod.white):
         message(self.messages, text, color)
 
-    def target_tile(self, max_range=None):
+    def target_tile(self, console, panel, max_range=None):
         # Return the position of a tile left-clicked in player's FOV
         # (optionally in a range), or (None, None) if right-clicked.
         while True:
@@ -58,7 +54,7 @@ class Game:
             libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                         libtcod.EVENT_MOUSE,
                                         self.key, self.mouse)
-            libui.render_all(self, False)
+            libui.render_all(console, panel, self, False)
 
             (x, y) = (self.mouse.cx, self.mouse.cy)
 
@@ -70,11 +66,11 @@ class Game:
             if self.mouse.rbutton_pressed or self.key.vk == libtcod.KEY_ESCAPE:
                 return (None, None)
 
-    def target_monster(self, max_range=None):
+    def target_monster(self, console, panel, max_range=None):
         # Returns a clicked monster inside FOV up to a range, or None if
         # right-clicked
         while True:
-            (x, y) = self.target_tile(max_range)
+            (x, y) = self.target_tile(console, panel, max_range)
             if x is None:
                 return None
 

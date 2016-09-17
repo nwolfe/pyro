@@ -24,7 +24,7 @@ def move_player_or_attack(dx, dy, game):
         return (True, 'move')
 
 
-def show_character_info(game):
+def show_character_info(console, game):
     msg = """Character Information
 
 Level: {0}
@@ -43,9 +43,9 @@ Defense: {6}
                      game.player.fighter.max_hp(game),
                      game.player.fighter.power(game),
                      game.player.fighter.defense(game))
-    libui.messagebox(game.console, msg, CHARACTER_SCREEN_WIDTH)
+    libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
-def handle_keys(game):
+def handle_keys(console, panel, game):
     if game.key.vk == libtcod.KEY_ENTER and game.key.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -88,14 +88,14 @@ def handle_keys(game):
     elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(game.console, game.inventory, msg)
+        selected_item = libui.inventory_menu(console, game.inventory, msg)
         if selected_item:
-            selected_item.use(game)
+            selected_item.use(game, console, panel)
         return (False, None)
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(game.console, game.inventory, msg)
+        selected_item = libui.inventory_menu(console, game.inventory, msg)
         if selected_item:
             selected_item.drop(game)
         return (False, None)
@@ -103,10 +103,10 @@ def handle_keys(game):
         # Go down the stairs to the next level
         if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
             next_dungeon_level(game)
-            libtcod.console_clear(game.console)
+            libtcod.console_clear(console)
         return (True, None)
     elif key_char == 'c':
-        show_character_info(game)
+        show_character_info(console, game)
         return (False, None)
     else:
         return (False, 'idle')
@@ -131,7 +131,7 @@ def make_fov_map(map):
     return fov_map
 
 
-def check_player_level_up(game):
+def check_player_level_up(game, console):
     player = game.player
 
     # See if the player's XP is enough to level up
@@ -145,10 +145,13 @@ def check_player_level_up(game):
 
     choice = None
     while choice is None:
-        options = ['Constitution (+20 HP, from {})'.format(player.fighter.base_max_hp),
-                   'Strength (+1 attack, from {})'.format(player.fighter.base_power),
-                   'Agility (+1 defense, from {})'.format(player.fighter.base_defense)]
-        choice = libui.menu(game.console, 'Level up! Choose a stat to raise:\n',
+        options = ['Constitution (+20 HP, from {})'.format(
+                       player.fighter.base_max_hp),
+                   'Strength (+1 attack, from {})'.format(
+                       player.fighter.base_power),
+                   'Agility (+1 defense, from {})'.format(
+                       player.fighter.base_defense)]
+        choice = libui.menu(console, 'Level up! Choose a stat to raise:\n',
                             options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
             player.fighter.base_max_hp += 20
@@ -159,7 +162,7 @@ def check_player_level_up(game):
             player.fighter.base_defense += 1
 
 
-def new_game(console, panel):
+def new_game():
     # Create the player
     exp_comp = libobj.Experience(xp=0, level=1)
     fighter_comp = libobj.Fighter(hp=100, defense=1, power=2,
@@ -178,9 +181,8 @@ def new_game(console, panel):
     inventory = []
     messages = []
 
-    game = libgame.Game('playing', console, panel, mouse, key, map, fov_map,
-                        objects, stairs, player, inventory, messages,
-                        dungeon_level)
+    game = libgame.Game('playing', mouse, key, map, fov_map, objects, stairs,
+                        player, inventory, messages, dungeon_level)
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
@@ -216,23 +218,23 @@ def next_dungeon_level(game):
     game.stairs = stairs
 
 
-def play_game(game):
+def play_game(game, console, panel):
     fov_recompute = True
-    libtcod.console_clear(game.console)
+    libtcod.console_clear(console)
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, game.key, game.mouse)
 
-        libui.render_all(game, fov_recompute)
+        libui.render_all(console, panel, game, fov_recompute)
 
         libtcod.console_flush()
 
-        check_player_level_up(game)
+        check_player_level_up(game, console)
 
         for object in game.objects:
-            object.clear(game.console)
+            object.clear(console)
 
-        (fov_recompute, player_action) = handle_keys(game)
+        (fov_recompute, player_action) = handle_keys(console, panel, game)
 
         if player_action == 'exit':
             save_game(game)
@@ -258,7 +260,7 @@ def save_game(game):
     file.close()
 
 
-def load_game(console, panel):
+def load_game():
     # Open the previously saved shelve and load the game data
     file = shelve.open('savegame', 'r')
     map = file['map']
@@ -275,9 +277,8 @@ def load_game(console, panel):
     mouse = libtcod.Mouse()
     key = libtcod.Key()
 
-    return libgame.Game(state, console, panel, mouse, key, map, fov_map,
-                        objects, stairs, player, inventory, messages,
-                        dungeon_level)
+    return libgame.Game(state, mouse, key, map, fov_map, objects, stairs,
+                        player, inventory, messages, dungeon_level)
 
 
 def main_menu(console, panel):
@@ -302,13 +303,13 @@ def main_menu(console, panel):
 
         if choice == 0:
             # New game
-            game = new_game(console, panel)
-            play_game(game)
+            game = new_game()
+            play_game(game, console, panel)
         elif choice == 1:
             # Load last game
             try:
-                game = load_game(console, panel)
-                play_game(game)
+                game = load_game()
+                play_game(game, console, panel)
             except:
                 libui.messagebox('\n No saved game to load.\n', 24)
                 continue

@@ -111,7 +111,7 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def render_all(game, fov_recompute):
+def render_all(console, panel, game, fov_recompute):
     if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
         libtcod.map_compute_fov(game.fov_map, game.player.x, game.player.y,
@@ -125,12 +125,12 @@ def render_all(game, fov_recompute):
                 if not visible:
                     if game.map[x][y].explored:
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
-                        libtcod.console_set_char_background(game.console,
+                        libtcod.console_set_char_background(console,
                                                             x, y, color,
                                                             libtcod.BKGND_SET)
                 else:
                     color = COLOR_LIGHT_WALL if wall else COLOR_LIGHT_GROUND
-                    libtcod.console_set_char_background(game.console,
+                    libtcod.console_set_char_background(console,
                                                         x, y, color,
                                                         libtcod.BKGND_SET)
                     game.map[x][y].explored = True
@@ -138,38 +138,38 @@ def render_all(game, fov_recompute):
     render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
     for object in render_ordered:
         if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
-            object.draw(game.console)
+            object.draw(console)
 
     # Blit the contents of the game (non-GUI) console to the root console
-    libtcod.console_blit(game.console, 0, 0, MAP_WIDTH, MAP_HEIGHT, 0, 0, 0)
+    libtcod.console_blit(console, 0, 0, MAP_WIDTH, MAP_HEIGHT, 0, 0, 0)
 
     # Prepare to render the GUI panel
-    libtcod.console_set_default_background(game.panel, libtcod.black)
-    libtcod.console_clear(game.panel)
+    libtcod.console_set_default_background(panel, libtcod.black)
+    libtcod.console_clear(panel)
 
     # Print game messages, one line at a time
     y = 1
     for (line, color) in game.messages:
-        libtcod.console_set_default_foreground(game.panel, color)
-        libtcod.console_print_ex(game.panel, MSG_X, y, libtcod.BKGND_NONE,
+        libtcod.console_set_default_foreground(panel, color)
+        libtcod.console_print_ex(panel, MSG_X, y, libtcod.BKGND_NONE,
                                  libtcod.LEFT, line)
         y += 1
 
     # Show player's stats
-    render_ui_bar(game.panel, 1, 1, BAR_WIDTH, 'HP',
-                  game.player.fighter.hp, game.player.fighter.max_hp(game),
-                  libtcod.light_red, libtcod.darker_red)
+    render_ui_bar(panel, 1, 1, BAR_WIDTH, 'HP', game.player.fighter.hp,
+                  game.player.fighter.max_hp(game), libtcod.light_red,
+                  libtcod.darker_red)
 
     # Show the dungeon level
-    libtcod.console_print_ex(game.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+    libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
     names = get_names_under_mouse(game.mouse, game.objects, game.fov_map)
-    libtcod.console_set_default_foreground(game.panel, libtcod.light_gray)
-    libtcod.console_print_ex(game.panel, 1, 0, libtcod.BKGND_NONE,
-                             libtcod.LEFT, names)
+    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+                             names)
 
     # Blit the contents of the GUI panel to the root console
-    libtcod.console_blit(game.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
+    libtcod.console_blit(panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
                          PANEL_Y)

@@ -354,7 +354,7 @@ class Item(Component):
         game.message('You dropped a {0}.'.format(self.owner.name),
                      libtcod.yellow)
 
-    def use(self, game):
+    def use(self, game, console, panel):
         # Call the use_fn if we have one
         if self.owner.equipment:
             # Special case: the "use" action is to equip/unequip
@@ -363,7 +363,8 @@ class Item(Component):
             game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            if self.use_fn(self.item_owner, game) != 'cancelled':
+            result = self.use_fn(self.item_owner, game, console, panel)
+            if result != 'cancelled':
                 game.inventory.remove(self.owner)
 
 
