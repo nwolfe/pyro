@@ -41,7 +41,8 @@ def cast_confuse(player, game, ui):
         return 'cancelled'
 
     old_ai = monster.components.get(libai.AI)
-    new_ai = ai.ConfusedMonster(old_ai)
+    new_ai = libai.ConfusedMonster(old_ai)
+    new_ai.initialize(monster)
     monster.components[libai.AI] = new_ai
     msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
     game.message(msg.format(monster.name), libtcod.light_green)

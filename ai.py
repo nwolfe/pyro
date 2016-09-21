@@ -24,17 +24,17 @@ class BasicMonster(AI):
                 monster.components.get(libfighter.Fighter).attack(game.player, game)
 
 
-def basic_monster():
+def basic():
     return BasicMonster()
 
 
 class ConfusedMonster(AI):
-    def __init__(self, restore_ai, num_turns=CONFUSE_NUM_TURNS):
+    def __init__(self, restore_ai=None, num_turns=CONFUSE_NUM_TURNS):
         self.restore_ai = restore_ai
         self.num_turns = num_turns
 
     def take_turn(self, game):
-        if self.num_turns > 0:
+        if self.restore_ai is None or self.num_turns > 0:
             # Move in a random direction
             self.owner.move(game.map, game.objects,
                             libtcod.random_get_int(0, -1, 1),
@@ -48,5 +48,5 @@ class ConfusedMonster(AI):
             game.message(msg, libtcod.red)
 
 
-def confused_monster():
-    return ConfusedMonster(BasicMonster())
+def confused():
+    return ConfusedMonster()
