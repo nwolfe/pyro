@@ -1,5 +1,6 @@
-import component as libcomp
 import libtcodpy as libtcod
+import component as libcomp
+import fighter as libfighter
 from settings import *
 
 
@@ -19,8 +20,8 @@ class BasicMonster(AI):
                                      game.player.x, game.player.y)
 
             # Close enough, attack! (If the player is still alive)
-            elif game.player.components.get(Fighter).hp > 0:
-                monster.components.get(Fighter).attack(game.player, game)
+            elif game.player.components.get(libfighter.Fighter).hp > 0:
+                monster.components.get(libfighter.Fighter).attack(game.player, game)
 
 
 def basic_monster():
@@ -41,7 +42,8 @@ class ConfusedMonster(AI):
             self.num_turns -= 1
         else:
             # Restore normal AI
-            self.owner.components[AI] = restore_ai
+            self.owner.components[AI] = self.restore_ai
+            self.restore_ai.initialize(self.owner)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             game.message(msg, libtcod.red)
 

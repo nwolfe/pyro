@@ -1,6 +1,8 @@
 import libtcodpy as libtcod
-import component as libcomp
 import ai as libai
+import item as libitem
+import experience as libxp
+import fighter as libfighter
 import abilities
 import math
 import json
@@ -63,136 +65,6 @@ class Object:
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
 
-class Experience(libcomp.Component):
-    def __init__(self, xp=0, level=0):
-        self.xp = xp
-        self.level = level
-
-    def required_for_level_up(self):
-        return LEVEL_UP_BASE + self.level * LEVEL_UP_FACTOR
-
-    def can_level_up(self):
-        return self.xp <= self.required_for_level_up()
-
-    def level_up(self):
-        required = self.required_for_level_up()
-        self.level += 1
-        self.xp -= required
-
-
-def get_equipped_in_slot(slot, game):
-    for obj in game.inventory:
-        item = obj.components.get(Equipment)
-        if item and item.slot == slot and item.is_equipped:
-            return item
-    return None
-
-
-def get_all_equipped(obj, game):
-    if obj == game.player:
-        equipped = []
-        for item in game.inventory:
-            equipment = item.components.get(Equipment)
-            if equipment and equipment.is_equipped:
-                equipped.append(equipment)
-        return equipped
-    else:
-        return []
-
-
-class Equipment(libcomp.Component):
-    """An object that can be equipped, yielding bonuses. Automatically adds
-    the Item component."""
-
-    def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
-        self.slot = slot
-        self.power_bonus = power_bonus
-        self.defense_bonus = defense_bonus
-        self.max_hp_bonus = max_hp_bonus
-        self.is_equipped = False
-
-    def initialize(self, object):
-        self.owner = object
-        item = Item()
-        item.initialize(object)
-        object.components[Item] = item
-
-    def toggle_equip(self, game):
-        if self.is_equipped:
-            self.unequip(game)
-        else:
-            self.equip(game)
-
-    def equip(self, game):
-        """Equip object and show a message about it."""
-        replacing = get_equipped_in_slot(self.slot, game)
-        if replacing is not None:
-            replacing.unequip(game)
-        self.is_equipped = True
-        game.message('Equipped {0} on {1}.'.format(self.owner.name, self.slot),
-                     libtcod.light_green)
-
-    def unequip(self, game):
-        """Unequip object and show a message about it."""
-        if not self.is_equipped:
-            return
-        self.is_equipped = False
-        game.message('Unequipped {0} from {1}.'.format(self.owner.name,
-                                                       self.slot),
-                     libtcod.light_yellow)
-
-
-class Fighter(libcomp.Component):
-    """Combat-related properties and methods (monster, player, NPC)."""
-    def __init__(self, hp, defense, power, death_fn=None):
-        self.hp = hp
-        self.base_max_hp = hp
-        self.base_defense = defense
-        self.base_power = power
-        self.death_fn = death_fn
-
-    def power(self, game):
-        equipped = get_all_equipped(self.owner, game)
-        bonus = sum(equipment.power_bonus for equipment in equipped)
-        return self.base_power + bonus
-
-    def defense(self, game):
-        equipped = get_all_equipped(self.owner, game)
-        bonus = sum(equipment.defense_bonus for equipment in equipped)
-        return self.base_defense + bonus
-
-    def max_hp(self, game):
-        equipped = get_all_equipped(self.owner, game)
-        bonus = sum(equipment.max_hp_bonus for equipment in equipped)
-        return self.base_max_hp + bonus
-
-    def take_damage(self, damage, game):
-        if damage > 0:
-            self.hp -= damage
-
-        # Check for death and call the death function if there is one
-        if self.hp <= 0 and self.death_fn:
-            self.death_fn(self.owner, game)
-
-    def heal(self, amount, game):
-        # Heal by the given amount, without going over the maximum
-        self.hp += amount
-        if self.hp > self.max_hp(game):
-            self.hp = self.max_hp(game)
-
-    def attack(self, target, game):
-        fighter = target.components.get(Fighter)
-        damage = self.power(game) - fighter.defense(game)
-
-        if damage > 0:
-            game.message('{0} attacks {1} for {2} hit points.'.format(
-                self.owner.name.capitalize(), target.name, damage))
-            fighter.take_damage(damage, game)
-        else:
-            game.message('{0} attacks {1} but it has no effect!'.format(
-                self.owner.name.capitalize(), target.name))
-
-
 def is_blocked(map, objects, x, y):
     # First test the map tile
     if map[x][y].blocked:
@@ -206,37 +78,20 @@ def is_blocked(map, objects, x, y):
     return False
 
 
-def closest_monster(max_range, game):
-    # Find closest enemy, up to a maximum range, and in the player's FOV
-    closest_enemy = None
-    closest_dist = max_range + 1
-
-    for object in game.objects:
-        if object != game.player and object.components.get(Fighter):
-            if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
-                # Calculate distance between this object and the player
-                dist = game.player.distance_to(object)
-                if dist < closest_dist:
-                    closest_dist = dist
-                    closest_enemy = object
-
-    return closest_enemy
-
-
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.components.get(Experience)
+    exp = monster.components.get(libxp.Experience)
     game.message('The {0} is dead! You gain {1} experience points.'.
                  format(monster.name.capitalize(), exp.xp),
                  libtcod.orange)
-    game.player.components.get(Experience).xp += exp.xp
+    game.player.components.get(libxp.Experience).xp += exp.xp
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
     monster.render_order = 0
     monster.name = 'remains of {0}'.format(monster.name)
-    monster.components.pop(Fighter)
+    monster.components.pop(libfighter.Fighter)
     monster.components.pop(libai.AI)
 
 
@@ -246,13 +101,13 @@ def instantiate_monster(template):
     color = getattr(libtcod, template['color'])
     ai_comp_fn = getattr(libai, template['ai'])
     ai_comp = ai_comp_fn()
-    exp_comp = Experience(template['experience'])
-    fighter_comp = Fighter(template['hp'], template['defense'],
-                           template['power'], death_fn=monster_death)
+    exp_comp = libxp.Experience(template['experience'])
+    fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
+                                   template['power'], death_fn=monster_death)
     return Object(char=char, name=name, color=color, blocks=True,
-                  components={Fighter: fighter_comp,
+                  components={libfighter.Fighter: fighter_comp,
                               libai.AI: ai_comp,
-                              Experience: exp_comp})
+                              libxp.Experience: exp_comp})
 
 
 def make_monster(name, monster_templates):
@@ -273,62 +128,12 @@ def load_templates(file):
         return templates
 
 
-class Item(libcomp.Component):
-    def __init__(self, use_fn=None):
-        self.use_fn = use_fn
-        self.item_owner = None
-
-    def pick_up(self, game):
-        # Add to player's inventory and remove from the map
-        if len(game.inventory) >= 26:
-            game.message('Your inventory is full, cannot pick up {0}.'.format(
-                self.owner.name), libtcod.red)
-        else:
-            self.item_owner = game.player
-            game.inventory.append(self.owner)
-            game.objects.remove(self.owner)
-            game.message('You picked up a {0}!'.format(self.owner.name),
-                         libtcod.green)
-            # Special case: automatically equip if slot is empty
-            equipment = self.owner.components.get(Equipment)
-            if equipment and get_equipped_in_slot(equipment.slot, game) is None:
-                equipment.equip(game)
-
-    def drop(self, game):
-        # Remove from the inventory and add to the map.
-        # Place at player's coordinates.
-        game.inventory.remove(self.owner)
-        game.objects.append(self.owner)
-        self.owner.x = game.player.x
-        self.owner.y = game.player.y
-        # Special case: unequip before dropping
-        equipment = self.owner.components.get(Equipment)
-        if equipment:
-            equipment.unequip(game)
-        game.message('You dropped a {0}.'.format(self.owner.name),
-                     libtcod.yellow)
-
-    def use(self, game, ui):
-        # Call the use_fn if we have one
-        equipment = self.owner.components.get(Equipment)
-        if equipment:
-            # Special case: the "use" action is to equip/unequip
-            equipment.toggle_equip(game)
-        elif self.use_fn is None:
-            game.message('The {0} cannot be used.'.format(self.owner.name))
-        else:
-            # Destroy after use, unless it was cancelled for some reason
-            result = self.use_fn(self.item_owner, game, ui)
-            if result != 'cancelled':
-                game.inventory.remove(self.owner)
-
-
 def instantiate_item(template):
     name = template['name']
     char = template['symbol']
     color = getattr(libtcod, template['color'])
     if 'slot' in template:
-        equipment = Equipment(slot=template['slot'])
+        equipment = libitem.Equipment(slot=template['slot'])
         if 'power' in template:
             equipment.power_bonus = template['power']
         if 'defense' in template:
@@ -336,11 +141,11 @@ def instantiate_item(template):
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
         return Object(char=char, name=name, color=color, render_order=0,
-                      components={Equipment: equipment})
+                      components={libitem.Equipment: equipment})
     elif 'on_use' in template:
         use_fn = getattr(abilities, template['on_use'])
         return Object(char=char, name=name, color=color, render_order=0,
-                      components={Item: Item(use_fn=use_fn)})
+                      components={libitem.Item: libitem.Item(use_fn=use_fn)})
 
 
 def make_item(name, item_templates):

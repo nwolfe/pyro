@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
-import object as libobj
+import item as libitem
+import fighter as libfighter
 from settings import *
 
 
@@ -73,7 +74,7 @@ def inventory_menu(console, inventory, header):
         options = []
         for item in inventory:
             text = item.name
-            equipment = item.components.get(libobj.Equipment)
+            equipment = item.components.get(libitem.Equipment)
             if equipment and equipment.is_equipped:
                 text = '{0} (on {1})'.format(text, equipment.slot)
             options.append(text)
@@ -81,7 +82,7 @@ def inventory_menu(console, inventory, header):
     if selection_index is None or len(inventory) == 0:
         return None
     else:
-        return inventory[selection_index].components.get(libobj.Item)
+        return inventory[selection_index].components.get(libitem.Item)
 
 
 def get_names_under_mouse(mouse, objects, fov_map):
@@ -163,7 +164,7 @@ def render_all(ui, game, fov_recompute):
         y += 1
 
     # Show player's stats
-    fighter = game.player.components.get(libobj.Fighter)
+    fighter = game.player.components.get(libfighter.Fighter)
     render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
                   fighter.max_hp(game), libtcod.light_red, libtcod.darker_red)
 

@@ -4,6 +4,9 @@ import map as libmap
 import game as libgame
 import ui as libui
 import ai as libai
+import fighter as libfighter
+import experience as libxp
+import item as libitem
 import shelve
 from settings import *
 
@@ -13,13 +16,13 @@ def move_player_or_attack(dx, dy, game):
     y = game.player.y + dy
     target = None
     for object in game.objects:
-        if object.components.get(libobj.Fighter):
+        if object.components.get(libfighter.Fighter):
             if object.x == x and object.y == y:
                 target = object
                 break
 
     if target:
-        game.player.components.get(libobj.Fighter).attack(target, game)
+        game.player.components.get(libfighter.Fighter).attack(target, game)
         return (False, None)
     else:
         game.player.move(game.map, game.objects, dx, dy)
@@ -38,8 +41,8 @@ Maximum HP: {4}
 Attack: {5}
 Defense: {6}
 """
-    exp = game.player.components.get(libobj.Experience)
-    fighter = game.player.components.get(libobj.Fighter)
+    exp = game.player.components.get(libxp.Experience)
+    fighter = game.player.components.get(libfighter.Fighter)
     msg = msg.format(exp.level,
                      exp.xp,
                      exp.required_for_level_up(),
@@ -84,7 +87,7 @@ def handle_keys(ui, game):
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
-            item = object.components.get(libobj.Item)
+            item = object.components.get(libitem.Item)
             if item:
                 if object.x == game.player.x and object.y == game.player.y:
                     item.pick_up(game)
@@ -138,7 +141,7 @@ def make_fov_map(map):
 
 def check_player_level_up(game, console):
     player = game.player
-    exp = player.components.get(libobj.Experience)
+    exp = player.components.get(libxp.Experience)
 
     # See if the player's XP is enough to level up
     if exp.can_level_up():
@@ -151,7 +154,7 @@ def check_player_level_up(game, console):
 
     choice = None
     while choice is None:
-        fighter = player.components.get(libobj.Fighter)
+        fighter = player.components.get(libfighter.Fighter)
         options = ['Constitution (+20 HP, from {})'.format(fighter.base_max_hp),
                    'Strength (+1 attack, from {})'.format(fighter.base_power),
                    'Agility (+1 defense, from {})'.format(fighter.base_defense)]
@@ -168,12 +171,12 @@ def check_player_level_up(game, console):
 
 def new_game():
     # Create the player
-    exp_comp = libobj.Experience(xp=0, level=1)
-    fighter_comp = libobj.Fighter(hp=100, defense=1, power=2,
+    exp_comp = libxp.Experience(xp=0, level=1)
+    fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
-                           components={libobj.Fighter: fighter_comp,
-                                       libobj.Experience: exp_comp})
+                           components={libfighter.Fighter: fighter_comp,
+                                       libxp.Experience: exp_comp})
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
@@ -193,9 +196,9 @@ def new_game():
     game.message(m, libtcod.red)
 
     # Initial equipment: a dagger
-    equipment_comp = libobj.Equipment(slot='right hand', power_bonus=2)
+    equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky,
-                           components={libobj.Equipment: equipment_comp})
+                           components={libitem.Equipment: equipment_comp})
     inventory.append(dagger)
     equipment_comp.equip(game)
 
@@ -207,7 +210,7 @@ def next_dungeon_level(game):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    fighter = game.player.components.get(libobj.Fighter)
+    fighter = game.player.components.get(libfighter.Fighter)
     fighter.heal(fighter.max_hp(game) / 2, game)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '

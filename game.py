@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 import ui as libui
-import object as libobj
+import fighter as libfighter
 import textwrap
 from settings import *
 
@@ -78,6 +78,22 @@ class Game:
             # Return the first clicked monster, otherwise continue looking
             for object in self.objects:
                 if object != self.player:
-                    if object.components.get(libobj.Fighter):
+                    if object.components.get(libfighter.Fighter):
                         if object.x == x and object.y == y:
                             return object
+
+    def closest_monster(self, max_range):
+        # Find closest enemy, up to a maximum range, and in the player's FOV
+        closest_enemy = None
+        closest_dist = max_range + 1
+
+        for object in self.objects:
+            if object != self.player and object.components.get(libfighter.Fighter):
+                if libtcod.map_is_in_fov(self.fov_map, object.x, object.y):
+                    # Calculate distance between this object and the player
+                    dist = self.player.distance_to(object)
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        closest_enemy = object
+
+        return closest_enemy
