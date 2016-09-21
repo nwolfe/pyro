@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import object as libobj
+import ai as libai
 from settings import *
 
 
@@ -39,9 +40,9 @@ def cast_confuse(player, game, ui):
     if monster is None:
         return 'cancelled'
 
-    old_ai = monster.components.get(libobj.AI)
-    new_ai = libobj.ConfusedMonster(old_ai)
-    monster.components[libobj.AI] = new_ai
+    old_ai = monster.components.get(libai.AI)
+    new_ai = libai.ConfusedMonster(old_ai)
+    monster.components[libai.AI] = new_ai
     msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
     game.message(msg.format(monster.name), libtcod.light_green)
 

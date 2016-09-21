@@ -3,6 +3,7 @@ import object as libobj
 import map as libmap
 import game as libgame
 import ui as libui
+import ai as libai
 import shelve
 from settings import *
 
@@ -247,7 +248,7 @@ def play_game(game, ui):
 
         if game.state == 'playing' and player_action != 'idle':
             for object in game.objects:
-                ai = object.components.get(libobj.AI)
+                ai = object.components.get(libai.AI)
                 if ai:
                     ai.take_turn(game)
 

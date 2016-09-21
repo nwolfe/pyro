@@ -1,4 +1,6 @@
 import libtcodpy as libtcod
+import component as libcomp
+import ai as libai
 import abilities
 import math
 import json
@@ -61,15 +63,7 @@ class Object:
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
 
-class Component:
-    def __init__(self):
-        self.owner = None
-
-    def initialize(self, object):
-        self.owner = object
-
-
-class Experience(Component):
+class Experience(libcomp.Component):
     def __init__(self, xp=0, level=0):
         self.xp = xp
         self.level = level
@@ -106,7 +100,7 @@ def get_all_equipped(obj, game):
         return []
 
 
-class Equipment(Component):
+class Equipment(libcomp.Component):
     """An object that can be equipped, yielding bonuses. Automatically adds
     the Item component."""
 
@@ -148,7 +142,7 @@ class Equipment(Component):
                      libtcod.light_yellow)
 
 
-class Fighter(Component):
+class Fighter(libcomp.Component):
     """Combat-related properties and methods (monster, player, NPC)."""
     def __init__(self, hp, defense, power, death_fn=None):
         self.hp = hp
@@ -199,45 +193,6 @@ class Fighter(Component):
                 self.owner.name.capitalize(), target.name))
 
 
-class AI(Component):
-    def take_turn(self, game):
-        # Children must implement
-        return
-
-
-class BasicMonster(AI):
-    def take_turn(self, game):
-        monster = self.owner
-        if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):
-            # Move towards player if far away
-            if monster.distance_to(game.player) >= 2:
-                monster.move_towards(game.map, game.objects,
-                                     game.player.x, game.player.y)
-
-            # Close enough, attack! (If the player is still alive)
-            elif game.player.components.get(Fighter).hp > 0:
-                monster.components.get(Fighter).attack(game.player, game)
-
-
-class ConfusedMonster(AI):
-    def __init__(self, restore_ai, num_turns=CONFUSE_NUM_TURNS):
-        self.restore_ai = restore_ai
-        self.num_turns = num_turns
-
-    def take_turn(self, game):
-        if self.num_turns > 0:
-            # Move in a random direction
-            self.owner.move(game.map, game.objects,
-                            libtcod.random_get_int(0, -1, 1),
-                            libtcod.random_get_int(0, -1, 1))
-            self.num_turns -= 1
-        else:
-            # Restore normal AI
-            self.owner.components[AI] = restore_ai
-            msg = 'The {0} is no longer confused!'.format(self.owner.name)
-            game.message(msg, libtcod.red)
-
-
 def is_blocked(map, objects, x, y):
     # First test the map tile
     if map[x][y].blocked:
@@ -282,20 +237,21 @@ def monster_death(monster, game):
     monster.render_order = 0
     monster.name = 'remains of {0}'.format(monster.name)
     monster.components.pop(Fighter)
-    monster.components.pop(AI)
+    monster.components.pop(libai.AI)
 
 
 def instantiate_monster(template):
     name = template['name']
     char = template['symbol']
     color = getattr(libtcod, template['color'])
-    ai_comp = BasicMonster()
+    ai_comp_fn = getattr(libai, template['ai'])
+    ai_comp = ai_comp_fn()
     exp_comp = Experience(template['experience'])
     fighter_comp = Fighter(template['hp'], template['defense'],
                            template['power'], death_fn=monster_death)
     return Object(char=char, name=name, color=color, blocks=True,
                   components={Fighter: fighter_comp,
-                              AI: ai_comp,
+                              libai.AI: ai_comp,
                               Experience: exp_comp})
 
 
@@ -317,7 +273,7 @@ def load_templates(file):
         return templates
 
 
-class Item(Component):
+class Item(libcomp.Component):
     def __init__(self, use_fn=None):
         self.use_fn = use_fn
         self.item_owner = None
