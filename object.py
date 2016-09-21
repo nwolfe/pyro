@@ -6,15 +6,15 @@ from settings import *
 
 
 class Object:
-    # REMIND: Consider adding the 'always_visible' property from Part 11
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
-                 render_order=1, components={}):
+                 render_order=1, always_visible=False, components={}):
         self.x = x
         self.y = y
         self.char = char
         self.color = color
         self.name = name
         self.render_order = render_order
+        self.always_visible = always_visible
         self.blocks = blocks
 
         self.components = components
@@ -26,12 +26,14 @@ class Object:
             self.x += dx
             self.y += dy
 
-    def draw(self, console):
-        # Set the color and then draw the character that
-        # represents this object at its position
-        libtcod.console_set_default_foreground(console, self.color)
-        libtcod.console_put_char(console, self.x, self.y, self.char,
-                                 libtcod.BKGND_NONE)
+    def draw(self, console, map, fov_map):
+        always_visible = self.always_visible and map[self.x][self.y].explored
+        if always_visible or libtcod.map_is_in_fov(fov_map, self.x, self.y):
+            # Set the color and then draw the character that
+            # represents this object at its position
+            libtcod.console_set_default_foreground(console, self.color)
+            libtcod.console_put_char(console, self.x, self.y, self.char,
+                                     libtcod.BKGND_NONE)
 
     def clear(self, console):
         # Erase the character that represents this object

@@ -145,8 +145,7 @@ def render_all(ui, game, fov_recompute):
 
     render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
     for object in render_ordered:
-        if libtcod.map_is_in_fov(game.fov_map, object.x, object.y):
-            object.draw(ui.console)
+        object.draw(ui.console, game.map, game.fov_map)
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, MAP_WIDTH, MAP_HEIGHT, 0, 0, 0)
