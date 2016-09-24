@@ -1,2 +1,4 @@
 * TODO Include .exe builds in GitHub repo
 * TODO Fix vanishing doppleganger casting bug
+* TODO Doors!
+* TODO Go back up stairs
