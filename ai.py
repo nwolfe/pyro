@@ -6,11 +6,16 @@ from settings import *
 
 class AI(libcomp.Component):
     def take_turn(self, game):
-        # Children must implement
+        """Perform a single game turn."""
+        return
+
+    def take_damage(self, damage, game):
+        """Called by the Fighter component when the owner takes damage."""
         return
 
 
 class Aggressive(AI):
+    """Pursue and attack the player once in sight."""
     def take_turn(self, game):
         monster = self.owner
         if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):
@@ -27,7 +32,28 @@ def basic():
     return Aggressive()
 
 
+class Passive(AI):
+    """Neutral, until the player attacks. May wander in a random direction."""
+
+    def take_damage(self, damage, game):
+        self.owner.components[AI] = Aggressive()
+        self.owner.components[AI].initialize(self.owner)
+
+    def take_turn(self, game):
+        # 25% chance to move one square in a random direction
+        if libtcod.random_get_int(0, 1, 4) == 1:
+            self.owner.move(game.map, game.objects,
+                            libtcod.random_get_int(0, -1, 1),
+                            libtcod.random_get_int(0, -1, 1))
+
+
+def passive():
+    return Passive()
+
 class Confused(AI):
+    """Wanders in a random direction for the specified number of turns, then
+    sets the owner's AI to the specified implementation."""
+
     def __init__(self, restore_ai=None, num_turns=CONFUSE_NUM_TURNS):
         self.restore_ai = restore_ai
         self.num_turns = num_turns

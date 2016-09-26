@@ -1,5 +1,6 @@
 import component as libcomp
 import item as libitem
+import ai as libai
 
 
 class Fighter(libcomp.Component):
@@ -33,6 +34,11 @@ class Fighter(libcomp.Component):
         # Check for death and call the death function if there is one
         if self.hp <= 0 and self.death_fn:
             self.death_fn(self.owner, game)
+
+        # Notify the AI that we were hit
+        ai = self.owner.components.get(libai.AI)
+        if ai:
+            ai.take_damage(damage, game)
 
     def heal(self, amount, game):
         # Heal by the given amount, without going over the maximum
