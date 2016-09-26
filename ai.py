@@ -16,6 +16,7 @@ class AI(libcomp.Component):
 
 class Aggressive(AI):
     """Pursue and attack the player once in sight."""
+
     def take_turn(self, game):
         monster = self.owner
         if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):

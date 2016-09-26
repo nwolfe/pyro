@@ -3,7 +3,4 @@
 * TODO Go back up stairs
 * TODO Doors!
 * TODO Grass
-* TODO Monsters spawn in corridors
-* TODO Passive AI
-* DONE Rename BasicMonster to Aggressive
 * TODO Ranged/missile combat
