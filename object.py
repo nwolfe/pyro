@@ -64,6 +64,56 @@ class Object:
     def distance(self, x, y):
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
+    def move_astar(self, target, map, objects):
+        # Create a FOV map that has the dimensions of the map
+        fov = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
+
+        # Scan the current map each turn and set all the walls as unwalkable
+        for y1 in range(MAP_HEIGHT):
+            for x1 in range(MAP_WIDTH):
+                libtcod.map_set_properties(fov, x1, y1,
+                                           not map[x1][y1].block_sight,
+                                           not map[x1][y1].blocked)
+
+        # Scan all the objects to see if there are objects that must be
+        # navigated around. Check also that the object isn't self or the
+        # target (so that the start and the end points are free).
+        # The AI class handles the situation if self is next to the target so
+        # it will not use this A* function anyway.
+        for obj in objects:
+            if obj.blocks and obj != self and obj != target:
+                # Set the tile as a wall so it must be navigated around
+                libtcod.map_set_properties(fov, obj.x, obj.y, True, False)
+
+        # Allocate an A* path
+        # The 1.41 is the normal diagonal cost of moving, it can be set as 0.0
+        # if diagonal moves are prohibited
+        path = libtcod.path_new_using_map(fov, 1.41)
+
+        # Compute the path between self's coordinates and the target's coordinates
+        libtcod.path_compute(path, self.x, self.y, target.x, target.y)
+
+        # Check if the path exists, and in this case, also the path is shorter
+        # than 25 tiles. The path size matters if you want the monster to use
+        # alternative longer paths (for example through other rooms). It makes
+        # sense to keep path size relatively low to keep the monsters from
+        # running around the map if there's an alternative path really far away
+        if not libtcod.path_is_empty(path) and libtcod.path_size(path) < 25:
+            # Find the next coordinates in the computed full path
+            x, y = libtcod.path_walk(path, True)
+            if x or y:
+                # Set self's coordinates to the next path tile
+                self.x = x
+                self.y = y
+        else:
+            # Keep the old move function as a backup so that if there are no
+            # paths (for example, another monster blocks a corridor). It will
+            # still try to move towards the player (closer to the corridor opening)
+            self.move_towards(map, objects, target.x, target.y)
+
+        # Delete the path to free memory
+        libtcod.path_delete(path)
+
 
 def is_blocked(map, objects, x, y):
     # First test the map tile

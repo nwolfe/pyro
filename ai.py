@@ -16,8 +16,7 @@ class BasicMonster(AI):
         if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):
             # Move towards player if far away
             if monster.distance_to(game.player) >= 2:
-                monster.move_towards(game.map, game.objects,
-                                     game.player.x, game.player.y)
+                monster.move_astar(game.player, game.map, game.objects)
 
             # Close enough, attack! (If the player is still alive)
             elif game.player.components.get(libfighter.Fighter).hp > 0:
