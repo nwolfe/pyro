@@ -5,5 +5,5 @@
 * TODO Grass
 * TODO Monsters spawn in corridors
 * TODO Passive AI
-* TODO Rename BasicMonster to Aggressive
+* DONE Rename BasicMonster to Aggressive
 * TODO Ranged/missile combat
