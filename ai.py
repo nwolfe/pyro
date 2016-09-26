@@ -27,7 +27,7 @@ def basic():
     return Aggressive()
 
 
-class ConfusedMonster(AI):
+class Confused(AI):
     def __init__(self, restore_ai=None, num_turns=CONFUSE_NUM_TURNS):
         self.restore_ai = restore_ai
         self.num_turns = num_turns
@@ -48,4 +48,4 @@ class ConfusedMonster(AI):
 
 
 def confused():
-    return ConfusedMonster()
+    return Confused()
