@@ -1,4 +1,9 @@
 * TODO Include .exe builds in GitHub repo
 * TODO Fix vanishing doppleganger casting bug
-* TODO Doors!
 * TODO Go back up stairs
+* TODO Doors!
+* TODO Grass
+* TODO Monsters spawn in corridors
+* TODO Passive AI
+* TODO Rename BasicMonster to Aggressive
+* TODO Ranged/missile combat
