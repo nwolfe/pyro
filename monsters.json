@@ -1,5 +1,16 @@
 [
     {
+        "name": "rat",
+        "symbol": "r",
+        "color": "darkest_pink",
+        "ai": "passive",
+        "experience": 5,
+        "hp": 5,
+        "defense": 0,
+        "power": 2,
+        "spawn": 60
+    },
+    {
         "name": "orc",
         "symbol": "o",
         "color": "desaturated_green",
@@ -8,7 +19,7 @@
         "hp": 20,
         "defense": 0,
         "power": 4,
-        "spawn": 80
+        "spawn": 20
     },
     {
         "name": "troll",
