@@ -1,6 +1,6 @@
-* TODO Include .exe builds in GitHub repo
 * TODO Fix vanishing doppleganger casting bug
-* TODO Go back up stairs
 * TODO Doors!
-* TODO Grass
+* TODO Grass!
 * TODO Ranged/missile combat
+* TODO Move key/mouse fields from Game to UI
+* TODO Move messages field from Game to UI
