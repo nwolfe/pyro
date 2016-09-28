@@ -53,25 +53,25 @@ Defense: {6}
     libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
 def handle_keys(ui, game):
-    if game.key.vk == libtcod.KEY_ENTER and game.key.lalt:
+    if ui.keyboard.vk == libtcod.KEY_ENTER and ui.keyboard.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-    elif game.key.vk == libtcod.KEY_ESCAPE:
+    elif ui.keyboard.vk == libtcod.KEY_ESCAPE:
         # Exit game
         return (False, 'exit')
 
     if game.state != 'playing':
         return (False, None)
 
-    key_char = chr(game.key.c)
+    key_char = chr(ui.keyboard.c)
 
-    if libtcod.KEY_UP == game.key.vk or key_char == 'w':
+    if libtcod.KEY_UP == ui.keyboard.vk or key_char == 'w':
         return move_player_or_attack(0, -1, game)
-    elif libtcod.KEY_DOWN == game.key.vk or key_char == 's':
+    elif libtcod.KEY_DOWN == ui.keyboard.vk or key_char == 's':
         return move_player_or_attack(0, 1, game)
-    elif libtcod.KEY_LEFT == game.key.vk or key_char == 'a':
+    elif libtcod.KEY_LEFT == ui.keyboard.vk or key_char == 'a':
         return move_player_or_attack(-1, 0, game)
-    elif libtcod.KEY_RIGHT == game.key.vk or key_char == 'd':
+    elif libtcod.KEY_RIGHT == ui.keyboard.vk or key_char == 'd':
         return move_player_or_attack(1, 0, game)
     elif key_char == 'q': # up-left
         return move_player_or_attack(-1, -1, game)
@@ -183,13 +183,10 @@ def new_game():
     (map, objects, stairs) = libmap.make_map(player, dungeon_level)
     fov_map = make_fov_map(map)
 
-    mouse = libtcod.Mouse()
-    key = libtcod.Key()
-
     inventory = []
     messages = []
 
-    game = libgame.Game('playing', mouse, key, map, fov_map, objects, stairs,
+    game = libgame.Game('playing', map, fov_map, objects, stairs,
                         player, inventory, messages, dungeon_level)
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
@@ -232,7 +229,7 @@ def play_game(game, ui):
     libtcod.console_clear(ui.console)
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                    libtcod.EVENT_MOUSE, game.key, game.mouse)
+                                    libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
 
         libui.render_all(ui, game, fov_recompute)
 
@@ -284,10 +281,8 @@ def load_game():
     file.close()
 
     fov_map = make_fov_map(map)
-    mouse = libtcod.Mouse()
-    key = libtcod.Key()
 
-    return libgame.Game(state, mouse, key, map, fov_map, objects, stairs,
+    return libgame.Game(state, map, fov_map, objects, stairs,
                         player, inventory, messages, dungeon_level)
 
 
@@ -339,8 +334,10 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
                           'Tombs Of The Ancient Kings', False)
 libtcod.sys_set_fps(LIMIT_FPS)
 
+keyboard = libtcod.Key()
+mouse = libtcod.Mouse()
 console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-ui = libui.UserInterface(console, panel)
+ui = libui.UserInterface(keyboard, mouse, console, panel)
 
 main_menu(ui)

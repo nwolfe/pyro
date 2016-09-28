@@ -8,8 +8,6 @@ from settings import *
 class Game:
     def __init__(self,
                  state=None,
-                 mouse=None,
-                 key=None,
                  map=None,
                  fov_map=None,
                  objects=None,
@@ -19,8 +17,6 @@ class Game:
                  messages=None,
                  dungeon_level=1):
         self.state = state
-        self.mouse = mouse
-        self.key = key
         self.map = map
         self.fov_map = fov_map
         self.stairs = stairs

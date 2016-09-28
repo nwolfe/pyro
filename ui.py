@@ -5,7 +5,9 @@ from settings import *
 
 
 class UserInterface:
-    def __init__(self, console, panel):
+    def __init__(self, keyboard, mouse, console, panel):
+        self.keyboard = keyboard
+        self.mouse = mouse
         self.console = console
         self.panel = panel
 
@@ -173,7 +175,7 @@ def render_all(ui, game, fov_recompute):
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
-    names = get_names_under_mouse(game.mouse, game.objects, game.fov_map)
+    names = get_names_under_mouse(ui.mouse, game.objects, game.fov_map)
     libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
     libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                              names)
