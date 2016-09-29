@@ -65,13 +65,13 @@ def handle_keys(ui, game):
 
     key_char = chr(ui.keyboard.c)
 
-    if libtcod.KEY_UP == ui.keyboard.vk or key_char == 'w':
+    if libtcod.KEY_UP == ui.keyboard.vk:
         return move_player_or_attack(0, -1, game)
-    elif libtcod.KEY_DOWN == ui.keyboard.vk or key_char == 's':
+    elif libtcod.KEY_DOWN == ui.keyboard.vk:
         return move_player_or_attack(0, 1, game)
-    elif libtcod.KEY_LEFT == ui.keyboard.vk or key_char == 'a':
+    elif libtcod.KEY_LEFT == ui.keyboard.vk:
         return move_player_or_attack(-1, 0, game)
-    elif libtcod.KEY_RIGHT == ui.keyboard.vk or key_char == 'd':
+    elif libtcod.KEY_RIGHT == ui.keyboard.vk:
         return move_player_or_attack(1, 0, game)
     elif key_char == 'q': # up-left
         return move_player_or_attack(-1, -1, game)
@@ -194,7 +194,7 @@ def new_game():
 
     # Initial equipment: a dagger
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
-    dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky,
+    dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
                            components={libitem.Equipment: equipment_comp})
     inventory_component.items.append(dagger)
     equipment_comp.equip(player, game)
