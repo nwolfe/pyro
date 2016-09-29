@@ -1,13 +1,9 @@
+* TODO Give a monster an inventory and weapon!
 * TODO Fix vanishing doppleganger casting bug
 * TODO Doors!
 * TODO Grass!
 * TODO Ranged/missile combat
 * TODO Remove UI#render_all() call in Game#target_tile()
-* DONE Move key/mouse fields from Game to UI
 * TODO Move messages field from Game to UI
-* TODO Decouple Equipment and Item
 * TODO Add format args to Game#message() for convenvience
-* Give each Object an inventory
-** TODO Create Inventory Component
-** TODO Remove inventory field in Game
-** TODO Update Item to use Inventory component
+* TODO Decouple Equipment and Item

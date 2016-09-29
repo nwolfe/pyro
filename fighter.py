@@ -12,18 +12,18 @@ class Fighter(libcomp.Component):
         self.base_power = power
         self.death_fn = death_fn
 
-    def power(self, game):
-        equipped = libitem.get_all_equipped(self.owner, game)
+    def power(self):
+        equipped = libitem.get_all_equipped(self.owner)
         bonus = sum(equipment.power_bonus for equipment in equipped)
         return self.base_power + bonus
 
-    def defense(self, game):
-        equipped = libitem.get_all_equipped(self.owner, game)
+    def defense(self):
+        equipped = libitem.get_all_equipped(self.owner)
         bonus = sum(equipment.defense_bonus for equipment in equipped)
         return self.base_defense + bonus
 
-    def max_hp(self, game):
-        equipped = libitem.get_all_equipped(self.owner, game)
+    def max_hp(self):
+        equipped = libitem.get_all_equipped(self.owner)
         bonus = sum(equipment.max_hp_bonus for equipment in equipped)
         return self.base_max_hp + bonus
 
@@ -40,15 +40,15 @@ class Fighter(libcomp.Component):
         if ai:
             ai.take_damage(damage, game)
 
-    def heal(self, amount, game):
+    def heal(self, amount):
         # Heal by the given amount, without going over the maximum
         self.hp += amount
-        if self.hp > self.max_hp(game):
-            self.hp = self.max_hp(game)
+        if self.hp > self.max_hp():
+            self.hp = self.max_hp()
 
     def attack(self, target, game):
         fighter = target.components.get(Fighter)
-        damage = self.power(game) - fighter.defense(game)
+        damage = self.power() - fighter.defense()
 
         if damage > 0:
             game.message('{0} attacks {1} for {2} hit points.'.format(

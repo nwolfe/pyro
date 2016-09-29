@@ -7,49 +7,60 @@ class Item(libcomp.Component):
         self.use_fn = use_fn
         self.item_owner = None
 
-    def pick_up(self, game):
-        # Add to player's inventory and remove from the map
-        if len(game.inventory) >= 26:
-            game.message('Your inventory is full, cannot pick up {0}.'.format(
-                self.owner.name), libtcod.red)
+    def pick_up(self, item_owner, game):
+        inventory = item_owner.components.get(Inventory)
+        if inventory is None:
+            return
         else:
-            self.item_owner = game.player
-            game.inventory.append(self.owner)
+            inventory = inventory.items
+
+        # Add to owner's inventory and remove from the map
+        if len(inventory) >= 26:
+            if item_owner == game.player:
+                msg = 'Your inventory is full, cannot pick up {0}.'
+                game.message(msg.format(self.owner.name), libtcod.red)
+        else:
+            self.item_owner = item_owner
+            inventory.append(self.owner)
             game.objects.remove(self.owner)
-            game.message('You picked up a {0}!'.format(self.owner.name),
-                         libtcod.green)
+            if item_owner == game.player:
+                game.message('You picked up a {0}!'.format(self.owner.name),
+                             libtcod.green)
             # Special case: automatically equip if slot is empty
             equipment = self.owner.components.get(Equipment)
-            if equipment and get_equipped_in_slot(equipment.slot, game) is None:
-                equipment.equip(game)
+            if equipment and get_equipped_in_slot(item_owner, equipment.slot) is None:
+                equipment.equip(item_owner, game)
 
     def drop(self, game):
         # Remove from the inventory and add to the map.
-        # Place at player's coordinates.
-        game.inventory.remove(self.owner)
+        # Place at owner's coordinates.
+        inventory = self.item_owner.components.get(Inventory).items
+        inventory.remove(self.owner)
         game.objects.append(self.owner)
-        self.owner.x = game.player.x
-        self.owner.y = game.player.y
+        self.owner.x = self.item_owner.x
+        self.owner.y = self.item_owner.y
         # Special case: unequip before dropping
         equipment = self.owner.components.get(Equipment)
         if equipment:
             equipment.unequip(game)
-        game.message('You dropped a {0}.'.format(self.owner.name),
-                     libtcod.yellow)
+        if self.item_owner == game.player:
+            game.message('You dropped a {0}.'.format(self.owner.name),
+                         libtcod.yellow)
 
     def use(self, game, ui):
         # Call the use_fn if we have one
         equipment = self.owner.components.get(Equipment)
         if equipment:
             # Special case: the "use" action is to equip/unequip
-            equipment.toggle_equip(game)
+            equipment.toggle_equip(self.item_owner, game)
         elif self.use_fn is None:
             game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
             result = self.use_fn(self.item_owner, game, ui)
             if result != 'cancelled':
-                game.inventory.remove(self.owner)
+                inventory = self.item_owner.components.get(Inventory).items
+                inventory.remove(self.owner)
 
 
 class Equipment(libcomp.Component):
@@ -69,46 +80,56 @@ class Equipment(libcomp.Component):
         item.initialize(object)
         object.components[Item] = item
 
-    def toggle_equip(self, game):
+    def toggle_equip(self, item_owner, game):
         if self.is_equipped:
             self.unequip(game)
         else:
-            self.equip(game)
+            self.equip(item_owner, game)
 
-    def equip(self, game):
+    def equip(self, item_owner, game):
         """Equip object and show a message about it."""
-        replacing = get_equipped_in_slot(self.slot, game)
+        self.owner.components.get(Item).item_owner = item_owner
+        replacing = get_equipped_in_slot(item_owner, self.slot)
         if replacing is not None:
             replacing.unequip(game)
         self.is_equipped = True
-        game.message('Equipped {0} on {1}.'.format(self.owner.name, self.slot),
-                     libtcod.light_green)
+        if item_owner == game.player:
+            msg = 'Equipped {0} on {1}.'.format(self.owner.name, self.slot)
+            game.message(msg, libtcod.light_green)
 
     def unequip(self, game):
         """Unequip object and show a message about it."""
         if not self.is_equipped:
             return
         self.is_equipped = False
-        game.message('Unequipped {0} from {1}.'.format(self.owner.name,
-                                                       self.slot),
-                     libtcod.light_yellow)
+        item_owner = self.owner.components.get(Item).item_owner
+        if item_owner == game.player:
+            game.message('Unequipped {0} from {1}.'.format(self.owner.name,
+                                                           self.slot),
+                         libtcod.light_yellow)
 
 
-def get_equipped_in_slot(slot, game):
-    for obj in game.inventory:
-        item = obj.components.get(Equipment)
-        if item and item.slot == slot and item.is_equipped:
-            return item
+class Inventory(libcomp.Component):
+    def __init__(self, items=[]):
+        self.items = items
+
+
+def get_equipped_in_slot(item_owner, slot):
+    inventory = item_owner.components.get(Inventory)
+    if inventory:
+        for obj in inventory.items:
+            equipment = obj.components.get(Equipment)
+            if equipment and equipment.slot == slot and equipment.is_equipped:
+                return equipment
     return None
 
 
-def get_all_equipped(obj, game):
-    if obj == game.player:
-        equipped = []
-        for item in game.inventory:
+def get_all_equipped(item_owner):
+    inventory = item_owner.components.get(Inventory)
+    equipped = []
+    if inventory:
+        for item in inventory.items:
             equipment = item.components.get(Equipment)
             if equipment and equipment.is_equipped:
                 equipped.append(equipment)
-        return equipped
-    else:
-        return []
+    return equipped

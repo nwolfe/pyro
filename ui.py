@@ -168,7 +168,7 @@ def render_all(ui, game, fov_recompute):
     # Show player's stats
     fighter = game.player.components.get(libfighter.Fighter)
     render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
-                  fighter.max_hp(game), libtcod.light_red, libtcod.darker_red)
+                  fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
 
     # Show the dungeon level
     libtcod.console_print_ex(ui.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,

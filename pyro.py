@@ -47,9 +47,9 @@ Defense: {6}
                      exp.xp,
                      exp.required_for_level_up(),
                      fighter.hp,
-                     fighter.max_hp(game),
-                     fighter.power(game),
-                     fighter.defense(game))
+                     fighter.max_hp(),
+                     fighter.power(),
+                     fighter.defense())
     libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
 def handle_keys(ui, game):
@@ -90,20 +90,22 @@ def handle_keys(ui, game):
             item = object.components.get(libitem.Item)
             if item:
                 if object.x == game.player.x and object.y == game.player.y:
-                    item.pick_up(game)
+                    item.pick_up(game.player, game)
                     break
         return (False, None)
     elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(ui.console, game.inventory, msg)
+        inventory = game.player.components.get(libitem.Inventory).items
+        selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.use(game, ui)
         return (False, None)
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
-        selected_item = libui.inventory_menu(ui.console, game.inventory, msg)
+        inventory = game.player.components.get(libitem.Inventory).items
+        selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.drop(game)
         return (False, None)
@@ -174,30 +176,31 @@ def new_game():
     exp_comp = libxp.Experience(xp=0, level=1)
     fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
+    inventory_component = libitem.Inventory()
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
                            components={libfighter.Fighter: fighter_comp,
-                                       libxp.Experience: exp_comp})
+                                       libxp.Experience: exp_comp,
+                                       libitem.Inventory: inventory_component})
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
     (map, objects, stairs) = libmap.make_map(player, dungeon_level)
     fov_map = make_fov_map(map)
 
-    inventory = []
     messages = []
 
     game = libgame.Game('playing', map, fov_map, objects, stairs,
-                        player, inventory, messages, dungeon_level)
-
-    m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
-    game.message(m, libtcod.red)
+                        player, messages, dungeon_level)
 
     # Initial equipment: a dagger
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky,
                            components={libitem.Equipment: equipment_comp})
-    inventory.append(dagger)
-    equipment_comp.equip(game)
+    inventory_component.items.append(dagger)
+    equipment_comp.equip(player, game)
+
+    m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
+    game.message(m, libtcod.red)
 
     return game
 
@@ -208,7 +211,7 @@ def next_dungeon_level(game):
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
     fighter = game.player.components.get(libfighter.Fighter)
-    fighter.heal(fighter.max_hp(game) / 2, game)
+    fighter.heal(fighter.max_hp() / 2)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
     msg += 'of the dungeon...'
@@ -259,7 +262,6 @@ def save_game(game):
     file['map'] = game.map
     file['objects'] = game.objects
     file['player_index'] = game.objects.index(game.player)
-    file['inventory'] = game.inventory
     file['messages'] = game.messages
     file['state'] = game.state
     file['stairs_index'] = game.objects.index(game.stairs)
@@ -273,7 +275,6 @@ def load_game():
     map = file['map']
     objects = file['objects']
     player = objects[file['player_index']]
-    inventory = file['inventory']
     messages = file['messages']
     state = file['state']
     stairs = objects[file['stairs_index']]
@@ -282,8 +283,8 @@ def load_game():
 
     fov_map = make_fov_map(map)
 
-    return libgame.Game(state, map, fov_map, objects, stairs,
-                        player, inventory, messages, dungeon_level)
+    return libgame.Game(state, map, fov_map, objects, stairs, player, messages,
+                        dungeon_level)
 
 
 def main_menu(ui):

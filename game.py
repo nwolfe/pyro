@@ -13,7 +13,6 @@ class Game:
                  objects=None,
                  stairs=None,
                  player=None,
-                 inventory=None,
                  messages=None,
                  dungeon_level=1):
         self.state = state
@@ -22,7 +21,6 @@ class Game:
         self.stairs = stairs
         self.objects = objects
         self.player = player
-        self.inventory = inventory
         self.messages = messages
         self.dungeon_level = dungeon_level
 
