@@ -3,12 +3,10 @@
 * TODO Ranged/missile combat
 * TODO Remove UI#render_all() call in Game#target_tile()
 * TODO Add format args to Game#message() for convenvience
-* TODO Decouple Equipment and Item
-* DONE Add proper get/set component interface to Object
+* TODO Component inheritence bad? Event system good?
 * TODO Abstract away the player checks
 ** Event/broadcasting system solution?
 * TODO Monsters drop items when killed
 * TODO Fix vanishing doppleganger casting bug
 * TODO Pass game reference into component constructors?
 ** Could this get rid of all the game parameters everywhere?
-* TODO Move ...equipped... methods into Equipment
