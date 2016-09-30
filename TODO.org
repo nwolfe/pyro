@@ -11,3 +11,4 @@
 * TODO Fix vanishing doppleganger casting bug
 * TODO Pass game reference into component constructors?
 ** Could this get rid of all the game parameters everywhere?
+* TODO Move ...equipped... methods into Equipment
