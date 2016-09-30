@@ -22,8 +22,15 @@ class Object:
         self.blocks = blocks
 
         self.components = components
-        for component in self.components.values():
-            component.initialize(self)
+        for comp in self.components.values():
+            comp.initialize(self)
+
+    def component(self, klass):
+        return self.components.get(klass)
+
+    def set_component(self, klass, comp):
+        self.components[klass] = comp
+        comp.initialize(self)
 
     def move(self, map, objects, dx, dy):
         if not is_blocked(map, objects, self.x + dx, self.y + dy):
@@ -131,11 +138,11 @@ def is_blocked(map, objects, x, y):
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.components.get(libxp.Experience)
+    exp = monster.component(libxp.Experience)
     game.message('The {0} is dead! You gain {1} experience points.'.
                  format(monster.name.capitalize(), exp.xp),
                  libtcod.orange)
-    game.player.components.get(libxp.Experience).xp += exp.xp
+    game.player.component(libxp.Experience).xp += exp.xp
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False

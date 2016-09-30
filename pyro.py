@@ -16,13 +16,13 @@ def move_player_or_attack(dx, dy, game):
     y = game.player.y + dy
     target = None
     for object in game.objects:
-        if object.components.get(libfighter.Fighter):
+        if object.component(libfighter.Fighter):
             if object.x == x and object.y == y:
                 target = object
                 break
 
     if target:
-        game.player.components.get(libfighter.Fighter).attack(target, game)
+        game.player.component(libfighter.Fighter).attack(target, game)
         return (False, None)
     else:
         game.player.move(game.map, game.objects, dx, dy)
@@ -41,8 +41,8 @@ Maximum HP: {4}
 Attack: {5}
 Defense: {6}
 """
-    exp = game.player.components.get(libxp.Experience)
-    fighter = game.player.components.get(libfighter.Fighter)
+    exp = game.player.component(libxp.Experience)
+    fighter = game.player.component(libfighter.Fighter)
     msg = msg.format(exp.level,
                      exp.xp,
                      exp.required_for_level_up(),
@@ -87,7 +87,7 @@ def handle_keys(ui, game):
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
-            item = object.components.get(libitem.Item)
+            item = object.component(libitem.Item)
             if item:
                 if object.x == game.player.x and object.y == game.player.y:
                     item.pick_up(game.player, game)
@@ -96,7 +96,7 @@ def handle_keys(ui, game):
     elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
-        inventory = game.player.components.get(libitem.Inventory).items
+        inventory = game.player.component(libitem.Inventory).items
         selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.use(game, ui)
@@ -104,7 +104,7 @@ def handle_keys(ui, game):
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
-        inventory = game.player.components.get(libitem.Inventory).items
+        inventory = game.player.component(libitem.Inventory).items
         selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.drop(game)
@@ -143,7 +143,7 @@ def make_fov_map(map):
 
 def check_player_level_up(game, console):
     player = game.player
-    exp = player.components.get(libxp.Experience)
+    exp = player.component(libxp.Experience)
 
     # See if the player's XP is enough to level up
     if exp.can_level_up():
@@ -156,7 +156,7 @@ def check_player_level_up(game, console):
 
     choice = None
     while choice is None:
-        fighter = player.components.get(libfighter.Fighter)
+        fighter = player.component(libfighter.Fighter)
         options = ['Constitution (+20 HP, from {})'.format(fighter.base_max_hp),
                    'Strength (+1 attack, from {})'.format(fighter.base_power),
                    'Agility (+1 defense, from {})'.format(fighter.base_defense)]
@@ -200,8 +200,7 @@ def new_game():
             axe = libobj.Object(0, 0, '/', 'axe', libtcod.sky, render_order=0,
                                 components={libitem.Equipment: equipment})
             inventory = libitem.Inventory(items=[axe])
-            inventory.initialize(object)
-            object.components[libitem.Inventory] = inventory
+            object.set_component(libitem.Inventory, inventory)
             equipment.equip(object, game)
 
     # Initial equipment: a dagger
@@ -222,7 +221,7 @@ def next_dungeon_level(game):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    fighter = game.player.components.get(libfighter.Fighter)
+    fighter = game.player.component(libfighter.Fighter)
     fighter.heal(fighter.max_hp() / 2)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
@@ -263,7 +262,7 @@ def play_game(game, ui):
 
         if game.state == 'playing' and player_action != 'idle':
             for object in game.objects:
-                ai = object.components.get(libai.AI)
+                ai = object.component(libai.AI)
                 if ai:
                     ai.take_turn(game)
 

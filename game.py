@@ -69,7 +69,7 @@ class Game:
             # Return the first clicked monster, otherwise continue looking
             for object in self.objects:
                 if object != self.player:
-                    if object.components.get(libfighter.Fighter):
+                    if object.component(libfighter.Fighter):
                         if object.x == x and object.y == y:
                             return object
 
@@ -79,7 +79,7 @@ class Game:
         closest_dist = max_range + 1
 
         for object in self.objects:
-            if object != self.player and object.components.get(libfighter.Fighter):
+            if object != self.player and object.component(libfighter.Fighter):
                 if libtcod.map_is_in_fov(self.fov_map, object.x, object.y):
                     # Calculate distance between this object and the player
                     dist = self.player.distance_to(object)

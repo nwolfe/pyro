@@ -25,8 +25,8 @@ class Aggressive(AI):
                 monster.move_astar(game.player, game.map, game.objects)
 
             # Close enough, attack! (If the player is still alive)
-            elif game.player.components.get(libfighter.Fighter).hp > 0:
-                monster.components.get(libfighter.Fighter).attack(game.player, game)
+            elif game.player.component(libfighter.Fighter).hp > 0:
+                monster.component(libfighter.Fighter).attack(game.player, game)
 
 
 def basic():
@@ -37,8 +37,7 @@ class Passive(AI):
     """Neutral, until the player attacks. May wander in a random direction."""
 
     def take_damage(self, damage, game):
-        self.owner.components[AI] = Aggressive()
-        self.owner.components[AI].initialize(self.owner)
+        self.owner.set_component(AI, Aggressive())
 
     def take_turn(self, game):
         # 25% chance to move one square in a random direction
@@ -68,8 +67,7 @@ class Confused(AI):
             self.num_turns -= 1
         else:
             # Restore normal AI
-            self.owner.components[AI] = self.restore_ai
-            self.restore_ai.initialize(self.owner)
+            self.owner.set_component(AI, self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             game.message(msg, libtcod.red)
 

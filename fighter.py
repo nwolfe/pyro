@@ -36,7 +36,7 @@ class Fighter(libcomp.Component):
             self.death_fn(self.owner, game)
 
         # Notify the AI that we were hit
-        ai = self.owner.components.get(libai.AI)
+        ai = self.owner.component(libai.AI)
         if ai:
             ai.take_damage(damage, game)
 
@@ -47,7 +47,7 @@ class Fighter(libcomp.Component):
             self.hp = self.max_hp()
 
     def attack(self, target, game):
-        fighter = target.components.get(Fighter)
+        fighter = target.component(Fighter)
         damage = self.power() - fighter.defense()
 
         if damage > 0:
