@@ -8,5 +8,4 @@
 ** Event/broadcasting system solution?
 * TODO Monsters drop items when killed
 * TODO Fix vanishing doppleganger casting bug
-* TODO Pass game reference into component constructors?
-** Could this get rid of all the game parameters everywhere?
+* TODO Move game from Component to Object?

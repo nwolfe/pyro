@@ -11,7 +11,7 @@ from settings import *
 
 class Object:
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
-                 render_order=1, always_visible=False, components={}):
+                 render_order=1, always_visible=False, components={}, game=None):
         self.x = x
         self.y = y
         self.char = char
@@ -20,6 +20,7 @@ class Object:
         self.render_order = render_order
         self.always_visible = always_visible
         self.blocks = blocks
+        self.game = game
 
         self.components = components
         for comp in self.components.values():

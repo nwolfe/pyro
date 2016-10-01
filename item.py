@@ -16,17 +16,17 @@ class Item(libcomp.Component):
 
         # Add to owner's inventory and remove from the map
         if len(inventory) >= 26:
-            if item_owner == self.game.player:
+            if item_owner == self.owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
-                self.game.message(msg.format(self.owner.name), libtcod.red)
+                self.owner.game.message(msg.format(self.owner.name), libtcod.red)
             return False
         else:
             self.item_owner = item_owner
             inventory.append(self.owner)
-            self.game.objects.remove(self.owner)
-            if item_owner == self.game.player:
-                self.game.message('You picked up a {0}!'.format(self.owner.name),
-                                  libtcod.green)
+            self.owner.game.objects.remove(self.owner)
+            if item_owner == self.owner.game.player:
+                self.owner.game.message('You picked up a {0}!'.format(
+                    self.owner.name), libtcod.green)
             return True
 
     def drop(self):
@@ -34,17 +34,17 @@ class Item(libcomp.Component):
         # Place at owner's coordinates.
         inventory = self.item_owner.component(Inventory).items
         inventory.remove(self.owner)
-        self.game.objects.append(self.owner)
+        self.owner.game.objects.append(self.owner)
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
 
     def use(self, ui):
         # Call the use_fn if we have one
         if self.use_fn is None:
-            self.game.message('The {0} cannot be used.'.format(self.owner.name))
+            self.owner.game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            result = self.use_fn(self.item_owner, self.game, ui)
+            result = self.use_fn(self.item_owner, self.owner.game, ui)
             if result != 'cancelled':
                 inventory = self.item_owner.component(Inventory).items
                 inventory.remove(self.owner)
@@ -78,19 +78,18 @@ class Equipment(Item):
         if replacing is not None:
             replacing.unequip()
         self.is_equipped = True
-        if item_owner == self.game.player:
+        if item_owner == self.owner.game.player:
             msg = 'Equipped {0} on {1}.'.format(self.owner.name, self.slot)
-            self.game.message(msg, libtcod.light_green)
+            self.owner.game.message(msg, libtcod.light_green)
 
     def unequip(self):
         """Unequip object and show a message about it."""
         if not self.is_equipped:
             return
         self.is_equipped = False
-        if self.item_owner == self.game.player:
-            self.game.message('Unequipped {0} from {1}.'.format(self.owner.name,
-                                                                self.slot),
-                         libtcod.light_yellow)
+        if self.item_owner == self.owner.game.player:
+            self.owner.game.message('Unequipped {0} from {1}.'.format(
+                self.owner.name, self.slot), libtcod.light_yellow)
 
     def pick_up(self, item_owner):
         # Automatically equip if slot is empty
@@ -102,9 +101,9 @@ class Equipment(Item):
         # Unequip before dropping
         Item.drop(self)
         self.unequip()
-        if self.item_owner == self.game.player:
-            self.game.message('You dropped a {0}.'.format(self.owner.name),
-                              libtcod.yellow)
+        if self.item_owner == self.owner.game.player:
+            self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
+                                    libtcod.yellow)
 
     def use(self, ui):
         self.toggle_equip(self.item_owner)

@@ -33,7 +33,7 @@ class Fighter(libcomp.Component):
 
         # Check for death and call the death function if there is one
         if self.hp <= 0 and self.death_fn:
-            self.death_fn(self.owner, self.game)
+            self.death_fn(self.owner, self.owner.game)
 
         # Notify the AI that we were hit
         ai = self.owner.component(libai.AI)
@@ -51,9 +51,11 @@ class Fighter(libcomp.Component):
         damage = self.power() - fighter.defense()
 
         if damage > 0:
-            self.game.message('{0} attacks {1} for {2} hit points.'.format(
-                self.owner.name.capitalize(), target.name, damage))
+            msg = '{0} attacks {1} for {2} hit points.'.format(
+                self.owner.name.capitalize(), target.name, damage)
+            self.owner.game.message(msg)
             fighter.take_damage(damage)
         else:
-            self.game.message('{0} attacks {1} but it has no effect!'.format(
-                self.owner.name.capitalize(), target.name))
+            msg = '{0} attacks {1} but it has no effect!'.format(
+                self.owner.name.capitalize(), target.name)
+            self.owner.game.message(msg)

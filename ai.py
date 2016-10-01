@@ -19,14 +19,15 @@ class Aggressive(AI):
 
     def take_turn(self):
         monster = self.owner
-        if libtcod.map_is_in_fov(self.game.fov_map, monster.x, monster.y):
+        if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
             # Move towards player if far away
-            if monster.distance_to(self.game.player) >= 2:
-                monster.move_astar(self.game.player, self.game.map, self.game.objects)
+            if monster.distance_to(monster.game.player) >= 2:
+                monster.move_astar(monster.game.player, monster.game.map,
+                                   monster.game.objects)
 
             # Close enough, attack! (If the player is still alive)
-            elif self.game.player.component(libfighter.Fighter).hp > 0:
-                monster.component(libfighter.Fighter).attack(self.game.player)
+            elif monster.game.player.component(libfighter.Fighter).hp > 0:
+                monster.component(libfighter.Fighter).attack(monster.game.player)
 
 
 def basic():
@@ -37,14 +38,12 @@ class Passive(AI):
     """Neutral, until the player attacks. May wander in a random direction."""
 
     def take_damage(self, damage):
-        aggressive = Aggressive()
-        aggressive.game = self.game
-        self.owner.set_component(AI, aggressive)
+        self.owner.set_component(AI, Aggressive())
 
     def take_turn(self):
         # 25% chance to move one square in a random direction
         if libtcod.random_get_int(0, 1, 4) == 1:
-            self.owner.move(self.game.map, self.game.objects,
+            self.owner.move(self.owner.game.map, self.owner.game.objects,
                             libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
 
@@ -63,7 +62,7 @@ class Confused(AI):
     def take_turn(self):
         if self.restore_ai is None or self.num_turns > 0:
             # Move in a random direction
-            self.owner.move(self.game.map, self.game.objects,
+            self.owner.move(self.owner.game.map, self.owner.game.objects,
                             libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
             self.num_turns -= 1
@@ -71,7 +70,7 @@ class Confused(AI):
             # Restore normal AI
             self.owner.set_component(AI, self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
-            self.game.message(msg, libtcod.red)
+            self.owner.game.message(msg, libtcod.red)
 
 
 def confused():

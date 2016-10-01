@@ -197,19 +197,18 @@ def new_game():
         if object.name == 'orc':
             bonus = libtcod.random_get_int(0, 1, 4)
             equipment = libitem.Equipment(slot='right hand', power_bonus=bonus)
-            equipment.game = game
             axe = libobj.Object(0, 0, '/', 'axe', libtcod.sky, render_order=0,
-                                components={libitem.Equipment: equipment})
+                                components={libitem.Equipment: equipment},
+                                game=game)
             inventory = libitem.Inventory(items=[axe])
-            inventory.game = game
             object.set_component(libitem.Inventory, inventory)
             equipment.equip(object)
 
     # Initial equipment: a dagger
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
-    equipment_comp.game = game
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
-                           components={libitem.Equipment: equipment_comp})
+                           components={libitem.Equipment: equipment_comp},
+                           game=game)
     inventory_component.items.append(dagger)
     equipment_comp.equip(player)
 
@@ -241,13 +240,11 @@ def next_dungeon_level(game):
     game.stairs = stairs
 
     for object in game.objects:
-        for component in object.components.values():
-            component.game = game
+        object.game = game
 
 def play_game(game, ui):
     for object in game.objects:
-        for component in object.components.values():
-            component.game = game
+        object.game = game
 
     fov_recompute = True
     libtcod.console_clear(ui.console)
