@@ -2,10 +2,9 @@
 * TODO Grass!
 * TODO Ranged/missile combat
 * TODO Remove UI#render_all() call in Game#target_tile()
-* TODO Add format args to Game#message() for convenvience
 * TODO Component inheritence bad? Event system good?
 * TODO Abstract away the player checks
 ** Event/broadcasting system solution?
 * TODO Monsters drop items when killed
 * TODO Fix vanishing doppleganger casting bug
-* TODO Move game from Component to Object?
+* TODO Remove map, objects parameters from Object#move
