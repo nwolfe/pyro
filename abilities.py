@@ -28,7 +28,7 @@ def cast_lightning(player, game, ui):
     msg = msg.format(monster.name, LIGHTNING_DAMAGE)
     game.message(msg, libtcod.light_blue)
     fighter = monster.component(libfighter.Fighter)
-    fighter.take_damage(LIGHTNING_DAMAGE, game)
+    fighter.take_damage(LIGHTNING_DAMAGE)
 
 
 def cast_confuse(player, game, ui):
@@ -63,4 +63,4 @@ def cast_fireball(player, game, ui):
             if fighter:
                 game.message('The {0} gets burned for {1} hit points.'.format(
                     object.name, FIREBALL_DAMAGE), libtcod.orange)
-                fighter.take_damage(FIREBALL_DAMAGE, game)
+                fighter.take_damage(FIREBALL_DAMAGE)

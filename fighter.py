@@ -27,18 +27,18 @@ class Fighter(libcomp.Component):
         bonus = sum(equipment.max_hp_bonus for equipment in equipped)
         return self.base_max_hp + bonus
 
-    def take_damage(self, damage, game):
+    def take_damage(self, damage):
         if damage > 0:
             self.hp -= damage
 
         # Check for death and call the death function if there is one
         if self.hp <= 0 and self.death_fn:
-            self.death_fn(self.owner, game)
+            self.death_fn(self.owner, self.game)
 
         # Notify the AI that we were hit
         ai = self.owner.component(libai.AI)
         if ai:
-            ai.take_damage(damage, game)
+            ai.take_damage(damage)
 
     def heal(self, amount):
         # Heal by the given amount, without going over the maximum
@@ -46,14 +46,14 @@ class Fighter(libcomp.Component):
         if self.hp > self.max_hp():
             self.hp = self.max_hp()
 
-    def attack(self, target, game):
+    def attack(self, target):
         fighter = target.component(Fighter)
         damage = self.power() - fighter.defense()
 
         if damage > 0:
-            game.message('{0} attacks {1} for {2} hit points.'.format(
+            self.game.message('{0} attacks {1} for {2} hit points.'.format(
                 self.owner.name.capitalize(), target.name, damage))
-            fighter.take_damage(damage, game)
+            fighter.take_damage(damage)
         else:
-            game.message('{0} attacks {1} but it has no effect!'.format(
+            self.game.message('{0} attacks {1} but it has no effect!'.format(
                 self.owner.name.capitalize(), target.name))

@@ -22,7 +22,7 @@ def move_player_or_attack(dx, dy, game):
                 break
 
     if target:
-        game.player.component(libfighter.Fighter).attack(target, game)
+        game.player.component(libfighter.Fighter).attack(target)
         return (False, None)
     else:
         game.player.move(game.map, game.objects, dx, dy)
@@ -90,7 +90,7 @@ def handle_keys(ui, game):
             item = object.component(libitem.Item)
             if item:
                 if object.x == game.player.x and object.y == game.player.y:
-                    item.pick_up(game.player, game)
+                    item.pick_up(game.player)
                     break
         return (False, None)
     elif key_char == 'i':
@@ -99,7 +99,7 @@ def handle_keys(ui, game):
         inventory = game.player.component(libitem.Inventory).items
         selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
-            selected_item.use(game, ui)
+            selected_item.use(ui)
         return (False, None)
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
@@ -107,7 +107,7 @@ def handle_keys(ui, game):
         inventory = game.player.component(libitem.Inventory).items
         selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
-            selected_item.drop(game)
+            selected_item.drop()
         return (False, None)
     elif key_char == '>':
         # Go down the stairs to the next level
@@ -197,18 +197,21 @@ def new_game():
         if object.name == 'orc':
             bonus = libtcod.random_get_int(0, 1, 4)
             equipment = libitem.Equipment(slot='right hand', power_bonus=bonus)
+            equipment.game = game
             axe = libobj.Object(0, 0, '/', 'axe', libtcod.sky, render_order=0,
                                 components={libitem.Equipment: equipment})
             inventory = libitem.Inventory(items=[axe])
+            inventory.game = game
             object.set_component(libitem.Inventory, inventory)
-            equipment.equip(object, game)
+            equipment.equip(object)
 
     # Initial equipment: a dagger
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
+    equipment_comp.game = game
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
                            components={libitem.Equipment: equipment_comp})
     inventory_component.items.append(dagger)
-    equipment_comp.equip(player, game)
+    equipment_comp.equip(player)
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
@@ -237,8 +240,15 @@ def next_dungeon_level(game):
     game.objects = objects
     game.stairs = stairs
 
+    for object in game.objects:
+        for component in object.components.values():
+            component.game = game
 
 def play_game(game, ui):
+    for object in game.objects:
+        for component in object.components.values():
+            component.game = game
+
     fov_recompute = True
     libtcod.console_clear(ui.console)
     while not libtcod.console_is_window_closed():
@@ -264,7 +274,7 @@ def play_game(game, ui):
             for object in game.objects:
                 ai = object.component(libai.AI)
                 if ai:
-                    ai.take_turn(game)
+                    ai.take_turn()
 
 
 def save_game(game):

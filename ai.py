@@ -5,11 +5,11 @@ from settings import *
 
 
 class AI(libcomp.Component):
-    def take_turn(self, game):
+    def take_turn(self):
         """Perform a single game turn."""
         return
 
-    def take_damage(self, damage, game):
+    def take_damage(self, damage):
         """Called by the Fighter component when the owner takes damage."""
         return
 
@@ -17,16 +17,16 @@ class AI(libcomp.Component):
 class Aggressive(AI):
     """Pursue and attack the player once in sight."""
 
-    def take_turn(self, game):
+    def take_turn(self):
         monster = self.owner
-        if libtcod.map_is_in_fov(game.fov_map, monster.x, monster.y):
+        if libtcod.map_is_in_fov(self.game.fov_map, monster.x, monster.y):
             # Move towards player if far away
-            if monster.distance_to(game.player) >= 2:
-                monster.move_astar(game.player, game.map, game.objects)
+            if monster.distance_to(self.game.player) >= 2:
+                monster.move_astar(self.game.player, self.game.map, self.game.objects)
 
             # Close enough, attack! (If the player is still alive)
-            elif game.player.component(libfighter.Fighter).hp > 0:
-                monster.component(libfighter.Fighter).attack(game.player, game)
+            elif self.game.player.component(libfighter.Fighter).hp > 0:
+                monster.component(libfighter.Fighter).attack(self.game.player)
 
 
 def basic():
@@ -36,13 +36,15 @@ def basic():
 class Passive(AI):
     """Neutral, until the player attacks. May wander in a random direction."""
 
-    def take_damage(self, damage, game):
-        self.owner.set_component(AI, Aggressive())
+    def take_damage(self, damage):
+        aggressive = Aggressive()
+        aggressive.game = self.game
+        self.owner.set_component(AI, aggressive)
 
-    def take_turn(self, game):
+    def take_turn(self):
         # 25% chance to move one square in a random direction
         if libtcod.random_get_int(0, 1, 4) == 1:
-            self.owner.move(game.map, game.objects,
+            self.owner.move(self.game.map, self.game.objects,
                             libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
 
@@ -58,10 +60,10 @@ class Confused(AI):
         self.restore_ai = restore_ai
         self.num_turns = num_turns
 
-    def take_turn(self, game):
+    def take_turn(self):
         if self.restore_ai is None or self.num_turns > 0:
             # Move in a random direction
-            self.owner.move(game.map, game.objects,
+            self.owner.move(self.game.map, self.game.objects,
                             libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
             self.num_turns -= 1
@@ -69,7 +71,7 @@ class Confused(AI):
             # Restore normal AI
             self.owner.set_component(AI, self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
-            game.message(msg, libtcod.red)
+            self.game.message(msg, libtcod.red)
 
 
 def confused():
