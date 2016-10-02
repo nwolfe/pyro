@@ -4,11 +4,20 @@
         "symbol": "r",
         "color": "darkest_pink",
         "ai": "passive_aggressive",
-        "experience": 5,
-        "hp": 5,
+        "experience": 10,
+        "hp": 10,
         "defense": 0,
         "power": 2,
-        "spawn": 60
+        "spawn": [[90, 1],
+                  [80, 2],
+                  [70, 3],
+                  [60, 4],
+                  [50, 5],
+                  [40, 6],
+                  [30, 7],
+                  [20, 8],
+                  [10, 9],
+                  [0, 10]]
     },
     {
         "name": "orc",
@@ -19,7 +28,7 @@
         "hp": 20,
         "defense": 0,
         "power": 4,
-        "spawn": 20
+        "spawn": 80
     },
     {
         "name": "troll",
