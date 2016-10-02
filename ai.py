@@ -29,11 +29,7 @@ class Aggressive(AI):
                 monster.component(libfighter.Fighter).attack(monster.game.player)
 
 
-def basic():
-    return Aggressive()
-
-
-class Passive(AI):
+class PassiveAggressive(AI):
     """Neutral, until the player attacks. May wander in a random direction."""
 
     def take_damage(self, damage):
@@ -45,9 +41,6 @@ class Passive(AI):
             self.owner.move(libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
 
-
-def passive():
-    return Passive()
 
 class Confused(AI):
     """Wanders in a random direction for the specified number of turns, then
@@ -68,6 +61,14 @@ class Confused(AI):
             self.owner.set_component(AI, self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             self.owner.game.message(msg, libtcod.red)
+
+
+def aggressive():
+    return Aggressive()
+
+
+def passive_aggressive():
+    return PassiveAggressive()
 
 
 def confused():
