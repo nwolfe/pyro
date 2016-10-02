@@ -25,7 +25,7 @@ def move_player_or_attack(dx, dy, game):
         game.player.component(libfighter.Fighter).attack(target)
         return (False, None)
     else:
-        game.player.move(game.map, game.objects, dx, dy)
+        game.player.move(dx, dy)
         return (True, 'move')
 
 

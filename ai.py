@@ -22,8 +22,7 @@ class Aggressive(AI):
         if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
             # Move towards player if far away
             if monster.distance_to(monster.game.player) >= 2:
-                monster.move_astar(monster.game.player, monster.game.map,
-                                   monster.game.objects)
+                monster.move_astar(monster.game.player)
 
             # Close enough, attack! (If the player is still alive)
             elif monster.game.player.component(libfighter.Fighter).hp > 0:
@@ -43,8 +42,7 @@ class Passive(AI):
     def take_turn(self):
         # 25% chance to move one square in a random direction
         if libtcod.random_get_int(0, 1, 4) == 1:
-            self.owner.move(self.owner.game.map, self.owner.game.objects,
-                            libtcod.random_get_int(0, -1, 1),
+            self.owner.move(libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
 
 
@@ -62,8 +60,7 @@ class Confused(AI):
     def take_turn(self):
         if self.restore_ai is None or self.num_turns > 0:
             # Move in a random direction
-            self.owner.move(self.owner.game.map, self.owner.game.objects,
-                            libtcod.random_get_int(0, -1, 1),
+            self.owner.move(libtcod.random_get_int(0, -1, 1),
                             libtcod.random_get_int(0, -1, 1))
             self.num_turns -= 1
         else:

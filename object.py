@@ -33,8 +33,9 @@ class Object:
         self.components[klass] = comp
         comp.initialize(self)
 
-    def move(self, map, objects, dx, dy):
-        if not is_blocked(map, objects, self.x + dx, self.y + dy):
+    def move(self, dx, dy):
+        if not is_blocked(self.game.map, self.game.objects,
+                          self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
 
@@ -52,7 +53,7 @@ class Object:
         libtcod.console_put_char(console, self.x, self.y, ' ',
                                  libtcod.BKGND_NONE)
 
-    def move_towards(self, map, objects, target_x, target_y):
+    def move_towards(self, target_x, target_y):
         # Vector from this object to the target, and distance
         dx = target_x - self.x
         dy = target_y - self.y
@@ -62,7 +63,7 @@ class Object:
         # convert to integer so the movement is restricted to the map grid
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
-        self.move(map, objects, dx, dy)
+        self.move(dx, dy)
 
     def distance_to(self, other):
         dx = other.x - self.x
@@ -72,7 +73,7 @@ class Object:
     def distance(self, x, y):
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
-    def move_astar(self, target, map, objects):
+    def move_astar(self, target):
         # Create a FOV map that has the dimensions of the map
         fov = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 
@@ -80,15 +81,15 @@ class Object:
         for y1 in range(MAP_HEIGHT):
             for x1 in range(MAP_WIDTH):
                 libtcod.map_set_properties(fov, x1, y1,
-                                           not map[x1][y1].block_sight,
-                                           not map[x1][y1].blocked)
+                                           not self.game.map[x1][y1].block_sight,
+                                           not self.game.map[x1][y1].blocked)
 
         # Scan all the objects to see if there are objects that must be
         # navigated around. Check also that the object isn't self or the
         # target (so that the start and the end points are free).
         # The AI class handles the situation if self is next to the target so
         # it will not use this A* function anyway.
-        for obj in objects:
+        for obj in self.game.objects:
             if obj.blocks and obj != self and obj != target:
                 # Set the tile as a wall so it must be navigated around
                 libtcod.map_set_properties(fov, obj.x, obj.y, True, False)
@@ -117,7 +118,7 @@ class Object:
             # Keep the old move function as a backup so that if there are no
             # paths (for example, another monster blocks a corridor). It will
             # still try to move towards the player (closer to the corridor opening)
-            self.move_towards(map, objects, target.x, target.y)
+            self.move_towards(target.x, target.y)
 
         # Delete the path to free memory
         libtcod.path_delete(path)

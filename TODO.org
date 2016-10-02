@@ -7,4 +7,3 @@
 ** Event/broadcasting system solution?
 * TODO Monsters drop items when killed
 * TODO Fix vanishing doppleganger casting bug
-* TODO Remove map, objects parameters from Object#move
