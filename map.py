@@ -95,6 +95,10 @@ def place_monsters(room, map, objects, monster_templates, dungeon_level):
     num_monsters = libtcod.random_get_int(0, 0, max_monsters)
     monster_chances = get_spawn_chances(monster_templates, dungeon_level)
 
+    chance = libtcod.random_get_int(0, 1, 100)
+    if chance <= 5:
+        num_monsters = max_monsters * 3
+
     for i in range(num_monsters):
         # Random position for monster
         x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
