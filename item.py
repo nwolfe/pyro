@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import component as libcomp
+import event as libevent
 
 
 class Item(libcomp.Component):
@@ -19,7 +20,6 @@ class Item(libcomp.Component):
             if item_owner == self.owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
                 self.owner.game.message(msg.format(self.owner.name), libtcod.red)
-            return False
         else:
             self.item_owner = item_owner
             inventory.append(self.owner)
@@ -27,7 +27,8 @@ class Item(libcomp.Component):
             if item_owner == self.owner.game.player:
                 self.owner.game.message('You picked up a {0}!'.format(
                     self.owner.name), libtcod.green)
-            return True
+            self.owner.fire_event('item.pickup', {'owner': item_owner,
+                                                  'item': self})
 
     def drop(self):
         # Remove from the inventory and add to the map.
@@ -37,6 +38,11 @@ class Item(libcomp.Component):
         self.owner.game.objects.append(self.owner)
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
+        self.owner.fire_event('item.drop',
+                              {'owner': self.item_owner, 'item': self})
+        if self.item_owner == self.owner.game.player:
+            self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
+                                    libtcod.yellow)
 
     def use(self, ui):
         # Call the use_fn if we have one
@@ -50,20 +56,35 @@ class Item(libcomp.Component):
                 inventory.remove(self.owner)
 
 
-class Equipment(Item):
+class Equipment(libcomp.Component, libevent.EventHandler):
     """An object that can be equipped, yielding bonuses. Automatically adds
     the Item component."""
 
     def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
+        libevent.EventHandler.__init__(self)
         self.slot = slot
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
         self.max_hp_bonus = max_hp_bonus
         self.is_equipped = False
+        self.item_owner = None
 
     def initialize(self, object):
         self.owner = object
-        self.owner.components[Item] = self
+        def use_fn(item_owner, game, ui):
+            self.toggle_equip(item_owner)
+            return 'cancelled'
+        self.owner.set_component(Item, Item(use_fn=use_fn))
+        self.owner.add_event_handler(self,
+                                     'item.pickup',
+                                     'item.drop')
+
+    def handle_event(self, event, data):
+        if 'item.pickup' == event:
+            if get_equipped_in_slot(data['owner'], self.slot) is None:
+                self.equip(data['owner'])
+        elif 'item.drop' == event:
+            self.unequip()
 
     def toggle_equip(self, item_owner):
         if self.is_equipped:
@@ -74,6 +95,7 @@ class Equipment(Item):
     def equip(self, item_owner):
         """Equip object and show a message about it."""
         self.item_owner = item_owner
+        self.owner.component(Item).item_owner = item_owner
         replacing = get_equipped_in_slot(item_owner, self.slot)
         if replacing is not None:
             replacing.unequip()
@@ -90,23 +112,7 @@ class Equipment(Item):
         if self.item_owner == self.owner.game.player:
             self.owner.game.message('Unequipped {0} from {1}.'.format(
                 self.owner.name, self.slot), libtcod.light_yellow)
-
-    def pick_up(self, item_owner):
-        # Automatically equip if slot is empty
-        if Item.pick_up(self, item_owner):
-            if get_equipped_in_slot(item_owner, self.slot) is None:
-                self.equip(item_owner)
-
-    def drop(self):
-        # Unequip before dropping
-        Item.drop(self)
-        self.unequip()
-        if self.item_owner == self.owner.game.player:
-            self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
-                                    libtcod.yellow)
-
-    def use(self, ui):
-        self.toggle_equip(self.item_owner)
+        self.item_owner = None
 
 
 class Inventory(libcomp.Component):
