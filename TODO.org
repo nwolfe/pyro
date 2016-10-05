@@ -5,5 +5,7 @@
 * TODO Component inheritence bad? Event system good?
 * TODO Abstract away the player checks
 ** Event/broadcasting system solution?
+** Simple Object#is_player check?
 * TODO Monsters drop items when killed
 * TODO Fix vanishing doppleganger casting bug
+* TODO Rename Object class to GameObject/Entity/???
