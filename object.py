@@ -3,15 +3,17 @@ import ai as libai
 import item as libitem
 import experience as libxp
 import fighter as libfighter
+import event as libevent
 import abilities
 import math
 import json
 from settings import *
 
 
-class Object:
+class Object(libevent.EventEmitter):
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
                  render_order=1, always_visible=False, components={}, game=None):
+        libevent.EventEmitter.__init__(self)
         self.x = x
         self.y = y
         self.char = char
