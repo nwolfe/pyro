@@ -7,5 +7,13 @@
 ** Event/broadcasting system solution?
 ** Simple Object#is_player check?
 * TODO Monsters drop items when killed
+** Random items (like Diablo) or carried items?
 * TODO Fix vanishing doppleganger casting bug
+** Scroll of Confusion creates a visual copy of the target
 * TODO Rename Object class to GameObject/Entity/???
+* TODO Simplify Event system
+** Put handle_event directly on Component
+** Remove concept of handler priority for now
+** Introduce Event class
+*** String id, Dict data
+*** Pass to all handlers, don't filter by event id yet
