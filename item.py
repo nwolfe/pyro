@@ -27,8 +27,9 @@ class Item(libcomp.Component):
             if item_owner == self.owner.game.player:
                 self.owner.game.message('You picked up a {0}!'.format(
                     self.owner.name), libtcod.green)
-            self.owner.fire_event('item.pickup', {'owner': item_owner,
-                                                  'item': self})
+            picked_up = libevent.Event('item.pickup',
+                                       {'owner': item_owner, 'item': self})
+            self.owner.fire_event(picked_up)
 
     def drop(self):
         # Remove from the inventory and add to the map.
@@ -38,8 +39,9 @@ class Item(libcomp.Component):
         self.owner.game.objects.append(self.owner)
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
-        self.owner.fire_event('item.drop',
-                              {'owner': self.item_owner, 'item': self})
+        dropped = libevent.Event('item.drop',
+                                 {'owner': self.item_owner, 'item': self})
+        self.owner.fire_event(dropped)
         if self.item_owner == self.owner.game.player:
             self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
                                     libtcod.yellow)
@@ -56,12 +58,11 @@ class Item(libcomp.Component):
                 inventory.remove(self.owner)
 
 
-class Equipment(libcomp.Component, libevent.EventHandler):
+class Equipment(libcomp.Component):
     """An object that can be equipped, yielding bonuses. Automatically adds
     the Item component."""
 
     def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
-        libevent.EventHandler.__init__(self)
         self.slot = slot
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
@@ -75,15 +76,12 @@ class Equipment(libcomp.Component, libevent.EventHandler):
             self.toggle_equip(item_owner)
             return 'cancelled'
         self.owner.set_component(Item, Item(use_fn=use_fn))
-        self.owner.add_event_handler(self,
-                                     'item.pickup',
-                                     'item.drop')
 
-    def handle_event(self, event, data):
-        if 'item.pickup' == event:
-            if get_equipped_in_slot(data['owner'], self.slot) is None:
-                self.equip(data['owner'])
-        elif 'item.drop' == event:
+    def handle_event(self, event):
+        if 'item.pickup' == event.id:
+            if get_equipped_in_slot(event.data['owner'], self.slot) is None:
+                self.equip(event.data['owner'])
+        elif 'item.drop' == event.id:
             self.unequip()
 
     def toggle_equip(self, item_owner):

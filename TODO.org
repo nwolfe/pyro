@@ -11,7 +11,7 @@
 * TODO Fix vanishing doppleganger casting bug
 ** Scroll of Confusion creates a visual copy of the target
 * TODO Rename Object class to GameObject/Entity/???
-* TODO Simplify Event system
+* DONE Simplify Event system
 ** Put handle_event directly on Component
 ** Remove concept of handler priority for now
 ** Introduce Event class
