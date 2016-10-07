@@ -58,12 +58,7 @@ class Item(libcomp.Component):
                 inventory.remove(self.owner)
 
 
-class ToggleEquipmentItem(Item):
-    def use(self, ui):
-        self.owner.component(Equipment).toggle_equip(self.item_owner)
-
-
-class Equipment(libcomp.Component):
+class Equipment(Item):
     """An object that can be equipped, yielding bonuses. Automatically adds
     the Item component."""
 
@@ -77,7 +72,10 @@ class Equipment(libcomp.Component):
 
     def initialize(self, object):
         self.owner = object
-        self.owner.set_component(Item, ToggleEquipmentItem())
+        self.owner.components[Item] = self
+
+    def use(self, ui):
+        self.toggle_equip(self.item_owner)
 
     def handle_event(self, event):
         if 'item.pickup' == event.id:
@@ -95,7 +93,6 @@ class Equipment(libcomp.Component):
     def equip(self, item_owner):
         """Equip object and show a message about it."""
         self.item_owner = item_owner
-        self.owner.component(Item).item_owner = item_owner
         replacing = get_equipped_in_slot(item_owner, self.slot)
         if replacing is not None:
             replacing.unequip()
