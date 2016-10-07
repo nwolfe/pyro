@@ -177,7 +177,7 @@ def new_game():
     exp_comp = libxp.Experience(xp=0, level=1)
     fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
-    inventory_component = libitem.Inventory()
+    inventory_component = libitem.Inventory(items=[])
     player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
                            components={libfighter.Fighter: fighter_comp,
                                        libxp.Experience: exp_comp,
