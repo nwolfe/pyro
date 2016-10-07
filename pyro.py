@@ -193,18 +193,6 @@ def new_game():
     game = libgame.Game('playing', map, fov_map, objects, stairs,
                         player, messages, dungeon_level)
 
-    # Arm the orcs!
-    for object in objects:
-        if object.name == 'orc':
-            bonus = libtcod.random_get_int(0, 1, 4)
-            equipment = libitem.Equipment(slot='right hand', power_bonus=bonus)
-            axe = libobj.Object(0, 0, '/', 'axe', libtcod.sky, render_order=0,
-                                components={libitem.Equipment: equipment},
-                                game=game)
-            inventory = libitem.Inventory(items=[axe])
-            object.set_component(libitem.Inventory, inventory)
-            equipment.equip(object)
-
     # Initial equipment: a dagger and scroll of lightning
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
