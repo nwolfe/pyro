@@ -199,7 +199,9 @@ def new_game():
                            components={libitem.Equipment: equipment_comp},
                            game=game)
     inventory_component.items.append(dagger)
-    equipment_comp.equip(player)
+    equipment_comp.item_owner = player
+    equipment_comp.is_equipped = True
+
 
     item_comp = libitem.Item(use_fn=libabilities.cast_lightning)
     spell = libobj.Object(0, 0, '-', 'scroll of lightning', libtcod.blue,
