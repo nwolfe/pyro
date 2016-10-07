@@ -7,6 +7,7 @@ import ai as libai
 import fighter as libfighter
 import experience as libxp
 import item as libitem
+import abilities as libabilities
 import shelve
 from settings import *
 
@@ -204,13 +205,20 @@ def new_game():
             object.set_component(libitem.Inventory, inventory)
             equipment.equip(object)
 
-    # Initial equipment: a dagger
+    # Initial equipment: a dagger and scroll of lightning
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
     dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
                            components={libitem.Equipment: equipment_comp},
                            game=game)
     inventory_component.items.append(dagger)
     equipment_comp.equip(player)
+
+    item_comp = libitem.Item(use_fn=libabilities.cast_lightning)
+    spell = libobj.Object(0, 0, '-', 'scroll of lightning', libtcod.blue,
+                          render_order=0, components={libitem.Item: item_comp},
+                          game=game)
+    inventory_component.items.append(spell)
+    item_comp.item_owner = player
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
