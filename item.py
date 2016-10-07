@@ -109,7 +109,6 @@ class Equipment(Item):
         if self.item_owner == self.owner.game.player:
             self.owner.game.message('Unequipped {0} from {1}.'.format(
                 self.owner.name, self.slot), libtcod.light_yellow)
-        self.item_owner = None
 
 
 class Inventory(libcomp.Component):
