@@ -8,6 +8,7 @@ import fighter as libfighter
 import experience as libxp
 import item as libitem
 import abilities as libabilities
+import door as libdoor
 import shelve
 from settings import *
 
@@ -26,7 +27,13 @@ def move_player_or_attack(dx, dy, game):
         game.player.component(libfighter.Fighter).attack(target)
         return (False, None)
     else:
-        game.player.move(dx, dy)
+        moved = game.player.move(dx, dy)
+        if not moved:
+            for object in game.objects:
+                if object.component(libdoor.Door):
+                    if object.x == x and object.y == y:
+                        object.component(libdoor.Door).open()
+                        break
         return (True, 'move')
 
 

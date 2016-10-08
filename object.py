@@ -38,6 +38,9 @@ class GameObject:
                           self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
+            return True
+        else:
+            return False
 
     def draw(self, console, map, fov_map):
         always_visible = self.always_visible and map[self.x][self.y].explored

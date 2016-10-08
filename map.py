@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import object as libobj
+import door as libdoor
 from settings import *
 
 
@@ -87,6 +88,31 @@ def get_spawn_chances(templates, dungeon_level):
         else:
             chances[t['name']] = chance
     return chances
+
+
+def place_door(x, y, map, objects):
+    map[x][y].blocked = True
+    map[x][y].block_sight = True
+    door_comp = libdoor.Door(is_open=False, opened_char='-', closed_char='+')
+    door = libobj.GameObject(x, y, '+', 'door', libtcod.white, render_order=0,
+                             components={libdoor.Door: door_comp})
+    objects.append(door)
+
+
+def place_doors(room, map, objects):
+    # Scan bottom & top walls
+    for x in range(room.x1, room.x2):
+        if not map[x][room.y1].blocked:
+            place_door(x, room.y1, map, objects)
+        if not map[x][room.y2].blocked:
+            place_door(x, room.y2, map, objects)
+
+    # Scan left & right walls
+    for y in range(room.y1, room.y2):
+        if not map[room.x1][y].blocked:
+            place_door(room.x1, y, map, objects)
+        if not map[room.x2][y].blocked:
+            place_door(room.x2, y, map, objects)
 
 
 def place_critters(room, map, objects, monster_templates, dungeon_level):
@@ -224,6 +250,7 @@ def make_map(player, dungeon_level):
                 create_h_tunnel(map, prev_x, new_x, new_y)
 
         # Finish
+        place_doors(new_room, map, objects)
         place_monsters(new_room, map, objects, monster_templates, dungeon_level)
         place_items(new_room, map, objects, item_templates, dungeon_level)
         place_critters(new_room, map, objects, monster_templates, dungeon_level)

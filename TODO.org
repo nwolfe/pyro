@@ -1,7 +1,15 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
-** TODO Doors!
+** Doors!
+*** TODO Close doors
+*** Field of view
+**** TODO Updates when door opens
+**** TODO Can see through properly from afar
+*** Better placement
+**** TODO Door always between two walls
+**** TODO No doors should be adjacent to one another
+**** TODO No free-standing doors
 ** TODO Grass!
 ** TODO Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat
@@ -10,6 +18,7 @@
 
 * CODEBASE
 ** TODO Remove UI#render_all() call in Game#target_tile()
+** TODO Rename char to glyph
 
 * BUGS
 ** TODO Fix missing messages from items after loading
