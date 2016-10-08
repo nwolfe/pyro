@@ -24,6 +24,9 @@ class Game:
         self.messages = messages
         self.dungeon_level = dungeon_level
 
+        if self.messages is None:
+            self.messages = []
+
     def message(self, text, color=libtcod.white):
         # Split the message if necessary, among multiple lines
         new_msg_lines = textwrap.wrap(text, MSG_WIDTH)

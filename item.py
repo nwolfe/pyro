@@ -109,8 +109,10 @@ class Equipment(Item):
 
 
 class Inventory(libcomp.Component):
-    def __init__(self, items=[]):
+    def __init__(self, items=None):
         self.items = items
+        if items is None:
+            self.items = []
 
 
 def get_equipped_in_slot(item_owner, slot):
