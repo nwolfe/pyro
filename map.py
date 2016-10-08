@@ -231,8 +231,8 @@ def make_map(player, dungeon_level):
         num_rooms += 1
 
     # Create stairs at the center of the last room
-    stairs = libobj.Object(new_x, new_y, '>', 'stairs', libtcod.white,
-                           render_order=0, always_visible=True)
+    stairs = libobj.GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
+                               render_order=0, always_visible=True)
     objects.append(stairs)
 
     return (map, objects, stairs)

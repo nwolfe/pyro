@@ -178,10 +178,10 @@ def new_game():
     fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
     inventory_component = libitem.Inventory(items=[])
-    player = libobj.Object(0, 0, '@', 'player', libtcod.white, blocks=True,
-                           components={libfighter.Fighter: fighter_comp,
-                                       libxp.Experience: exp_comp,
-                                       libitem.Inventory: inventory_component})
+    player = libobj.GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
+                               components={libfighter.Fighter: fighter_comp,
+                                           libxp.Experience: exp_comp,
+                                           libitem.Inventory: inventory_component})
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
@@ -195,18 +195,18 @@ def new_game():
 
     # Initial equipment: a dagger and scroll of lightning
     equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
-    dagger = libobj.Object(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
-                           components={libitem.Equipment: equipment_comp},
-                           game=game)
+    dagger = libobj.GameObject(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
+                               components={libitem.Equipment: equipment_comp},
+                               game=game)
     inventory_component.items.append(dagger)
     equipment_comp.item_owner = player
     equipment_comp.is_equipped = True
 
 
     item_comp = libitem.Item(use_fn=libabilities.cast_lightning)
-    spell = libobj.Object(0, 0, '-', 'scroll of lightning', libtcod.blue,
-                          render_order=0, components={libitem.Item: item_comp},
-                          game=game)
+    spell = libobj.GameObject(0, 0, '-', 'scroll of lightning', libtcod.blue,
+                              render_order=0, components={libitem.Item: item_comp},
+                              game=game)
     inventory_component.items.append(spell)
     item_comp.item_owner = player
 

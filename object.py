@@ -9,7 +9,7 @@ import json
 from settings import *
 
 
-class Object:
+class GameObject:
     def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
                  render_order=1, always_visible=False, components={}, game=None):
         self.x = x
@@ -163,10 +163,10 @@ def instantiate_monster(template):
     exp_comp = libxp.Experience(template['experience'])
     fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
                                    template['power'], death_fn=monster_death)
-    return Object(char=char, name=name, color=color, blocks=True,
-                  components={libfighter.Fighter: fighter_comp,
-                              libai.AI: ai_comp,
-                              libxp.Experience: exp_comp})
+    return GameObject(char=char, name=name, color=color, blocks=True,
+                      components={libfighter.Fighter: fighter_comp,
+                                  libai.AI: ai_comp,
+                                  libxp.Experience: exp_comp})
 
 
 def make_monster(name, monster_templates):
@@ -199,12 +199,12 @@ def instantiate_item(template):
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        return Object(char=char, name=name, color=color, render_order=0,
-                      components={libitem.Equipment: equipment})
+        return GameObject(char=char, name=name, color=color, render_order=0,
+                          components={libitem.Equipment: equipment})
     elif 'on_use' in template:
         use_fn = getattr(abilities, template['on_use'])
-        return Object(char=char, name=name, color=color, render_order=0,
-                      components={libitem.Item: libitem.Item(use_fn=use_fn)})
+        return GameObject(char=char, name=name, color=color, render_order=0,
+                          components={libitem.Item: libitem.Item(use_fn=use_fn)})
 
 
 def make_item(name, item_templates):
