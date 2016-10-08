@@ -1,8 +1,14 @@
-* TODO Doors!
-* TODO Grass!
-* TODO Ranged/missile combat
-* TODO Remove UI#render_all() call in Game#target_tile()
-* TODO Monsters drop items when killed
-** Random items (like Diablo) or carried items?
-* TODO Fix vanishing doppleganger casting bug
-** Scroll of Confusion creates a visual copy of the target
+#+STARTUP: showeverything
+
+* GAMEPLAY
+** TODO Doors!
+** TODO Grass!
+** TODO Attacks shouldn't have 100% hit chance
+** TODO Ranged/missile combat
+** TODO Monsters drop items when killed?
+*** Random items (like Diablo) or carried items?
+** TODO Fix vanishing doppleganger casting bug
+*** Scroll of Confusion creates a visual copy of the target
+
+* CODEBASE
+** TODO Remove UI#render_all() call in Game#target_tile()
