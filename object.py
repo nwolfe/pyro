@@ -33,10 +33,6 @@ class Object:
         self.components[klass] = comp
         comp.initialize(self)
 
-    def fire_event(self, event):
-        for comp in self.components.values():
-            comp.handle_event(event)
-
     def move(self, dx, dy):
         if not is_blocked(self.game.map, self.game.objects,
                           self.x + dx, self.y + dy):

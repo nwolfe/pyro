@@ -6,6 +6,3 @@ class Component:
 
     def initialize(self, object):
         self.owner = object
-
-    def handle_event(self, event):
-        return

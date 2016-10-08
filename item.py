@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
 import component as libcomp
-import event as libevent
 
 
 class Item(libcomp.Component):
@@ -20,6 +19,7 @@ class Item(libcomp.Component):
             if item_owner == self.owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
                 self.owner.game.message(msg.format(self.owner.name), libtcod.red)
+            return False
         else:
             self.item_owner = item_owner
             inventory.append(self.owner)
@@ -27,9 +27,7 @@ class Item(libcomp.Component):
             if item_owner == self.owner.game.player:
                 self.owner.game.message('You picked up a {0}!'.format(
                     self.owner.name), libtcod.green)
-            picked_up = libevent.Event('item.pickup',
-                                       {'owner': item_owner, 'item': self})
-            self.owner.fire_event(picked_up)
+            return True
 
     def drop(self):
         # Remove from the inventory and add to the map.
@@ -39,9 +37,6 @@ class Item(libcomp.Component):
         self.owner.game.objects.append(self.owner)
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
-        dropped = libevent.Event('item.drop',
-                                 {'owner': self.item_owner, 'item': self})
-        self.owner.fire_event(dropped)
         if self.item_owner == self.owner.game.player:
             self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
                                     libtcod.yellow)
@@ -74,15 +69,17 @@ class Equipment(Item):
         self.owner = object
         self.owner.components[Item] = self
 
+    def pick_up(self, item_owner):
+        if Item.pick_up(self, item_owner):
+            if get_equipped_in_slot(item_owner, self.slot) is None:
+                self.equip(item_owner)
+
+    def drop(self):
+        self.unequip()
+        Item.drop(self)
+
     def use(self, ui):
         self.toggle_equip(self.item_owner)
-
-    def handle_event(self, event):
-        if 'item.pickup' == event.id:
-            if get_equipped_in_slot(event.data['owner'], self.slot) is None:
-                self.equip(event.data['owner'])
-        elif 'item.drop' == event.id:
-            self.unequip()
 
     def toggle_equip(self, item_owner):
         if self.is_equipped:
