@@ -6,10 +6,6 @@
 *** Field of view
 **** TODO Updates when door opens
 **** TODO Can see through properly from afar
-*** Better placement
-**** TODO Door always between two walls
-**** TODO No doors should be adjacent to one another
-**** TODO No free-standing doors
 ** TODO Grass!
 ** TODO Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat
@@ -21,6 +17,7 @@
 ** TODO Rename char to glyph
 
 * BUGS
+** TODO Lower monster corpse render order below critter
 ** TODO Fix missing messages from items after loading
 ** TODO Fix vanishing doppleganger casting bug
 *** Scroll of Confusion creates a visual copy of the target

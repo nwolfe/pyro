@@ -30,6 +30,12 @@ class Tile:
         self.explored = False
 
 
+class TileMeta:
+    def __init__(self):
+        self.room_wall = False
+        self.tunnelled = False
+
+
 def random_choice_index(chances):
     # Choose an option from the list, returning its index
     dice = libtcod.random_get_int(0, 1, sum(chances))
@@ -59,24 +65,36 @@ def from_dungeon_level(table, dungeon_level):
     return 0
 
 
-def create_room(map, room):
+def create_room(map, room, metamap):
     # Go through the tiles in the rectangle and make them passable
     for x in range(room.x1 + 1, room.x2):
         for y in range(room.y1 + 1, room.y2):
             map[x][y].blocked = False
             map[x][y].block_sight = False
 
+    # Mark the exterior tiles as walls
+    for x in range(room.x1, room.x2+1):
+        metamap[x][room.y1].room_wall = True
+        metamap[x][room.y2].room_wall = True
+    for y in range(room.y1, room.y2+1):
+        metamap[room.x1][y].room_wall = True
+        metamap[room.x2][y].room_wall = True
 
-def create_h_tunnel(map, x1, x2, y):
+
+def create_h_tunnel(map, x1, x2, y, metamap):
     for x in range(min(x1, x2), max(x1, x2) + 1):
         map[x][y].blocked = False
         map[x][y].block_sight = False
+        if metamap[x][y].room_wall:
+            metamap[x][y].tunnelled = True
 
 
-def create_v_tunnel(map, y1, y2, x):
+def create_v_tunnel(map, y1, y2, x, metamap):
     for y in range(min(y1, y2), max(y1, y2) + 1):
         map[x][y].blocked = False
         map[x][y].block_sight = False
+        if metamap[x][y].room_wall:
+            metamap[x][y].tunnelled = True
 
 
 def get_spawn_chances(templates, dungeon_level):
@@ -99,20 +117,26 @@ def place_door(x, y, map, objects):
     objects.append(door)
 
 
-def place_doors(room, map, objects):
-    # Scan bottom & top walls
-    for x in range(room.x1, room.x2):
-        if not map[x][room.y1].blocked:
-            place_door(x, room.y1, map, objects)
-        if not map[x][room.y2].blocked:
-            place_door(x, room.y2, map, objects)
+def place_doors(map, objects, metamap):
+    # Look for tunnelled walls as potential doors
+    for x in range(MAP_WIDTH):
+        for y in range(MAP_HEIGHT):
+            if metamap[x][y].tunnelled:
+                # Don't place doors next to other doors
+                door_above = metamap[x][y+1].tunnelled
+                door_below = metamap[x][y-1].tunnelled
+                door_left = metamap[x-1][y].tunnelled
+                door_right = metamap[x+1][y].tunnelled
+                if door_above or door_below or door_left or door_right:
+                    continue
 
-    # Scan left & right walls
-    for y in range(room.y1, room.y2):
-        if not map[room.x1][y].blocked:
-            place_door(room.x1, y, map, objects)
-        if not map[room.x2][y].blocked:
-            place_door(room.x2, y, map, objects)
+                # Make sure to place doors between two walls
+                wall_above = map[x][y+1].blocked
+                wall_below = map[x][y-1].blocked
+                wall_left = map[x-1][y].blocked
+                wall_right = map[x+1][y].blocked
+                if (wall_above and wall_below) or (wall_left and wall_right):
+                    place_door(x, y, map, objects)
 
 
 def place_critters(room, map, objects, monster_templates, dungeon_level):
@@ -213,6 +237,9 @@ def make_map(player, dungeon_level):
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
            for x in range(MAP_WIDTH)]
+    metamap = [[TileMeta()
+                for y in range(MAP_HEIGHT)]
+               for x in range(MAP_WIDTH)]
     rooms = []
     num_rooms = 0
     monster_templates = libobj.load_templates('monsters.json')
@@ -226,7 +253,7 @@ def make_map(player, dungeon_level):
             continue
 
         # Room is valid, continue
-        create_room(map, new_room)
+        create_room(map, new_room, metamap)
 
         (new_x, new_y) = new_room.center()
 
@@ -242,20 +269,21 @@ def make_map(player, dungeon_level):
 
             if libtcod.random_get_int(0, 0, 1) == 1:
                 # First move horizontally, then vertically
-                create_h_tunnel(map, prev_x, new_x, prev_y)
-                create_v_tunnel(map, prev_y, new_y, new_x)
+                create_h_tunnel(map, prev_x, new_x, prev_y, metamap)
+                create_v_tunnel(map, prev_y, new_y, new_x, metamap)
             else:
                 # First move vertically, then horizontally
-                create_v_tunnel(map, prev_y, new_y, prev_x)
-                create_h_tunnel(map, prev_x, new_x, new_y)
+                create_v_tunnel(map, prev_y, new_y, prev_x, metamap)
+                create_h_tunnel(map, prev_x, new_x, new_y, metamap)
 
         # Finish
-        place_doors(new_room, map, objects)
         place_monsters(new_room, map, objects, monster_templates, dungeon_level)
         place_items(new_room, map, objects, item_templates, dungeon_level)
         place_critters(new_room, map, objects, monster_templates, dungeon_level)
         rooms.append(new_room)
         num_rooms += 1
+
+    place_doors(map, objects, metamap)
 
     # Create stairs at the center of the last room
     stairs = libobj.GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
