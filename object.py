@@ -214,3 +214,15 @@ def make_item(name, item_templates):
     for template in item_templates:
         if template['name'] == name:
             return instantiate_item(template)
+
+
+class GameObjectFactory:
+    def load_templates(self, monster_file, item_file):
+        self.monster_templates = load_templates(monster_file)
+        self.item_templates = load_templates(item_file)
+
+    def new_monster(self, monster_name):
+        return make_monster(monster_name, self.monster_templates)
+
+    def new_item(self, item_name):
+        return make_item(item_name, self.item_templates)

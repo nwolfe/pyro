@@ -73,7 +73,7 @@ Defense: {6}
                      fighter.defense())
     libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
-def handle_keys(ui, game):
+def handle_keys(ui, game, object_factory):
     if ui.keyboard.vk == libtcod.KEY_ENTER and ui.keyboard.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -133,7 +133,7 @@ def handle_keys(ui, game):
     elif key_char == '>':
         # Go down the stairs to the next level
         if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
-            next_dungeon_level(game)
+            next_dungeon_level(game, object_factory)
             libtcod.console_clear(ui.console)
         return (True, None)
     elif key_char == 'c':
@@ -195,20 +195,20 @@ def check_player_level_up(game, console):
             fighter.base_defense += 1
 
 
-def new_game():
+def new_game(object_factory):
     # Create the player
     exp_comp = libxp.Experience(xp=0, level=1)
     fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
-    inventory_component = libitem.Inventory(items=[])
+    player_inventory = libitem.Inventory(items=[])
     player = libobj.GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
                                components={libfighter.Fighter: fighter_comp,
                                            libxp.Experience: exp_comp,
-                                           libitem.Inventory: inventory_component})
+                                           libitem.Inventory: player_inventory})
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
-    (map, objects, stairs) = libmap.make_map(player, dungeon_level)
+    (map, objects, stairs) = libmap.make_map(player, dungeon_level, object_factory)
     fov_map = make_fov_map(map)
 
     messages = []
@@ -216,22 +216,17 @@ def new_game():
     game = libgame.Game('playing', map, fov_map, objects, stairs,
                         player, messages, dungeon_level)
 
-    # Initial equipment: a dagger and scroll of lightning
-    equipment_comp = libitem.Equipment(slot='right hand', power_bonus=2)
-    dagger = libobj.GameObject(0, 0, '-', 'dagger', libtcod.sky, render_order=0,
-                               components={libitem.Equipment: equipment_comp},
-                               game=game)
-    inventory_component.items.append(dagger)
-    equipment_comp.item_owner = player
-    equipment_comp.is_equipped = True
+    # Initial equipment: a dagger and scroll of lightning bolt
+    dagger = object_factory.new_item('dagger')
+    dagger.component(libitem.Equipment).item_owner = player
+    dagger.component(libitem.Equipment).is_equipped = True
+    player_inventory.items.append(dagger)
+    dagger.game = game
 
-
-    item_comp = libitem.Item(use_fn=libabilities.cast_lightning)
-    spell = libobj.GameObject(0, 0, '-', 'scroll of lightning', libtcod.blue,
-                              render_order=0, components={libitem.Item: item_comp},
-                              game=game)
-    inventory_component.items.append(spell)
-    item_comp.item_owner = player
+    spell = object_factory.new_item('scroll of lightning bolt')
+    spell.component(libitem.Item).item_owner = player
+    player_inventory.items.append(spell)
+    spell.game = game
 
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
@@ -239,7 +234,7 @@ def new_game():
     return game
 
 
-def next_dungeon_level(game):
+def next_dungeon_level(game, object_factory):
     # Advance to the next level
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
@@ -252,7 +247,8 @@ def next_dungeon_level(game):
     game.message(msg, libtcod.red)
     game.dungeon_level += 1
 
-    (map, objects, stairs) = libmap.make_map(game.player, game.dungeon_level)
+    (map, objects, stairs) = libmap.make_map(game.player, game.dungeon_level,
+                                             object_factory)
     fov_map = make_fov_map(map)
 
     game.map = map
@@ -263,7 +259,7 @@ def next_dungeon_level(game):
     for object in game.objects:
         object.game = game
 
-def play_game(game, ui):
+def play_game(game, ui, object_factory):
     for object in game.objects:
         object.game = game
 
@@ -282,7 +278,7 @@ def play_game(game, ui):
         for object in game.objects:
             object.clear(ui.console)
 
-        (fov_recompute, player_action) = handle_keys(ui, game)
+        (fov_recompute, player_action) = handle_keys(ui, game, object_factory)
 
         if player_action == 'exit':
             save_game(game)
@@ -329,6 +325,10 @@ def load_game():
 def main_menu(ui):
     background = libtcod.image_load('menu_background.png')
 
+    object_factory = libobj.GameObjectFactory()
+    object_factory.load_templates(monster_file='monsters.json',
+                                  item_file='items.json')
+
     while not libtcod.console_is_window_closed():
         # Show the image at twice the regular console resolution
         libtcod.image_blit_2x(background, 0, 0, 0)
@@ -348,13 +348,13 @@ def main_menu(ui):
 
         if choice == 0:
             # New game
-            game = new_game()
-            play_game(game, ui)
+            game = new_game(object_factory)
+            play_game(game, ui, object_factory)
         elif choice == 1:
             # Load last game
             try:
                 game = load_game()
-                play_game(game, ui)
+                play_game(game, ui, object_factory)
             except:
                 libui.messagebox(ui.console, '\n No saved game to load.\n', 24)
                 continue

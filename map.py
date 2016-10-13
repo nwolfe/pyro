@@ -140,7 +140,7 @@ def place_doors(map, objects, metamap):
                     place_door(x, y, map, objects)
 
 
-def place_critters(room, map, objects, monster_templates, dungeon_level):
+def place_critters(room, map, objects, dungeon_level, object_factory):
     # Random number of critters
     max_critters = from_dungeon_level([[6, 1],
                                        [5, 3],
@@ -150,7 +150,7 @@ def place_critters(room, map, objects, monster_templates, dungeon_level):
                                       dungeon_level)
     num_critters = libtcod.random_get_int(0, 0, max_critters)
     critters = filter(lambda m: m['ai'] == 'passive_aggressive',
-                      monster_templates)
+                      object_factory.monster_templates)
     critter_chances = get_spawn_chances(critters, dungeon_level)
 
     chance = libtcod.random_get_int(0, 1, 100)
@@ -164,18 +164,18 @@ def place_critters(room, map, objects, monster_templates, dungeon_level):
 
         if not libobj.is_blocked(map, objects, x, y):
             choice = random_choice(critter_chances)
-            critter = libobj.make_monster(choice, critters)
+            critter = object_factory.new_monster(choice)
             critter.x = x
             critter.y = y
             objects.append(critter)
 
 
-def place_monsters(room, map, objects, monster_templates, dungeon_level):
+def place_monsters(room, map, objects, dungeon_level, object_factory):
     # Random number of monsters
     max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]], dungeon_level)
     num_monsters = libtcod.random_get_int(0, 0, max_monsters)
     monsters = filter(lambda m: m['ai'] != 'passive_aggressive',
-                      monster_templates)
+                      object_factory.monster_templates)
     monster_chances = get_spawn_chances(monsters, dungeon_level)
 
     chance = libtcod.random_get_int(0, 1, 100)
@@ -189,17 +189,17 @@ def place_monsters(room, map, objects, monster_templates, dungeon_level):
 
         if not libobj.is_blocked(map, objects, x, y):
             choice = random_choice(monster_chances)
-            monster = libobj.make_monster(choice, monsters)
+            monster = object_factory.new_monster(choice)
             monster.x = x
             monster.y = y
             objects.append(monster)
 
 
-def place_items(room, map, objects, item_templates, dungeon_level):
+def place_items(room, map, objects, dungeon_level, object_factory):
     # Random number of items
     max_items = from_dungeon_level([[1, 1], [2, 4]], dungeon_level)
     num_items = libtcod.random_get_int(0, 0, max_items)
-    item_chances = get_spawn_chances(item_templates, dungeon_level)
+    item_chances = get_spawn_chances(object_factory.item_templates, dungeon_level)
 
     for i in range(num_items):
         # Random position for item
@@ -208,7 +208,7 @@ def place_items(room, map, objects, item_templates, dungeon_level):
 
         if not libobj.is_blocked(map, objects, x, y):
             choice = random_choice(item_chances)
-            item = libobj.make_item(choice, item_templates)
+            item = object_factory.new_item(choice)
             item.x = x
             item.y = y
             objects.append(item)
@@ -233,7 +233,7 @@ def randomly_placed_rect():
     return Rect(x, y, w, h)
 
 
-def make_map(player, dungeon_level):
+def make_map(player, dungeon_level, object_factory):
     objects = [player]
     map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
@@ -243,8 +243,6 @@ def make_map(player, dungeon_level):
                for x in range(MAP_WIDTH)]
     rooms = []
     num_rooms = 0
-    monster_templates = libobj.load_templates('monsters.json')
-    item_templates = libobj.load_templates('items.json')
 
     for r in range(MAX_ROOMS):
         new_room = randomly_placed_rect()
@@ -278,9 +276,9 @@ def make_map(player, dungeon_level):
                 create_h_tunnel(map, prev_x, new_x, new_y, metamap)
 
         # Finish
-        place_monsters(new_room, map, objects, monster_templates, dungeon_level)
-        place_items(new_room, map, objects, item_templates, dungeon_level)
-        place_critters(new_room, map, objects, monster_templates, dungeon_level)
+        place_monsters(new_room, map, objects, dungeon_level, object_factory)
+        place_items(new_room, map, objects, dungeon_level, object_factory)
+        place_critters(new_room, map, objects, dungeon_level, object_factory)
         rooms.append(new_room)
         num_rooms += 1
 
