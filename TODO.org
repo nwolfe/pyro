@@ -8,11 +8,11 @@
 *** Random items (like Diablo) or carried items?
 
 * CODEBASE
-** TODO Remove UI#render_all() call in Game#target_tile()
 ** TODO Rename char to glyph
 
 * BUGS
 ** TODO Lower monster corpse render order below critter
 ** TODO Fix missing messages from items after loading
+*** Problem due to persistence and the reference to Game from Component
 ** TODO Fix vanishing doppleganger casting bug
 *** Scroll of Confusion creates a visual copy of the target
