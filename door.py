@@ -1,4 +1,5 @@
 import component as libcomp
+import libtcodpy as libtcod
 
 
 class Door(libcomp.Component):
@@ -13,6 +14,8 @@ class Door(libcomp.Component):
         self.owner.char = self.opened_char
         self.owner.game.map[self.owner.x][self.owner.y].blocked = False
         self.owner.game.map[self.owner.x][self.owner.y].block_sight = False
+        libtcod.map_set_properties(self.owner.game.fov_map,
+                                   self.owner.x, self.owner.y, True, True)
 
     def close(self):
         self.is_open = False
@@ -20,3 +23,5 @@ class Door(libcomp.Component):
         self.owner.char = self.closed_char
         self.owner.game.map[self.owner.x][self.owner.y].blocked = True
         self.owner.game.map[self.owner.x][self.owner.y].block_sight = True
+        libtcod.map_set_properties(self.owner.game.fov_map,
+                                   self.owner.x, self.owner.y, False, False)

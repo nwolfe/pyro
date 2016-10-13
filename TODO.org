@@ -3,9 +3,6 @@
 * GAMEPLAY
 ** Doors!
 *** TODO Close doors
-*** Field of view
-**** TODO Updates when door opens
-**** TODO Can see through properly from afar
 ** TODO Grass!
 ** TODO Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat
