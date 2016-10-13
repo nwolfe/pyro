@@ -1,8 +1,6 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
-** Doors!
-*** TODO Close doors
 ** TODO Grass!
 ** TODO Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat

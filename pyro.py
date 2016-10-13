@@ -37,6 +37,19 @@ def move_player_or_attack(dx, dy, game):
         return (True, 'move')
 
 
+def close_nearest_door(game):
+    x = game.player.x
+    y = game.player.y
+    for object in game.objects:
+        if object.component(libdoor.Door):
+            close_x = (object.x == x or object.x == x-1 or object.x == x+1)
+            close_y = (object.y == y or object.y == y-1 or object.y == y+1)
+            player_on_door = (object.x == x and object.y == y)
+            if close_x and close_y and not player_on_door:
+                object.component(libdoor.Door).close()
+                break
+
+
 def show_character_info(console, game):
     msg = """Character Information
 
@@ -126,6 +139,9 @@ def handle_keys(ui, game):
     elif key_char == 'c':
         show_character_info(ui.console, game)
         return (False, None)
+    elif key_char == 'r':
+        close_nearest_door(game)
+        return (True, None)
     else:
         return (False, 'idle')
 
