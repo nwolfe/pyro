@@ -100,11 +100,12 @@ def create_v_tunnel(map, y1, y2, x, metamap):
 def get_spawn_chances(templates, dungeon_level):
     chances = {}
     for t in templates:
-        chance = t['spawn']
-        if isinstance(chance, list):
-            chances[t['name']] = from_dungeon_level(chance, dungeon_level)
-        else:
-            chances[t['name']] = chance
+        if t.has_key('spawn'):
+            chance = t['spawn']
+            if isinstance(chance, list):
+                chances[t['name']] = from_dungeon_level(chance, dungeon_level)
+            else:
+                chances[t['name']] = chance
     return chances
 
 

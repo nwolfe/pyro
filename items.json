@@ -28,6 +28,13 @@
         "spawn": [[25, 6]]
     },
     {
+        "name": "dagger",
+        "glyph": "-",
+        "color": "sky",
+        "slot": "right hand",
+        "power": 2
+    },
+    {
         "name": "sword",
         "glyph": "/",
         "color": "sky",
