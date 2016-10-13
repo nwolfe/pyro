@@ -10,11 +10,11 @@ from settings import *
 
 
 class GameObject:
-    def __init__(self, x=0, y=0, char=None, name=None, color=None, blocks=False,
+    def __init__(self, x=0, y=0, glyph=None, name=None, color=None, blocks=False,
                  render_order=1, always_visible=False, components={}, game=None):
         self.x = x
         self.y = y
-        self.char = char
+        self.glyph = glyph
         self.color = color
         self.name = name
         self.render_order = render_order
@@ -48,7 +48,7 @@ class GameObject:
             # Set the color and then draw the character that
             # represents this object at its position
             libtcod.console_set_default_foreground(console, self.color)
-            libtcod.console_put_char(console, self.x, self.y, self.char,
+            libtcod.console_put_char(console, self.x, self.y, self.glyph,
                                      libtcod.BKGND_NONE)
 
     def clear(self, console):
@@ -148,7 +148,7 @@ def monster_death(monster, game):
                  format(monster.name.capitalize(), exp.xp),
                  libtcod.orange)
     game.player.component(libxp.Experience).xp += exp.xp
-    monster.char = '%'
+    monster.glyph = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
     monster.render_order = 0
@@ -159,14 +159,14 @@ def monster_death(monster, game):
 
 def instantiate_monster(template):
     name = template['name']
-    char = template['symbol']
+    glyph = template['glyph']
     color = getattr(libtcod, template['color'])
     ai_comp_fn = getattr(libai, template['ai'])
     ai_comp = ai_comp_fn()
     exp_comp = libxp.Experience(template['experience'])
     fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
                                    template['power'], death_fn=monster_death)
-    return GameObject(char=char, name=name, color=color, blocks=True,
+    return GameObject(glyph=glyph, name=name, color=color, blocks=True,
                       components={libfighter.Fighter: fighter_comp,
                                   libai.AI: ai_comp,
                                   libxp.Experience: exp_comp})
@@ -183,16 +183,16 @@ def load_templates(file):
         templates = json.load(f)
 
         # For some reason the UI renderer can't handle Unicode strings so we
-        # need to convert the character symbol to UTF-8 for it to be rendered
+        # need to convert the character glyph to UTF-8 for it to be rendered
         for t in templates:
-            t['symbol'] = str(t['symbol'])
+            t['glyph'] = str(t['glyph'])
 
         return templates
 
 
 def instantiate_item(template):
     name = template['name']
-    char = template['symbol']
+    glyph = template['glyph']
     color = getattr(libtcod, template['color'])
     if 'slot' in template:
         equipment = libitem.Equipment(slot=template['slot'])
@@ -202,11 +202,11 @@ def instantiate_item(template):
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        return GameObject(char=char, name=name, color=color, render_order=0,
+        return GameObject(glyph=glyph, name=name, color=color, render_order=0,
                           components={libitem.Equipment: equipment})
     elif 'on_use' in template:
         use_fn = getattr(abilities, template['on_use'])
-        return GameObject(char=char, name=name, color=color, render_order=0,
+        return GameObject(glyph=glyph, name=name, color=color, render_order=0,
                           components={libitem.Item: libitem.Item(use_fn=use_fn)})
 
 

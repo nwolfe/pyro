@@ -1,35 +1,35 @@
 [
     {
         "name": "healing potion",
-        "symbol": "!",
+        "glyph": "!",
         "color": "violet",
         "on_use": "cast_heal",
         "spawn": 35
     },
     {
         "name": "scroll of lightning bolt",
-        "symbol": "#",
+        "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_lightning",
         "spawn": [[25, 4]]
     },
     {
         "name": "scroll of confusion",
-        "symbol": "#",
+        "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_confuse",
         "spawn": [[10, 2]]
     },
     {
         "name": "scroll of fireball",
-        "symbol": "#",
+        "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_fireball",
         "spawn": [[25, 6]]
     },
     {
         "name": "sword",
-        "symbol": "/",
+        "glyph": "/",
         "color": "sky",
         "slot": "right hand",
         "power": 3,
@@ -37,7 +37,7 @@
     },
     {
         "name": "shield",
-        "symbol": "[",
+        "glyph": "[",
         "color": "darker_orange",
         "slot": "left hand",
         "defense": 1,

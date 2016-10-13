@@ -111,7 +111,7 @@ def get_spawn_chances(templates, dungeon_level):
 def place_door(x, y, map, objects):
     map[x][y].blocked = True
     map[x][y].block_sight = True
-    door_comp = libdoor.Door(is_open=False, opened_char='-', closed_char='+')
+    door_comp = libdoor.Door(is_open=False, opened_glyph='-', closed_glyph='+')
     door = libobj.GameObject(x, y, '+', 'door', libtcod.white, render_order=0,
                              components={libdoor.Door: door_comp})
     objects.append(door)

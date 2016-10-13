@@ -150,7 +150,7 @@ def player_death(player, game):
     game.message('You died!')
     game.state = 'dead'
 
-    player.char = '%'
+    player.glyph = '%'
     player.color = libtcod.dark_red
 
 

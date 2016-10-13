@@ -8,7 +8,6 @@
 *** Random items (like Diablo) or carried items?
 
 * CODEBASE
-** TODO Rename char to glyph
 
 * BUGS
 ** TODO Lower monster corpse render order below critter

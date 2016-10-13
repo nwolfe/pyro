@@ -1,7 +1,7 @@
 [
     {
         "name": "rat",
-        "symbol": "r",
+        "glyph": "r",
         "color": "darkest_pink",
         "ai": "passive_aggressive",
         "experience": 10,
@@ -21,7 +21,7 @@
     },
     {
         "name": "orc",
-        "symbol": "o",
+        "glyph": "o",
         "color": "desaturated_green",
         "ai": "aggressive",
         "experience": 35,
@@ -32,7 +32,7 @@
     },
     {
         "name": "troll",
-        "symbol": "T",
+        "glyph": "T",
         "color": "darker_green",
         "ai": "aggressive",
         "experience": 100,
