@@ -8,6 +8,8 @@
 *** Random items (like Diablo) or carried items?
 
 * CODEBASE
+** TODO Define player's dagger in JSON instead of code
+** TODO Use Scroll of Lightning from JSON instead of redefining
 
 * BUGS
 ** TODO Lower monster corpse render order below critter
