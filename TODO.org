@@ -14,6 +14,7 @@
 * BUGS
 ** TODO Lower monster corpse render order below critter
 ** TODO Fix missing messages from items after loading
-*** Problem due to persistence and the reference to Game from Component
+*** Problem due to persistence and the reference to Game from GameObject
 ** TODO Fix vanishing doppleganger casting bug
 *** Scroll of Confusion creates a visual copy of the target
+*** Has to do with the call to UI.render_all
