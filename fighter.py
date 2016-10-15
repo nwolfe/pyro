@@ -1,3 +1,4 @@
+import libtcodpy as libtcod
 import component as libcomp
 import item as libitem
 import ai as libai
@@ -47,6 +48,12 @@ class Fighter(libcomp.Component):
             self.hp = self.max_hp()
 
     def attack(self, target):
+        if libtcod.random_get_int(0, 1, 10) == 1:
+            msg = '{0} attacks {1} but misses!'.format(
+                self.owner.name.capitalize(), target.name)
+            self.owner.game.message(msg)
+            return
+
         fighter = target.component(Fighter)
         damage = self.power() - fighter.defense()
 

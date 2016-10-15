@@ -2,7 +2,7 @@
 
 * GAMEPLAY
 ** DONE Grass!
-** TODO Attacks shouldn't have 100% hit chance
+** DONE Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat
 ** TODO Monsters drop items when killed?
 *** Random items (like Diablo) or carried items?
