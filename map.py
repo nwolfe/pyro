@@ -1,7 +1,14 @@
 import libtcodpy as libtcod
 import object as libobj
 import door as libdoor
+import grass as libgrass
 from settings import *
+
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
 class Rect:
@@ -20,6 +27,10 @@ class Rect:
         # Returns true if this rectangle intersects with the other one
         return (self.x1 <= other.x2 and self.x2 >= other.x1 and
                 self.y1 <= other.y2 and self.y2 >= other.y1)
+
+    def random_point_inside(self):
+        return Point(libtcod.random_get_int(0, self.x1+1, self.x2-1),
+                     libtcod.random_get_int(0, self.y1+1, self.y2-1))
 
 
 class Tile:
@@ -214,6 +225,62 @@ def place_items(room, map, objects, dungeon_level, object_factory):
             objects.append(item)
 
 
+def place_grass_tile(x, y, map, objects):
+    map[x][y].block_sight = True
+    grass_comp = libgrass.Grass(is_crushed=False, standing_glyph=':',
+                                crushed_glyph='.')
+    grass = libobj.GameObject(x, y, ':', 'tall grass', libtcod.green,
+                              render_order=0,
+                              components={libgrass.Grass: grass_comp})
+    objects.append(grass)
+
+
+def random_point_surrounding(point):
+    p = Point(libtcod.random_get_int(0, point.x-1, point.x+1),
+              libtcod.random_get_int(0, point.y-1, point.y+1))
+    while p.x == point.x and p.y == point.y:
+        p = Point(libtcod.random_get_int(0, point.x-1, point.x+1),
+                  libtcod.random_get_int(0, point.y-1, point.y+1))
+    return p
+
+
+def is_on_map(point, map):
+    x_in_bounds = point.x >= 0 and point.x < len(map)
+    y_in_bounds = point.y >= 0 and point.y < len(map[0])
+    return x_in_bounds and y_in_bounds
+
+
+def place_grass(room, map, objects):
+    if libtcod.random_get_int(0, 1, 2) == 1:
+        grass_tiles = []
+        point = room.random_point_inside()
+        while libobj.is_blocked(map, objects, point.x, point.y):
+            point = room.random_point_inside()
+
+        place_grass_tile(point.x, point.y, map, grass_tiles)
+
+        num_grass = libtcod.random_get_int(0, 4, 8)
+        for i in range(num_grass):
+            point = random_point_surrounding(point)
+            while not is_on_map(point, map):
+                point = random_point_surrounding(point)
+
+            grass_at_point = False
+            for grass in grass_tiles:
+                if point.x == grass.x and point.y == grass.y:
+                    grass_at_point = True
+                    break
+
+            if grass_at_point:
+                continue
+
+            if not libobj.is_blocked(map, objects, point.x, point.y):
+                place_grass_tile(point.x, point.y, map, objects)
+
+        for grass in grass_tiles:
+            objects.append(grass)
+
+
 def room_overlaps_existing(room, existing):
     for other in existing:
         if room.intersect(other):
@@ -276,6 +343,7 @@ def make_map(player, dungeon_level, object_factory):
                 create_h_tunnel(map, prev_x, new_x, new_y, metamap)
 
         # Finish
+        place_grass(new_room, map, objects)
         place_monsters(new_room, map, objects, dungeon_level, object_factory)
         place_items(new_room, map, objects, dungeon_level, object_factory)
         place_critters(new_room, map, objects, dungeon_level, object_factory)

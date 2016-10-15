@@ -1,7 +1,7 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
-** TODO Grass!
+** DONE Grass!
 ** TODO Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat
 ** TODO Monsters drop items when killed?

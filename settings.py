@@ -5,6 +5,7 @@ COLOR_DARK_WALL = libtcod.Color(0, 0, 100)
 COLOR_LIGHT_WALL = libtcod.Color(130, 110, 50)
 COLOR_DARK_GROUND = libtcod.Color(50, 50, 150)
 COLOR_LIGHT_GROUND = libtcod.Color(200, 180, 50)
+COLOR_LIGHT_GRASS = libtcod.Color(74, 73, 70)
 
 # GUI
 SCREEN_WIDTH = 80

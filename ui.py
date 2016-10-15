@@ -132,7 +132,7 @@ def render_all(ui, game, fov_recompute):
         for y in range(MAP_HEIGHT):
             for x in range(MAP_WIDTH):
                 visible = libtcod.map_is_in_fov(game.fov_map, x, y)
-                wall = game.map[x][y].block_sight
+                wall = game.map[x][y].block_sight and game.map[x][y].blocked
                 if not visible:
                     if game.map[x][y].explored:
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
@@ -140,7 +140,12 @@ def render_all(ui, game, fov_recompute):
                                                             x, y, color,
                                                             libtcod.BKGND_SET)
                 else:
-                    color = COLOR_LIGHT_WALL if wall else COLOR_LIGHT_GROUND
+                    if wall:
+                        color = COLOR_LIGHT_WALL
+                    elif game.map[x][y].block_sight:
+                        color = COLOR_LIGHT_GRASS
+                    else:
+                        color = COLOR_LIGHT_GROUND
                     libtcod.console_set_char_background(ui.console,
                                                         x, y, color,
                                                         libtcod.BKGND_SET)

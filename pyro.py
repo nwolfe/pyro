@@ -9,6 +9,7 @@ import experience as libxp
 import item as libitem
 import abilities as libabilities
 import door as libdoor
+import grass as libgrass
 import shelve
 from settings import *
 
@@ -25,15 +26,29 @@ def move_player_or_attack(dx, dy, game):
 
     if target:
         game.player.component(libfighter.Fighter).attack(target)
-        return (False, None)
+        return (False, 'attack')
     else:
+        door = None
+        grass = None
+        for object in game.objects:
+            if object.component(libdoor.Door):
+                if object.x == x and object.y == y:
+                    door = object.component(libdoor.Door)
+            elif object.component(libgrass.Grass):
+                if object.x == x and object.y == y:
+                    if not object.component(libgrass.Grass).is_crushed:
+                        grass = object.component(libgrass.Grass)
+
+            if door and grass:
+                break
+
         moved = game.player.move(dx, dy)
-        if not moved:
-            for object in game.objects:
-                if object.component(libdoor.Door):
-                    if object.x == x and object.y == y:
-                        object.component(libdoor.Door).open()
-                        break
+        if moved:
+            if grass:
+                grass.crush()
+        else:
+            if door:
+                door.open()
         return (True, 'move')
 
 
