@@ -3,6 +3,12 @@
 * GAMEPLAY
 ** TODO Ranged/missile combat
 ** TODO Monsters drop items when killed?
+** Menu
+*** TODO ESC closes the menu and returns to the game
+*** TODO Add 'Continue' menu option
+*** TODO Add 'Save Game' menu option
+*** TODO Add 'Save and Quit' menu option
+*** TODO Add 'Quit' menu option (no save)
 
 * CODEBASE
 
