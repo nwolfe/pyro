@@ -170,14 +170,13 @@ def place_critters(room, map, objects, dungeon_level, object_factory):
 
     for i in range(num_critters):
         # Random position for critter
-        x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
-        y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+        point = room.random_point_inside()
 
-        if not libobj.is_blocked(map, objects, x, y):
+        if not libobj.is_blocked(map, objects, point.x, point.y):
             choice = random_choice(critter_chances)
             critter = object_factory.new_monster(choice)
-            critter.x = x
-            critter.y = y
+            critter.x = point.x
+            critter.y = point.y
             objects.append(critter)
 
 
@@ -195,14 +194,13 @@ def place_monsters(room, map, objects, dungeon_level, object_factory):
 
     for i in range(num_monsters):
         # Random position for monster
-        x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
-        y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+        point = room.random_point_inside()
 
-        if not libobj.is_blocked(map, objects, x, y):
+        if not libobj.is_blocked(map, objects, point.x, point.y):
             choice = random_choice(monster_chances)
             monster = object_factory.new_monster(choice)
-            monster.x = x
-            monster.y = y
+            monster.x = point.x
+            monster.y = point.y
             objects.append(monster)
 
 
@@ -214,14 +212,13 @@ def place_items(room, map, objects, dungeon_level, object_factory):
 
     for i in range(num_items):
         # Random position for item
-        x = libtcod.random_get_int(0, room.x1+1, room.x2-1)
-        y = libtcod.random_get_int(0, room.y1+1, room.y2-1)
+        point = room.random_point_inside()
 
-        if not libobj.is_blocked(map, objects, x, y):
+        if not libobj.is_blocked(map, objects, point.x, point.y):
             choice = random_choice(item_chances)
             item = object_factory.new_item(choice)
-            item.x = x
-            item.y = y
+            item.x = point.x
+            item.y = point.y
             objects.append(item)
 
 
