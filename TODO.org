@@ -1,15 +1,10 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
-** DONE Grass!
-** DONE Attacks shouldn't have 100% hit chance
 ** TODO Ranged/missile combat
 ** TODO Monsters drop items when killed?
-*** Random items (like Diablo) or carried items?
 
 * CODEBASE
-** DONE Define player's dagger in JSON instead of code
-** DONE Use Scroll of Lightning from JSON instead of redefining
 
 * BUGS
 ** TODO Lower monster corpse render order below critter
