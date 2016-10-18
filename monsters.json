@@ -42,5 +42,16 @@
         "spawn": [[15, 3],
                   [30, 5],
                   [60, 7]]
+    },
+    {
+        "name": "kobold wizard",
+        "glyph": "w",
+        "color": "dark_green",
+        "ai": "aggressive_spellcaster",
+        "experience": 100,
+        "hp": 15,
+        "defense": 0,
+        "power": 2,
+        "spawn": 40
     }
 ]
