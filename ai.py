@@ -1,6 +1,7 @@
 import libtcodpy as libtcod
 import component as libcomp
 import fighter as libfighter
+import abilities as libabil
 from settings import *
 
 
@@ -27,6 +28,20 @@ class Aggressive(AI):
             # Close enough, attack! (If the player is still alive)
             elif monster.game.player.component(libfighter.Fighter).hp > 0:
                 monster.component(libfighter.Fighter).attack(monster.game.player)
+
+
+class AggressiveSpellcaster(AI):
+    def take_turn(self):
+        monster = self.owner
+        player = monster.game.player
+        if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
+            # Move towards player if far away
+            if monster.distance_to(player) >= LIGHTNING_RANGE:
+                monster.move_astar(player)
+
+            # Close enough, attack! (If the player is still alive)
+            elif player.component(libfighter.Fighter).hp > 0:
+                libabil.cast_lightning(monster, monster.game, None)
 
 
 class PassiveAggressive(AI):
@@ -65,6 +80,10 @@ class Confused(AI):
 
 def aggressive():
     return Aggressive()
+
+
+def aggressive_spellcaster():
+    return AggressiveSpellcaster()
 
 
 def passive_aggressive():
