@@ -10,7 +10,7 @@
         "name": "scroll of lightning bolt",
         "glyph": "#",
         "color": "light_yellow",
-        "on_use": "cast_lightning",
+        "on_use": "cast_lightning_bolt",
         "spawn": [[25, 4]]
     },
     {

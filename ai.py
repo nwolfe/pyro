@@ -2,6 +2,7 @@ import libtcodpy as libtcod
 import component as libcomp
 import fighter as libfighter
 import abilities as libabil
+import spellcaster as libcast
 from settings import *
 
 
@@ -36,16 +37,12 @@ class AggressiveSpellcaster(AI):
         player = monster.game.player
         if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
             # Move towards player if far away
-            if monster.distance_to(player) >= LIGHTNING_RANGE:
+            if not monster.component(libcast.Spellcaster).in_range(player):
                 monster.move_astar(player)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(libfighter.Fighter).hp > 0:
-                # 50% chance to hit
-                if libtcod.random_get_int(0, 0, 1) == 0:
-                    libabil.monster_cast_lightning(monster, player,
-                                                   LIGHTNING_DAMAGE / 3,
-                                                   monster.game)
+                monster.component(libcast.Spellcaster).cast_spell(player)
 
 
 class PassiveAggressive(AI):

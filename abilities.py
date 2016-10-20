@@ -1,6 +1,7 @@
 import libtcodpy as libtcod
 import ai as libai
 import fighter as libfighter
+import spells as libspells
 from settings import *
 
 
@@ -12,12 +13,13 @@ def cast_heal(player, game, ui):
         return 'cancelled'
 
     game.message('Your wounds start to feel better!', libtcod.light_violet)
-    fighter.heal(HEAL_AMOUNT)
+    libspells.Heal().cast(player, player)
 
 
-def cast_lightning(player, game, ui):
+def cast_lightning_bolt(player, game, ui):
     # Find the closest enemy (inside a maximum range) and damage it
-    monster = game.closest_monster(LIGHTNING_RANGE)
+    spell = libspells.LightningBolt()
+    monster = game.closest_monster(spell.range())
     if monster is None:
         game.message('No enemy is close enough to strike.', libtcod.red)
         return 'cancelled'
@@ -25,28 +27,21 @@ def cast_lightning(player, game, ui):
     # Zap it!
     msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
     msg += 'The damage is {1} hit points.'
-    msg = msg.format(monster.name, LIGHTNING_DAMAGE)
+    msg = msg.format(monster.name, spell.strength())
     game.message(msg, libtcod.light_blue)
-    monster.component(libfighter.Fighter).take_damage(LIGHTNING_DAMAGE)
-
-
-def monster_cast_lightning(monster, player, damage, game):
-    player.component(libfighter.Fighter).take_damage(damage)
-    msg = 'The {0} strikes you with a bolt of lightning! You take {1} damage.'
-    game.message(msg.format(monster.name, damage), libtcod.red)
+    spell.cast(player, monster)
 
 
 def cast_confuse(player, game, ui):
     # Ask the player for a target to confuse
+    spell = libspells.Confuse()
     game.message('Left-click an enemy to confuse it, or right-click to cancel.',
                  libtcod.light_cyan)
-    monster = game.target_monster(ui, CONFUSE_RANGE)
+    monster = game.target_monster(ui, spell.range())
     if monster is None:
         return 'cancelled'
 
-    old_ai = monster.component(libai.AI)
-    new_ai = libai.ConfusedMonster(old_ai)
-    monster.set_component(libai.AI, new_ai)
+    spell.cast(player, monster)
     msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
     game.message(msg.format(monster.name), libtcod.light_green)
 

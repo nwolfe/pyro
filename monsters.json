@@ -48,6 +48,7 @@
         "glyph": "w",
         "color": "dark_green",
         "ai": "aggressive_spellcaster",
+        "spell": "lightning_bolt",
         "experience": 100,
         "hp": 15,
         "defense": 0,

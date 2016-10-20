@@ -3,7 +3,9 @@ import ai as libai
 import item as libitem
 import experience as libxp
 import fighter as libfighter
+import spellcaster as libcast
 import abilities
+import spells
 import math
 import json
 from settings import *
@@ -166,10 +168,15 @@ def instantiate_monster(template):
     exp_comp = libxp.Experience(template['experience'])
     fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
                                    template['power'], death_fn=monster_death)
+    components = {libfighter.Fighter: fighter_comp,
+                  libai.AI: ai_comp,
+                  libxp.Experience: exp_comp}
+    if 'spell' in template:
+        spell_fn = getattr(spells, template['spell'])
+        spell = spell_fn()
+        components[libcast.Spellcaster] = libcast.Spellcaster(spell)
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
-                      components={libfighter.Fighter: fighter_comp,
-                                  libai.AI: ai_comp,
-                                  libxp.Experience: exp_comp})
+                      components=components)
 
 
 def make_monster(name, monster_templates):
