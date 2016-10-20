@@ -41,7 +41,11 @@ class AggressiveSpellcaster(AI):
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(libfighter.Fighter).hp > 0:
-                libabil.cast_lightning(monster, monster.game, None)
+                # 50% chance to hit
+                if libtcod.random_get_int(0, 0, 1) == 0:
+                    libabil.monster_cast_lightning(monster, player,
+                                                   LIGHTNING_DAMAGE / 3,
+                                                   monster.game)
 
 
 class PassiveAggressive(AI):

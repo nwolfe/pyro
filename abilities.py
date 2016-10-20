@@ -15,24 +15,25 @@ def cast_heal(player, game, ui):
     fighter.heal(HEAL_AMOUNT)
 
 
-def cast_lightning(source, game, ui):
-    target = None
-    if source == game.player:
-        # Find the closest enemy (inside a maximum range) and damage it
-        target = game.closest_monster(LIGHTNING_RANGE)
-        if target is None:
-            game.message('No enemy is close enough to strike.', libtcod.red)
-            return 'cancelled'
-    else:
-        # Monster cast; target the player
-        target = game.player
+def cast_lightning(player, game, ui):
+    # Find the closest enemy (inside a maximum range) and damage it
+    monster = game.closest_monster(LIGHTNING_RANGE)
+    if monster is None:
+        game.message('No enemy is close enough to strike.', libtcod.red)
+        return 'cancelled'
 
     # Zap it!
     msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
     msg += 'The damage is {1} hit points.'
-    msg = msg.format(target.name, LIGHTNING_DAMAGE)
+    msg = msg.format(monster.name, LIGHTNING_DAMAGE)
     game.message(msg, libtcod.light_blue)
-    target.component(libfighter.Fighter).take_damage(LIGHTNING_DAMAGE)
+    monster.component(libfighter.Fighter).take_damage(LIGHTNING_DAMAGE)
+
+
+def monster_cast_lightning(monster, player, damage, game):
+    player.component(libfighter.Fighter).take_damage(damage)
+    msg = 'The {0} strikes you with a bolt of lightning! You take {1} damage.'
+    game.message(msg.format(monster.name, damage), libtcod.red)
 
 
 def cast_confuse(player, game, ui):
