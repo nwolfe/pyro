@@ -1,7 +1,6 @@
 import libtcodpy as libtcod
 import component as libcomp
 import fighter as libfighter
-import abilities as libabil
 import spellcaster as libcast
 from settings import *
 

@@ -1,5 +1,4 @@
 import libtcodpy as libtcod
-import ai as libai
 import fighter as libfighter
 import spells as libspells
 from settings import *
