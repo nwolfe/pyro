@@ -13,6 +13,7 @@
 *** TODO Add 'Quit' menu option (no save)
 
 * CODEBASE
+** TODO Fix setup.py since code moved to pyro/
 
 * BUGS
 ** TODO Lower monster corpse render order below critter
