@@ -3,13 +3,13 @@ import object as libobj
 import map as libmap
 import game as libgame
 import ui as libui
-import ai as libai
-import fighter as libfighter
-import experience as libxp
-import item as libitem
+import components.ai as libai
+import components.fighter as libfighter
+import components.experience as libxp
+import components.item as libitem
 import abilities as libabilities
-import door as libdoor
-import grass as libgrass
+import components.door as libdoor
+import components.grass as libgrass
 import shelve
 from settings import *
 

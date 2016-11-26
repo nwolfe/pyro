@@ -1,9 +1,10 @@
 import libtcodpy as libtcod
-import ai as libai
-import item as libitem
-import experience as libxp
-import fighter as libfighter
-import spellcaster as libcast
+import components.ai as libai
+import components.item as libitem
+import components.experience as libxp
+import components.fighter as libfighter
+import components.spellcaster as libcast
+import ai_factory
 import abilities
 import spells
 import math
@@ -163,7 +164,7 @@ def instantiate_monster(template):
     name = template['name']
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
-    ai_comp_fn = getattr(libai, template['ai'])
+    ai_comp_fn = getattr(ai_factory, template['ai'])
     ai_comp = ai_comp_fn()
     exp_comp = libxp.Experience(template['experience'])
     fighter_comp = libfighter.Fighter(template['hp'], template['defense'],

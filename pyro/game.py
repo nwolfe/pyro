@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 import ui as libui
-import fighter as libfighter
+import components.fighter as libfighter
 import textwrap
 from settings import *
 

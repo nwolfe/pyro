@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-import fighter as libfighter
+import components.fighter as libfighter
 import spells as libspells
 from settings import *
 

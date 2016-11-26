@@ -1,5 +1,5 @@
-import ai as libai
-import fighter as libfighter
+import components.ai as libai
+import components.fighter as libfighter
 from settings import *
 
 

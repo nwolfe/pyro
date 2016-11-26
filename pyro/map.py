@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 import object as libobj
-import door as libdoor
-import grass as libgrass
+import components.door as libdoor
+import components.grass as libgrass
 from settings import *
 
 

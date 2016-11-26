@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 import component as libcomp
-import item as libitem
-import ai as libai
+import components.item as libitem
+import components.ai as libai
 
 
 class Fighter(libcomp.Component):

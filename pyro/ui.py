@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
-import item as libitem
-import fighter as libfighter
+import components.item as libitem
+import components.fighter as libfighter
 from settings import *
 
 
