@@ -4,7 +4,10 @@ import components.item as libitem
 import components.experience as libxp
 import components.fighter as libfighter
 import components.spellcaster as libcast
-import ai_factory
+import ai.aggressive
+import ai.aggressive_spellcaster
+import ai.passive_aggressive
+import ai.confused
 import abilities
 import spells
 import math
@@ -160,12 +163,19 @@ def monster_death(monster, game):
     monster.components.pop(libai.AI)
 
 
+MONSTER_AI_CLASSES = dict(
+    aggressive = ai.aggressive.Aggressive,
+    aggressive_spellcaster = ai.aggressive_spellcaster.AggressiveSpellcaster,
+    passive_aggressive = ai.passive_aggressive.PassiveAggressive,
+    confused = ai.confused.Confused
+)
+
+
 def instantiate_monster(template):
     name = template['name']
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
-    ai_comp_fn = getattr(ai_factory, template['ai'])
-    ai_comp = ai_comp_fn()
+    ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = libxp.Experience(template['experience'])
     fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
                                    template['power'], death_fn=monster_death)

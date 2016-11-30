@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 import components.ai as libai
-import components.ais.aggressive as libagg
+import ai.aggressive as libagg
 
 
 class PassiveAggressive(libai.AI):
