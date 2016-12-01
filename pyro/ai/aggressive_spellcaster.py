@@ -15,4 +15,4 @@ class AggressiveSpellcaster(libai.AI):
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(libfighter.Fighter).hp > 0:
-                monster.component(libcast.Spellcaster).cast_spell(player)
+                monster.component(libcast.Spellcaster).cast_spell([player])

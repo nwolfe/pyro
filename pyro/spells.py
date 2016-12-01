@@ -15,7 +15,7 @@ class Spell:
     def strength(self):
         return self.base_strength
 
-    def cast(self, caster, target):
+    def cast(self, caster, targets):
         return
 
 
@@ -24,26 +24,26 @@ class LightningBolt(Spell):
                  strength=LIGHTNING_DAMAGE):
         Spell.__init__(self, name, range, strength)
 
-    def cast(self, caster, target):
-        target.component(libfighter.Fighter).take_damage(self.strength())
+    def cast(self, caster, targets):
+        targets[0].component(libfighter.Fighter).take_damage(self.strength())
 
 
 class Heal(Spell):
     def __init__(self, name='Healing', strength=HEAL_AMOUNT):
         Spell.__init__(self, name, 0, strength)
 
-    def cast(self, caster, target):
-        target.component(libfighter.Fighter).heal(self.strength())
+    def cast(self, caster, targets):
+        targets[0].component(libfighter.Fighter).heal(self.strength())
 
 
 class Confuse(Spell):
     def __init__(self, name='Confusion', range=CONFUSE_RANGE):
         Spell.__init__(self, name, range, 0)
 
-    def cast(self, caster, target):
-        old_ai = target.component(libai.AI)
+    def cast(self, caster, targets):
+        old_ai = targets[0].component(libai.AI)
         new_ai = libai.ConfusedMonster(old_ai)
-        target.set_component(libai.AI, new_ai)
+        targets[0].set_component(libai.AI, new_ai)
 
 
 def lightning_bolt():

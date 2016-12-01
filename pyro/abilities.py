@@ -12,7 +12,7 @@ def cast_heal(player, game, ui):
         return 'cancelled'
 
     game.message('Your wounds start to feel better!', libtcod.light_violet)
-    libspells.Heal().cast(player, player)
+    libspells.Heal().cast(player, [player])
 
 
 def cast_lightning_bolt(player, game, ui):
@@ -28,7 +28,7 @@ def cast_lightning_bolt(player, game, ui):
     msg += 'The damage is {1} hit points.'
     msg = msg.format(monster.name, spell.strength())
     game.message(msg, libtcod.light_blue)
-    spell.cast(player, monster)
+    spell.cast(player, [monster])
 
 
 def cast_confuse(player, game, ui):
@@ -40,7 +40,7 @@ def cast_confuse(player, game, ui):
     if monster is None:
         return 'cancelled'
 
-    spell.cast(player, monster)
+    spell.cast(player, [monster])
     msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
     game.message(msg.format(monster.name), libtcod.light_green)
 
