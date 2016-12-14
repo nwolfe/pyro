@@ -7,7 +7,6 @@ import pyro.components.ai as libai
 import pyro.components.fighter as libfighter
 import pyro.components.experience as libxp
 import pyro.components.item as libitem
-import pyro.abilities as libabilities
 import pyro.components.door as libdoor
 import pyro.components.grass as libgrass
 import shelve
@@ -341,8 +340,8 @@ def main_menu(ui):
     background = libtcod.image_load('menu_background.png')
 
     object_factory = libobj.GameObjectFactory()
-    object_factory.load_templates(monster_file='monsters.json',
-                                  item_file='items.json')
+    object_factory.load_templates(monster_file='resources/monsters.json',
+                                  item_file='resources/items.json')
 
     while not libtcod.console_is_window_closed():
         # Show the image at twice the regular console resolution

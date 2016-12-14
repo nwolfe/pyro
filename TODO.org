@@ -1,10 +1,9 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
-** TODO Ranged/missile combat
+** TODO Ranged/missile combat animation
 ** TODO Monsters drop items when killed?
 ** TODO Add weapon/spell accuracy attribute
-** TODO Create Fireball Spell
 ** Menu
 *** TODO ESC closes the menu and returns to the game
 *** TODO Add 'Continue' menu option
@@ -19,6 +18,7 @@
 *** TODO Capitalize monster names correctly
 
 * CODEBASE
+** TODO Create Fireball Spell
 ** TODO Fix setup.py since code moved to pyro/
 
 * BUGS
