@@ -14,8 +14,6 @@
 *** TODO Replace stairs on Level 26 with something else
 **** Finish the game on Level 26? Or
 **** Require the player to return to the top?
-** Messages
-*** TODO Capitalize monster names correctly
 
 * CODEBASE
 ** TODO Create Fireball Spell

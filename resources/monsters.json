@@ -1,6 +1,6 @@
 [
     {
-        "name": "rat",
+        "name": "Rat",
         "glyph": "r",
         "color": "darkest_pink",
         "ai": "passive_aggressive",
@@ -20,7 +20,7 @@
                   [0, 10]]
     },
     {
-        "name": "orc",
+        "name": "Orc",
         "glyph": "o",
         "color": "desaturated_green",
         "ai": "aggressive",
@@ -31,7 +31,7 @@
         "spawn": 80
     },
     {
-        "name": "troll",
+        "name": "Troll",
         "glyph": "T",
         "color": "darker_green",
         "ai": "aggressive",
@@ -44,7 +44,7 @@
                   [60, 7]]
     },
     {
-        "name": "kobold wizard",
+        "name": "Kobold Wizard",
         "glyph": "w",
         "color": "dark_green",
         "ai": "aggressive_spellcaster",

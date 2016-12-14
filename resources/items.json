@@ -1,41 +1,41 @@
 [
     {
-        "name": "healing potion",
+        "name": "Healing Potion",
         "glyph": "!",
         "color": "violet",
         "on_use": "cast_heal",
         "spawn": 35
     },
     {
-        "name": "scroll of lightning bolt",
+        "name": "Scroll Of Lightning Bolt",
         "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_lightning_bolt",
         "spawn": [[25, 4]]
     },
     {
-        "name": "scroll of confusion",
+        "name": "Scroll Of Confusion",
         "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_confuse",
         "spawn": [[10, 2]]
     },
     {
-        "name": "scroll of fireball",
+        "name": "Scroll Of Fireball",
         "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_fireball",
         "spawn": [[25, 6]]
     },
     {
-        "name": "dagger",
+        "name": "Dagger",
         "glyph": "-",
         "color": "sky",
         "slot": "right hand",
         "power": 2
     },
     {
-        "name": "sword",
+        "name": "Sword",
         "glyph": "/",
         "color": "sky",
         "slot": "right hand",
@@ -43,7 +43,7 @@
         "spawn": [[5, 4]]
     },
     {
-        "name": "shield",
+        "name": "Shield",
         "glyph": "[",
         "color": "darker_orange",
         "slot": "left hand",
