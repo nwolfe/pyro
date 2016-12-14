@@ -1,3 +1,4 @@
+import libtcodpy as libtcod
 import pyro.components.door as libdoor
 import pyro.components.grass as libgrass
 import pyro.object as libobj

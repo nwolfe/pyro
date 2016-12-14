@@ -1,3 +1,4 @@
+import libtcodpy as libtcod
 import pyro.components.fighter as libfighter
 import pyro.spells as libspells
 from pyro.settings import *

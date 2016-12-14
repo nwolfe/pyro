@@ -1,3 +1,4 @@
+import libtcodpy as libtcod
 import json
 import math
 import pyro.abilities

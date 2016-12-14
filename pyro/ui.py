@@ -1,3 +1,4 @@
+import libtcodpy as libtcod
 import pyro.components.fighter as libfighter
 import pyro.components.item as libitem
 from pyro.settings import *
