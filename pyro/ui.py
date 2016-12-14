@@ -1,7 +1,6 @@
-import libtcodpy as libtcod
-import components.item as libitem
-import components.fighter as libfighter
-from settings import *
+import pyro.components.fighter as libfighter
+import pyro.components.item as libitem
+from pyro.settings import *
 
 
 class UserInterface:

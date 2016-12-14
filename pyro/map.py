@@ -1,8 +1,7 @@
-import libtcodpy as libtcod
-import object as libobj
-import components.door as libdoor
-import components.grass as libgrass
-from settings import *
+import pyro.components.door as libdoor
+import pyro.components.grass as libgrass
+import pyro.object as libobj
+from pyro.settings import *
 
 
 class Point:

@@ -1,18 +1,17 @@
-import libtcodpy as libtcod
-import components.ai as libai
-import components.item as libitem
-import components.experience as libxp
-import components.fighter as libfighter
-import components.spellcaster as libcast
-import ai.aggressive
-import ai.aggressive_spellcaster
-import ai.passive_aggressive
-import ai.confused
-import abilities
-import spells
-import math
 import json
-from settings import *
+import math
+import pyro.abilities
+import pyro.ai.confused
+import pyro.ai.aggressive
+import pyro.ai.aggressive_spellcaster
+import pyro.ai.passive_aggressive
+import pyro.components.ai as libai
+import pyro.components.experience as libxp
+import pyro.components.fighter as libfighter
+import pyro.components.item as libitem
+import pyro.components.spellcaster as libcast
+import pyro.spells
+from pyro.settings import *
 
 
 class GameObject:
@@ -164,10 +163,10 @@ def monster_death(monster, game):
 
 
 MONSTER_AI_CLASSES = dict(
-    aggressive = ai.aggressive.Aggressive,
-    aggressive_spellcaster = ai.aggressive_spellcaster.AggressiveSpellcaster,
-    passive_aggressive = ai.passive_aggressive.PassiveAggressive,
-    confused = ai.confused.Confused
+    aggressive = pyro.ai.aggressive.Aggressive,
+    aggressive_spellcaster = pyro.ai.aggressive_spellcaster.AggressiveSpellcaster,
+    passive_aggressive = pyro.ai.passive_aggressive.PassiveAggressive,
+    confused = pyro.ai.confused.Confused
 )
 
 
@@ -183,7 +182,7 @@ def instantiate_monster(template):
                   libai.AI: ai_comp,
                   libxp.Experience: exp_comp}
     if 'spell' in template:
-        spell_fn = getattr(spells, template['spell'])
+        spell_fn = getattr(pyro.spells, template['spell'])
         spell = spell_fn()
         components[libcast.Spellcaster] = libcast.Spellcaster(spell)
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
@@ -223,7 +222,7 @@ def instantiate_item(template):
         return GameObject(glyph=glyph, name=name, color=color, render_order=0,
                           components={libitem.Equipment: equipment})
     elif 'on_use' in template:
-        use_fn = getattr(abilities, template['on_use'])
+        use_fn = getattr(pyro.abilities, template['on_use'])
         return GameObject(glyph=glyph, name=name, color=color, render_order=0,
                           components={libitem.Item: libitem.Item(use_fn=use_fn)})
 

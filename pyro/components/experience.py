@@ -1,5 +1,5 @@
-import component as libcomp
-from settings import *
+import pyro.component as libcomp
+from pyro.settings import *
 
 
 class Experience(libcomp.Component):

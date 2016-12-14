@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
-import components.ai as libai
-import components.fighter as libfighter
+import pyro.components.ai as libai
+import pyro.components.fighter as libfighter
 
 
 class Aggressive(libai.AI):

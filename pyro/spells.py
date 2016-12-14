@@ -1,6 +1,6 @@
-import components.ai as libai
-import components.fighter as libfighter
-from settings import *
+import pyro.components.ai as libai
+import pyro.components.fighter as libfighter
+from pyro.settings import *
 
 
 class Spell:

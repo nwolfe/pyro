@@ -1,7 +1,6 @@
-import libtcodpy as libtcod
-import components.fighter as libfighter
-import spells as libspells
-from settings import *
+import pyro.components.fighter as libfighter
+import pyro.spells as libspells
+from pyro.settings import *
 
 
 def cast_heal(player, game, ui):

@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
-import component as libcomp
-import components.item as libitem
-import components.ai as libai
+import pyro.component as libcomp
+import pyro.components.ai as libai
+import pyro.components.item as libitem
 
 
 class Fighter(libcomp.Component):

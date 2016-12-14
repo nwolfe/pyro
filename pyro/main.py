@@ -1,17 +1,17 @@
 import libtcodpy as libtcod
-import object as libobj
-import map as libmap
-import game as libgame
-import ui as libui
-import components.ai as libai
-import components.fighter as libfighter
-import components.experience as libxp
-import components.item as libitem
-import abilities as libabilities
-import components.door as libdoor
-import components.grass as libgrass
+import pyro.object as libobj
+import pyro.map as libmap
+import pyro.game as libgame
+import pyro.ui as libui
+import pyro.components.ai as libai
+import pyro.components.fighter as libfighter
+import pyro.components.experience as libxp
+import pyro.components.item as libitem
+import pyro.abilities as libabilities
+import pyro.components.door as libdoor
+import pyro.components.grass as libgrass
 import shelve
-from settings import *
+from pyro.settings import *
 
 
 def move_player_or_attack(dx, dy, game):

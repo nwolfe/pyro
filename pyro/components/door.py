@@ -1,4 +1,4 @@
-import component as libcomp
+import pyro.component as libcomp
 import libtcodpy as libtcod
 
 

@@ -1,4 +1,4 @@
-import component as libcomp
+import pyro.component as libcomp
 
 class AI(libcomp.Component):
     def take_turn(self):

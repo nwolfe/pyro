@@ -1,6 +1,5 @@
-import libtcodpy as libtcod
-import components.ai as libai
-from settings import *
+import pyro.components.ai as libai
+from pyro.settings import *
 
 
 class Confused(libai.AI):

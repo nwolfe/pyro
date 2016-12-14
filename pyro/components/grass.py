@@ -1,5 +1,5 @@
-import component as libcomp
 import libtcodpy as libtcod
+import pyro.component as libcomp
 
 
 class Grass(libcomp.Component):

@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-import component as libcomp
+import pyro.component as libcomp
 
 
 class Item(libcomp.Component):

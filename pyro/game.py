@@ -1,8 +1,8 @@
 import libtcodpy as libtcod
-import ui as libui
-import components.fighter as libfighter
 import textwrap
-from settings import *
+import pyro.components.fighter as libfighter
+import pyro.ui as libui
+from pyro.settings import *
 
 
 class Game:

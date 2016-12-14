@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
-import components.ai as libai
-import components.fighter as libfighter
-import components.spellcaster as libcast
+import pyro.components.ai as libai
+import pyro.components.fighter as libfighter
+import pyro.components.spellcaster as libcast
 
 
 class AggressiveSpellcaster(libai.AI):
