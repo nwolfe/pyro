@@ -11,6 +11,12 @@
 *** TODO Add 'Save Game' menu option
 *** TODO Add 'Save and Quit' menu option
 *** TODO Add 'Quit' menu option (no save)
+** End Game
+*** TODO Replace stairs on Level 26 with something else
+**** Finish the game on Level 26? Or
+**** Require the player to return to the top?
+** Messages
+*** TODO Capitalize monster names correctly
 
 * CODEBASE
 ** TODO Fix setup.py since code moved to pyro/
