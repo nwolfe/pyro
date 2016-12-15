@@ -14,10 +14,14 @@
 *** TODO Replace stairs on Level 26 with something else
 **** Finish the game on Level 26? Or
 **** Require the player to return to the top?
+** Messages
+*** TODO Colorize hit/miss message so it stands out
 
 * CODEBASE
 ** TODO Create Fireball Spell
 ** TODO Fix setup.py since code moved to pyro/
+** TODO Eliminate use of constructors
+*** Behavior should just be in a real method
 
 * BUGS
 ** TODO Lower monster corpse render order below critter
