@@ -7,6 +7,7 @@ class Confused(libai.AI):
     sets the owner's AI to the specified implementation."""
 
     def __init__(self, restore_ai=None, num_turns=CONFUSE_NUM_TURNS):
+        libai.AI.__init__(self)
         self.restore_ai = restore_ai
         self.num_turns = num_turns
 

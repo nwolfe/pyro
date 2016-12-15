@@ -4,6 +4,7 @@ import pyro.component as libcomp
 
 class Item(libcomp.Component):
     def __init__(self, use_fn=None):
+        libcomp.Component.__init__(self)
         self.use_fn = use_fn
         self.item_owner = None
 
@@ -58,6 +59,7 @@ class Equipment(Item):
     the Item component."""
 
     def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
+        Item.__init__(self)
         self.slot = slot
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
@@ -110,6 +112,7 @@ class Equipment(Item):
 
 class Inventory(libcomp.Component):
     def __init__(self, items=None):
+        libcomp.Component.__init__(self)
         self.items = items
         if items is None:
             self.items = []

@@ -4,6 +4,7 @@ import pyro.component as libcomp
 
 class Grass(libcomp.Component):
     def __init__(self, is_crushed=False, standing_glyph=":", crushed_glyph="."):
+        libcomp.Component.__init__(self)
         self.is_crushed = is_crushed
         self.standing_glyph = standing_glyph
         self.crushed_glyph = crushed_glyph

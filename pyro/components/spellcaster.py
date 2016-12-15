@@ -4,6 +4,7 @@ import pyro.component as libcomp
 
 class Spellcaster(libcomp.Component):
     def __init__(self, spell):
+        libcomp.Component.__init__(self)
         self.spell = spell
 
     def in_range(self, target):

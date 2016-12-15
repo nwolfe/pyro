@@ -4,6 +4,7 @@ import libtcodpy as libtcod
 
 class Door(libcomp.Component):
     def __init__(self, is_open=False, opened_glyph='-', closed_glyph='+'):
+        libcomp.Component.__init__(self)
         self.is_open = is_open
         self.opened_glyph = opened_glyph
         self.closed_glyph = closed_glyph

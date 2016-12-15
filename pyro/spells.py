@@ -1,5 +1,6 @@
 import pyro.components.ai as libai
 import pyro.components.fighter as libfighter
+import pyro.ai.confused as libconf
 from pyro.settings import *
 
 
@@ -42,7 +43,7 @@ class Confuse(Spell):
 
     def cast(self, caster, targets):
         old_ai = targets[0].component(libai.AI)
-        new_ai = libai.ConfusedMonster(old_ai)
+        new_ai = libconf.Confused(old_ai)
         targets[0].set_component(libai.AI, new_ai)
 
 

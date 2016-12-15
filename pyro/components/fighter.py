@@ -7,6 +7,7 @@ import pyro.components.item as libitem
 class Fighter(libcomp.Component):
     """Combat-related properties and methods (monster, player, NPC)."""
     def __init__(self, hp, defense, power, death_fn=None):
+        libcomp.Component.__init__(self)
         self.hp = hp
         self.base_max_hp = hp
         self.base_defense = defense
