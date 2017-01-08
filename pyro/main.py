@@ -1,8 +1,9 @@
 import libtcodpy as libtcod
-import pyro.object as libobj
+import pyro.objects as libobj
 import pyro.map as libmap
 import pyro.game as libgame
 import pyro.ui as libui
+from pyro.gameobject import GameObject
 import pyro.components.ai as libai
 import pyro.components.fighter as libfighter
 import pyro.components.experience as libxp
@@ -215,10 +216,10 @@ def new_game(object_factory):
     fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
                                   death_fn=player_death)
     player_inventory = libitem.Inventory(items=[])
-    player = libobj.GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
-                               components={libfighter.Fighter: fighter_comp,
-                                           libxp.Experience: exp_comp,
-                                           libitem.Inventory: player_inventory})
+    player = GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
+                        components={libfighter.Fighter: fighter_comp,
+                                    libxp.Experience: exp_comp,
+                                    libitem.Inventory: player_inventory})
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1

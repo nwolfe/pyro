@@ -1,7 +1,8 @@
 import libtcodpy as libtcod
+from pyro.gameobject import GameObject
 import pyro.components.door as libdoor
 import pyro.components.grass as libgrass
-import pyro.object as libobj
+import pyro.utilities as libutils
 from pyro.settings import *
 
 
@@ -124,8 +125,8 @@ def place_door(x, y, map, objects):
     map[x][y].blocked = True
     map[x][y].block_sight = True
     door_comp = libdoor.Door(is_open=False, opened_glyph='-', closed_glyph='+')
-    door = libobj.GameObject(x, y, '+', 'door', libtcod.white, render_order=0,
-                             components={libdoor.Door: door_comp})
+    door = GameObject(x, y, '+', 'door', libtcod.white, render_order=0,
+                      components={libdoor.Door: door_comp})
     objects.append(door)
 
 
@@ -172,7 +173,7 @@ def place_critters(room, map, objects, dungeon_level, object_factory):
         # Random position for critter
         point = room.random_point_inside()
 
-        if not libobj.is_blocked(map, objects, point.x, point.y):
+        if not libutils.is_blocked(map, objects, point.x, point.y):
             choice = random_choice(critter_chances)
             critter = object_factory.new_monster(choice)
             critter.x = point.x
@@ -196,7 +197,7 @@ def place_monsters(room, map, objects, dungeon_level, object_factory):
         # Random position for monster
         point = room.random_point_inside()
 
-        if not libobj.is_blocked(map, objects, point.x, point.y):
+        if not libutils.is_blocked(map, objects, point.x, point.y):
             choice = random_choice(monster_chances)
             monster = object_factory.new_monster(choice)
             monster.x = point.x
@@ -214,7 +215,7 @@ def place_items(room, map, objects, dungeon_level, object_factory):
         # Random position for item
         point = room.random_point_inside()
 
-        if not libobj.is_blocked(map, objects, point.x, point.y):
+        if not libutils.is_blocked(map, objects, point.x, point.y):
             choice = random_choice(item_chances)
             item = object_factory.new_item(choice)
             item.x = point.x
@@ -226,9 +227,9 @@ def place_grass_tile(x, y, map, objects):
     map[x][y].block_sight = True
     grass_comp = libgrass.Grass(is_crushed=False, standing_glyph=':',
                                 crushed_glyph='.')
-    grass = libobj.GameObject(x, y, ':', 'tall grass', libtcod.green,
-                              render_order=0,
-                              components={libgrass.Grass: grass_comp})
+    grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
+                       render_order=0,
+                       components={libgrass.Grass: grass_comp})
     objects.append(grass)
 
 
@@ -251,7 +252,7 @@ def place_grass(room, map, objects):
     if libtcod.random_get_int(0, 1, 2) == 1:
         grass_tiles = []
         point = room.random_point_inside()
-        while libobj.is_blocked(map, objects, point.x, point.y):
+        while libutils.is_blocked(map, objects, point.x, point.y):
             point = room.random_point_inside()
 
         place_grass_tile(point.x, point.y, map, grass_tiles)
@@ -271,7 +272,7 @@ def place_grass(room, map, objects):
             if grass_at_point:
                 continue
 
-            if not libobj.is_blocked(map, objects, point.x, point.y):
+            if not libutils.is_blocked(map, objects, point.x, point.y):
                 place_grass_tile(point.x, point.y, map, objects)
 
         for grass in grass_tiles:
@@ -350,8 +351,8 @@ def make_map(player, dungeon_level, object_factory):
     place_doors(map, objects, metamap)
 
     # Create stairs at the center of the last room
-    stairs = libobj.GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
-                               render_order=0, always_visible=True)
+    stairs = GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
+                        render_order=0, always_visible=True)
     objects.append(stairs)
 
     return (map, objects, stairs)
