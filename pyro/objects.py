@@ -33,10 +33,10 @@ def monster_death(monster, game):
 
 
 MONSTER_AI_CLASSES = dict(
-    aggressive = pyro.ai.aggressive.Aggressive,
-    aggressive_spellcaster = pyro.ai.aggressive_spellcaster.AggressiveSpellcaster,
-    passive_aggressive = pyro.ai.passive_aggressive.PassiveAggressive,
-    confused = pyro.ai.confused.Confused
+    aggressive=pyro.ai.aggressive.Aggressive,
+    aggressive_spellcaster=pyro.ai.aggressive_spellcaster.AggressiveSpellcaster,
+    passive_aggressive=pyro.ai.passive_aggressive.PassiveAggressive,
+    confused=pyro.ai.confused.Confused
 )
 
 
@@ -47,7 +47,7 @@ def instantiate_monster(template):
     ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = libxp.Experience(template['experience'])
     fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
-                                   template['power'], death_fn=monster_death)
+                                      template['power'], death_fn=monster_death)
     components = {libfighter.Fighter: fighter_comp,
                   libai.AI: ai_comp,
                   libxp.Experience: exp_comp}
@@ -104,6 +104,10 @@ def make_item(name, item_templates):
 
 
 class GameObjectFactory:
+    def __init__(self):
+        self.monster_templates = None
+        self.item_templates = None
+
     def load_templates(self, monster_file, item_file):
         self.monster_templates = load_templates(monster_file)
         self.item_templates = load_templates(item_file)

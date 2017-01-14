@@ -26,7 +26,7 @@ def move_player_or_attack(dx, dy, game):
 
     if target:
         game.player.component(libfighter.Fighter).attack(target)
-        return (False, 'attack')
+        return False, 'attack'
     else:
         door = None
         grass = None
@@ -49,7 +49,7 @@ def move_player_or_attack(dx, dy, game):
         else:
             if door:
                 door.open()
-        return (True, 'move')
+        return True, 'move'
 
 
 def close_nearest_door(game):
@@ -88,16 +88,17 @@ Defense: {6}
                      fighter.defense())
     libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
+
 def handle_keys(ui, game, object_factory):
     if ui.keyboard.vk == libtcod.KEY_ENTER and ui.keyboard.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
     elif ui.keyboard.vk == libtcod.KEY_ESCAPE:
         # Exit game
-        return (False, 'exit')
+        return False, 'exit'
 
     if game.state != 'playing':
-        return (False, None)
+        return False, None
 
     key_char = chr(ui.keyboard.c)
 
@@ -119,7 +120,7 @@ def handle_keys(ui, game, object_factory):
         return move_player_or_attack(1, 1, game)
     elif key_char == 'f':
         # Don't move, let the monsters come to you
-        return (False, None)
+        return False, None
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
         for object in game.objects:
@@ -128,7 +129,7 @@ def handle_keys(ui, game, object_factory):
                 if object.x == game.player.x and object.y == game.player.y:
                     item.pick_up(game.player)
                     break
-        return (False, None)
+        return False, None
     elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
@@ -136,7 +137,7 @@ def handle_keys(ui, game, object_factory):
         selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.use(ui)
-        return (False, None)
+        return False, None
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
@@ -144,21 +145,21 @@ def handle_keys(ui, game, object_factory):
         selected_item = libui.inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.drop()
-        return (False, None)
+        return False, None
     elif key_char == '>':
         # Go down the stairs to the next level
         if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
             next_dungeon_level(game, object_factory)
             libtcod.console_clear(ui.console)
-        return (True, None)
+        return True, None
     elif key_char == 'c':
         show_character_info(ui.console, game)
-        return (False, None)
+        return False, None
     elif key_char == 'r':
         close_nearest_door(game)
-        return (True, None)
+        return True, None
     else:
-        return (False, 'idle')
+        return False, 'idle'
 
 
 def player_death(player, game):
@@ -214,7 +215,7 @@ def new_game(object_factory):
     # Create the player
     exp_comp = libxp.Experience(xp=0, level=1)
     fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
-                                  death_fn=player_death)
+                                      death_fn=player_death)
     player_inventory = libitem.Inventory(items=[])
     player = GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
                         components={libfighter.Fighter: fighter_comp,
@@ -273,6 +274,7 @@ def next_dungeon_level(game, object_factory):
 
     for object in game.objects:
         object.game = game
+
 
 def play_game(game, ui, object_factory):
     for object in game.objects:

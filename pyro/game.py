@@ -59,7 +59,7 @@ class Game:
                 return (x, y)
 
             if self.mouse.rbutton_pressed or self.key.vk == libtcod.KEY_ESCAPE:
-                return (None, None)
+                return None, None
 
     def target_monster(self, ui, max_range=None):
         # Returns a clicked monster inside FOV up to a range, or None if

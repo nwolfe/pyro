@@ -6,7 +6,7 @@ from pyro.settings import *
 
 class GameObject:
     def __init__(self, x=0, y=0, glyph=None, name=None, color=None, blocks=False,
-                 render_order=1, always_visible=False, components={}, game=None):
+                 render_order=1, always_visible=False, components=None, game=None):
         self.x = x
         self.y = y
         self.glyph = glyph
@@ -17,9 +17,12 @@ class GameObject:
         self.blocks = blocks
         self.game = game
 
-        self.components = components
-        for comp in self.components.values():
-            comp.initialize(self)
+        if components:
+            self.components = components
+            for comp in self.components.values():
+                comp.initialize(self)
+        else:
+            self.components = {}
 
     def component(self, klass):
         return self.components.get(klass)

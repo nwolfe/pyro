@@ -22,7 +22,7 @@ class Rect:
     def center(self):
         centerx = (self.x1 + self.x2) / 2
         centery = (self.y1 + self.y2) / 2
-        return (centerx, centery)
+        return centerx, centery
 
     def intersect(self, other):
         # Returns true if this rectangle intersects with the other one
@@ -37,7 +37,8 @@ class Rect:
 class Tile:
     def __init__(self, blocked, block_sight=None):
         self.blocked = blocked
-        if block_sight is None: block_sight = blocked
+        if block_sight is None:
+            block_sight = blocked
         self.block_sight = block_sight
         self.explored = False
 
@@ -112,7 +113,7 @@ def create_v_tunnel(map, y1, y2, x, metamap):
 def get_spawn_chances(templates, dungeon_level):
     chances = {}
     for t in templates:
-        if t.has_key('spawn'):
+        if 'spawn' in t:
             chance = t['spawn']
             if isinstance(chance, list):
                 chances[t['name']] = from_dungeon_level(chance, dungeon_level)
@@ -308,6 +309,8 @@ def make_map(player, dungeon_level, object_factory):
                for x in range(MAP_WIDTH)]
     rooms = []
     num_rooms = 0
+    new_x = 0
+    new_y = 0
 
     for r in range(MAX_ROOMS):
         new_room = randomly_placed_rect()
@@ -355,4 +358,4 @@ def make_map(player, dungeon_level, object_factory):
                         render_order=0, always_visible=True)
     objects.append(stairs)
 
-    return (map, objects, stairs)
+    return map, objects, stairs
