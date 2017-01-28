@@ -14,18 +14,20 @@
 *** TODO Replace stairs on Level 26 with something else
 **** Finish the game on Level 26? Or
 **** Require the player to return to the top?
-** Messages
-*** TODO Colorize hit/miss message so it stands out
 
 * CODEBASE
+** TODO Add Item#player_owned? convenience method
 ** TODO Create Fireball Spell
 ** TODO Fix setup.py since code moved to pyro/
 ** TODO Eliminate use of constructors
 *** Behavior should just be in a real method
+** Refactor libtcod -> pygame
+*** TODO Replace random / rng function calls
 
 * BUGS
 ** TODO Fix calls to self.mouse and self.key in Game, change to UI
 ** TODO Lower monster corpse render order below critter
+** TODO Lower monster corpse render order below items
 ** TODO Fix missing messages from items after loading
 *** Problem due to persistence and the reference to Game from GameObject
 ** TODO Fix vanishing doppleganger casting bug

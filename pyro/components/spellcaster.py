@@ -16,7 +16,7 @@ class Spellcaster(libcomp.Component):
             self.spell.cast(self.owner, targets)
             msg = 'The {0} strikes you with a {1}! You take {2} damage.'
             msg = msg.format(self.owner.name, self.spell.name, self.spell.strength())
-            self.owner.game.message(msg, libtcod.red)
+            self.owner.game.message('- ' + msg, libtcod.red)
         else:
             msg = 'The {0} casts a {1} but it fizzles!'
             msg = msg.format(self.owner.name, self.spell.name)

@@ -61,7 +61,10 @@ class Fighter(libcomp.Component):
         if damage > 0:
             msg = '{0} attacks {1} for {2} hit points.'.format(
                 self.owner.name.capitalize(), target.name, damage)
-            self.owner.game.message(msg)
+            if self.owner == self.owner.game.player:
+                self.owner.game.message(msg, libtcod.light_green)
+            else:
+                self.owner.game.message('- ' + msg, libtcod.light_red)
             fighter.take_damage(damage)
         else:
             msg = '{0} attacks {1} but it has no effect!'.format(
