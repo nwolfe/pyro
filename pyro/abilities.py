@@ -1,23 +1,23 @@
 import libtcodpy as libtcod
-import pyro.components.fighter as libfighter
-import pyro.spells as libspells
+from pyro.components.fighter import Fighter
+from pyro.spells import Heal, LightningBolt, Confuse
 from pyro.settings import *
 
 
 def cast_heal(player, game, ui):
     # Heal the player
-    fighter = player.component(libfighter.Fighter)
+    fighter = player.component(Fighter)
     if fighter.hp == fighter.max_hp():
         game.message('You are already at full health.', libtcod.red)
         return 'cancelled'
 
     game.message('Your wounds start to feel better!', libtcod.light_violet)
-    libspells.Heal().cast(player, [player])
+    Heal().cast(player, [player])
 
 
 def cast_lightning_bolt(player, game, ui):
     # Find the closest enemy (inside a maximum range) and damage it
-    spell = libspells.LightningBolt()
+    spell = LightningBolt()
     monster = game.closest_monster(spell.range())
     if monster is None:
         game.message('No enemy is close enough to strike.', libtcod.red)
@@ -33,7 +33,7 @@ def cast_lightning_bolt(player, game, ui):
 
 def cast_confuse(player, game, ui):
     # Ask the player for a target to confuse
-    spell = libspells.Confuse()
+    spell = Confuse()
     game.message('Left-click an enemy to confuse it, or right-click to cancel.',
                  libtcod.light_cyan)
     monster = game.target_monster(ui, spell.range())
@@ -58,7 +58,7 @@ def cast_fireball(player, game, ui):
 
     for game_object in game.objects:
         if game_object.distance(x, y) <= FIREBALL_RADIUS:
-            fighter = game_object.component(libfighter.Fighter)
+            fighter = game_object.component(Fighter)
             if fighter:
                 game.message('The {0} gets burned for {1} hit points.'.format(
                     game_object.name, FIREBALL_DAMAGE), libtcod.orange)

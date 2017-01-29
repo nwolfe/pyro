@@ -1,13 +1,13 @@
 import libtcodpy as libtcod
-import pyro.component as libcomp
-import pyro.components.ai as libai
-import pyro.components.item as libitem
+from pyro.component import Component
+from pyro.components.ai import AI
+from pyro.components.item import get_all_equipped
 
 
-class Fighter(libcomp.Component):
+class Fighter(Component):
     """Combat-related properties and methods (monster, player, NPC)."""
     def __init__(self, hp, defense, power, death_fn=None):
-        libcomp.Component.__init__(self)
+        Component.__init__(self)
         self.hp = hp
         self.base_max_hp = hp
         self.base_defense = defense
@@ -15,17 +15,17 @@ class Fighter(libcomp.Component):
         self.death_fn = death_fn
 
     def power(self):
-        equipped = libitem.get_all_equipped(self.owner)
+        equipped = get_all_equipped(self.owner)
         bonus = sum(equipment.power_bonus for equipment in equipped)
         return self.base_power + bonus
 
     def defense(self):
-        equipped = libitem.get_all_equipped(self.owner)
+        equipped = get_all_equipped(self.owner)
         bonus = sum(equipment.defense_bonus for equipment in equipped)
         return self.base_defense + bonus
 
     def max_hp(self):
-        equipped = libitem.get_all_equipped(self.owner)
+        equipped = get_all_equipped(self.owner)
         bonus = sum(equipment.max_hp_bonus for equipment in equipped)
         return self.base_max_hp + bonus
 
@@ -38,7 +38,7 @@ class Fighter(libcomp.Component):
             self.death_fn(self.owner, self.owner.game)
 
         # Notify the AI that we were hit
-        ai = self.owner.component(libai.AI)
+        ai = self.owner.component(AI)
         if ai:
             ai.take_damage(damage)
 

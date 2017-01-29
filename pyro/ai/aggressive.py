@@ -1,9 +1,9 @@
 import libtcodpy as libtcod
-import pyro.components.ai as libai
-import pyro.components.fighter as libfighter
+from pyro.components.ai import AI
+from pyro.components.fighter import Fighter
 
 
-class Aggressive(libai.AI):
+class Aggressive(AI):
     """Pursue and attack the player once in sight."""
 
     def take_turn(self):
@@ -14,5 +14,5 @@ class Aggressive(libai.AI):
                 monster.move_astar(monster.game.player)
 
             # Close enough, attack! (If the player is still alive)
-            elif monster.game.player.component(libfighter.Fighter).hp > 0:
-                monster.component(libfighter.Fighter).attack(monster.game.player)
+            elif monster.game.player.component(Fighter).hp > 0:
+                monster.component(Fighter).attack(monster.game.player)

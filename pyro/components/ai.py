@@ -1,9 +1,9 @@
-import pyro.component as libcomp
+from pyro.component import Component
 
 
-class AI(libcomp.Component):
+class AI(Component):
     def __init__(self):
-        libcomp.Component.__init__(self)
+        Component.__init__(self)
 
     def take_turn(self):
         """Perform a single game turn."""

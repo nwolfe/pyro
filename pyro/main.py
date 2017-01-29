@@ -1,16 +1,16 @@
-import libtcodpy as libtcod
-import pyro.objects as libobj
-import pyro.map as libmap
-import pyro.game as libgame
-import pyro.ui as libui
-from pyro.gameobject import GameObject
-import pyro.components.ai as libai
-import pyro.components.fighter as libfighter
-import pyro.components.experience as libxp
-import pyro.components.item as libitem
-import pyro.components.door as libdoor
-import pyro.components.grass as libgrass
 import shelve
+import libtcodpy as libtcod
+from pyro.objects import GameObjectFactory
+from pyro.map import make_map
+from pyro.game import Game
+from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
+from pyro.gameobject import GameObject
+from pyro.components.ai import AI
+from pyro.components.fighter import Fighter
+from pyro.components.experience import Experience
+from pyro.components.item import Item, Inventory, Equipment
+from pyro.components.door import Door
+from pyro.components.grass import Grass
 from pyro.settings import *
 
 
@@ -19,25 +19,25 @@ def move_player_or_attack(dx, dy, game):
     y = game.player.y + dy
     target = None
     for game_object in game.objects:
-        if game_object.component(libfighter.Fighter):
+        if game_object.component(Fighter):
             if game_object.x == x and game_object.y == y:
                 target = game_object
                 break
 
     if target:
-        game.player.component(libfighter.Fighter).attack(target)
+        game.player.component(Fighter).attack(target)
         return False, 'attack'
     else:
         door = None
         grass = None
         for game_object in game.objects:
-            if game_object.component(libdoor.Door):
+            if game_object.component(Door):
                 if game_object.x == x and game_object.y == y:
-                    door = game_object.component(libdoor.Door)
-            elif game_object.component(libgrass.Grass):
+                    door = game_object.component(Door)
+            elif game_object.component(Grass):
                 if game_object.x == x and game_object.y == y:
-                    if not game_object.component(libgrass.Grass).is_crushed:
-                        grass = game_object.component(libgrass.Grass)
+                    if not game_object.component(Grass).is_crushed:
+                        grass = game_object.component(Grass)
 
             if door and grass:
                 break
@@ -56,12 +56,12 @@ def close_nearest_door(game):
     x = game.player.x
     y = game.player.y
     for game_object in game.objects:
-        if game_object.component(libdoor.Door):
+        if game_object.component(Door):
             close_x = (game_object.x == x or game_object.x == x-1 or game_object.x == x+1)
             close_y = (game_object.y == y or game_object.y == y-1 or game_object.y == y+1)
             player_on_door = (game_object.x == x and game_object.y == y)
             if close_x and close_y and not player_on_door:
-                game_object.component(libdoor.Door).close()
+                game_object.component(Door).close()
                 break
 
 
@@ -77,8 +77,8 @@ Maximum HP: {4}
 Attack: {5}
 Defense: {6}
 """
-    exp = game.player.component(libxp.Experience)
-    fighter = game.player.component(libfighter.Fighter)
+    exp = game.player.component(Experience)
+    fighter = game.player.component(Fighter)
     msg = msg.format(exp.level,
                      exp.xp,
                      exp.required_for_level_up(),
@@ -86,7 +86,7 @@ Defense: {6}
                      fighter.max_hp(),
                      fighter.power(),
                      fighter.defense())
-    libui.messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
+    messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
 
 def handle_keys(ui, game, object_factory):
@@ -124,7 +124,7 @@ def handle_keys(ui, game, object_factory):
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
         for game_object in game.objects:
-            item = game_object.component(libitem.Item)
+            item = game_object.component(Item)
             if item:
                 if game_object.x == game.player.x and game_object.y == game.player.y:
                     item.pick_up(game.player)
@@ -133,16 +133,16 @@ def handle_keys(ui, game, object_factory):
     elif key_char == 'i':
         # Show the inventory
         msg = 'Select an item to use it, or any other key to cancel.\n'
-        inventory = game.player.component(libitem.Inventory).items
-        selected_item = libui.inventory_menu(ui.console, inventory, msg)
+        inventory = game.player.component(Inventory).items
+        selected_item = inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.use(ui)
         return False, None
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it
         msg = 'Select an item to drop it, or any other key to cancel.\n'
-        inventory = game.player.component(libitem.Inventory).items
-        selected_item = libui.inventory_menu(ui.console, inventory, msg)
+        inventory = game.player.component(Inventory).items
+        selected_item = inventory_menu(ui.console, inventory, msg)
         if selected_item:
             selected_item.drop()
         return False, None
@@ -183,7 +183,7 @@ def make_fov_map(game_map):
 
 def check_player_level_up(game, console):
     player = game.player
-    exp = player.component(libxp.Experience)
+    exp = player.component(Experience)
 
     # See if the player's XP is enough to level up
     if exp.can_level_up():
@@ -196,12 +196,11 @@ def check_player_level_up(game, console):
 
     choice = None
     while choice is None:
-        fighter = player.component(libfighter.Fighter)
+        fighter = player.component(Fighter)
         options = ['Constitution (+20 HP, from {})'.format(fighter.base_max_hp),
                    'Strength (+1 attack, from {})'.format(fighter.base_power),
                    'Agility (+1 defense, from {})'.format(fighter.base_defense)]
-        choice = libui.menu(console, 'Level up! Choose a stat to raise:\n',
-                            options, LEVEL_SCREEN_WIDTH)
+        choice = menu(console, 'Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
             fighter.base_max_hp += 20
             fighter.hp += 20
@@ -213,34 +212,33 @@ def check_player_level_up(game, console):
 
 def new_game(object_factory):
     # Create the player
-    exp_comp = libxp.Experience(xp=0, level=1)
-    fighter_comp = libfighter.Fighter(hp=100, defense=1, power=2,
-                                      death_fn=player_death)
-    player_inventory = libitem.Inventory(items=[])
+    exp_comp = Experience(xp=0, level=1)
+    fighter_comp = Fighter(hp=100, defense=1, power=2, death_fn=player_death)
+    player_inventory = Inventory(items=[])
     player = GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
-                        components={libfighter.Fighter: fighter_comp,
-                                    libxp.Experience: exp_comp,
-                                    libitem.Inventory: player_inventory})
+                        components={Fighter: fighter_comp,
+                                    Experience: exp_comp,
+                                    Inventory: player_inventory})
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
-    (game_map, objects, stairs) = libmap.make_map(player, dungeon_level, object_factory)
+    (game_map, objects, stairs) = make_map(player, dungeon_level, object_factory)
     fov_map = make_fov_map(game_map)
 
     messages = []
 
-    game = libgame.Game('playing', game_map, fov_map, objects, stairs,
-                        player, messages, dungeon_level)
+    game = Game('playing', game_map, fov_map, objects, stairs,
+                player, messages, dungeon_level)
 
     # Initial equipment: a dagger and scroll of lightning bolt
     dagger = object_factory.new_item('Dagger')
-    dagger.component(libitem.Equipment).item_owner = player
-    dagger.component(libitem.Equipment).is_equipped = True
+    dagger.component(Equipment).item_owner = player
+    dagger.component(Equipment).is_equipped = True
     player_inventory.items.append(dagger)
     dagger.game = game
 
     spell = object_factory.new_item('Scroll Of Lightning Bolt')
-    spell.component(libitem.Item).item_owner = player
+    spell.component(Item).item_owner = player
     player_inventory.items.append(spell)
     spell.game = game
 
@@ -255,7 +253,7 @@ def next_dungeon_level(game, object_factory):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    fighter = game.player.component(libfighter.Fighter)
+    fighter = game.player.component(Fighter)
     fighter.heal(fighter.max_hp() / 2)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
@@ -263,11 +261,10 @@ def next_dungeon_level(game, object_factory):
     game.message(msg, libtcod.red)
     game.dungeon_level += 1
 
-    (game_map, objects, stairs) = libmap.make_map(game.player, game.dungeon_level,
-                                                  object_factory)
+    (game_map, objects, stairs) = make_map(game.player, game.dungeon_level, object_factory)
     fov_map = make_fov_map(game_map)
 
-    game.map = game_map
+    game.game_map = game_map
     game.fov_map = fov_map
     game.objects = objects
     game.stairs = stairs
@@ -286,7 +283,7 @@ def play_game(game, ui, object_factory):
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
 
-        libui.render_all(ui, game, fov_recompute)
+        render_all(ui, game, fov_recompute)
 
         libtcod.console_flush()
 
@@ -303,7 +300,7 @@ def play_game(game, ui, object_factory):
 
         if game.state == 'playing' and player_action != 'idle':
             for game_object in game.objects:
-                ai = game_object.component(libai.AI)
+                ai = game_object.component(AI)
                 if ai:
                     ai.take_turn()
 
@@ -311,7 +308,7 @@ def play_game(game, ui, object_factory):
 def save_game(game):
     # Open an empty shelve (possibly overwriting an old one) to write the data
     save_file = shelve.open('savegame', 'n')
-    save_file['map'] = game.map
+    save_file['map'] = game.game_map
     save_file['objects'] = game.objects
     save_file['player_index'] = game.objects.index(game.player)
     save_file['messages'] = game.messages
@@ -335,14 +332,13 @@ def load_game():
 
     fov_map = make_fov_map(game_map)
 
-    return libgame.Game(state, game_map, fov_map, objects, stairs, player, messages,
-                        dungeon_level)
+    return Game(state, game_map, fov_map, objects, stairs, player, messages, dungeon_level)
 
 
 def main_menu(ui):
     background = libtcod.image_load('menu_background.png')
 
-    object_factory = libobj.GameObjectFactory()
+    object_factory = GameObjectFactory()
     object_factory.load_templates(monster_file='resources/monsters.json',
                                   item_file='resources/items.json')
 
@@ -361,7 +357,7 @@ def main_menu(ui):
 
         # Show options and wait for the player's choice
         options = ['Play a new game', 'Continue last game', 'Quit']
-        choice = libui.menu(ui.console, '', options, 24)
+        choice = menu(ui.console, '', options, 24)
 
         if choice == 0:
             # New game
@@ -373,7 +369,7 @@ def main_menu(ui):
                 game = load_game()
                 play_game(game, ui, object_factory)
             except:
-                libui.messagebox(ui.console, '\n No saved game to load.\n', 24)
+                messagebox(ui.console, '\n No saved game to load.\n', 24)
                 continue
         elif choice == 2:
             # Quit
@@ -395,6 +391,6 @@ keyboard = libtcod.Key()
 mouse = libtcod.Mouse()
 console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-ui = libui.UserInterface(keyboard, mouse, console, panel)
+ui = UserInterface(keyboard, mouse, console, panel)
 
 main_menu(ui)

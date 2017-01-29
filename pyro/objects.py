@@ -1,35 +1,35 @@
 import libtcodpy as libtcod
 import json
-from pyro.gameobject import GameObject
 import pyro.abilities
 import pyro.ai.confused
 import pyro.ai.aggressive
 import pyro.ai.aggressive_spellcaster
 import pyro.ai.passive_aggressive
-import pyro.components.ai as libai
-import pyro.components.experience as libxp
-import pyro.components.fighter as libfighter
-import pyro.components.item as libitem
-import pyro.components.spellcaster as libcast
 import pyro.spells
+from pyro.gameobject import GameObject
+from pyro.components.ai import AI
+from pyro.components.experience import Experience
+from pyro.components.fighter import Fighter
+from pyro.components.item import Item, Equipment
+from pyro.components.spellcaster import Spellcaster
 from pyro.settings import *
 
 
 def monster_death(monster, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.component(libxp.Experience)
+    exp = monster.component(Experience)
     game.message('The {0} is dead! You gain {1} experience points.'.
                  format(monster.name.capitalize(), exp.xp),
                  libtcod.orange)
-    game.player.component(libxp.Experience).xp += exp.xp
+    game.player.component(Experience).xp += exp.xp
     monster.glyph = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
     monster.render_order = RENDER_ORDER_CORPSE
     monster.name = 'remains of {0}'.format(monster.name)
-    monster.components.pop(libfighter.Fighter)
-    monster.components.pop(libai.AI)
+    monster.components.pop(Fighter)
+    monster.components.pop(AI)
 
 
 MONSTER_AI_CLASSES = dict(
@@ -45,16 +45,14 @@ def instantiate_monster(template):
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
     ai_comp = MONSTER_AI_CLASSES[template['ai']]()
-    exp_comp = libxp.Experience(template['experience'])
-    fighter_comp = libfighter.Fighter(template['hp'], template['defense'],
-                                      template['power'], death_fn=monster_death)
-    components = {libfighter.Fighter: fighter_comp,
-                  libai.AI: ai_comp,
-                  libxp.Experience: exp_comp}
+    exp_comp = Experience(template['experience'])
+    fighter_comp = Fighter(template['hp'], template['defense'],
+                           template['power'], death_fn=monster_death)
+    components = {Fighter: fighter_comp, AI: ai_comp, Experience: exp_comp}
     if 'spell' in template:
         spell_fn = getattr(pyro.spells, template['spell'])
         spell = spell_fn()
-        components[libcast.Spellcaster] = libcast.Spellcaster(spell)
+        components[Spellcaster] = Spellcaster(spell)
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
                       components=components)
 
@@ -82,7 +80,7 @@ def instantiate_item(template):
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
     if 'slot' in template:
-        equipment = libitem.Equipment(slot=template['slot'])
+        equipment = Equipment(slot=template['slot'])
         if 'power' in template:
             equipment.power_bonus = template['power']
         if 'defense' in template:
@@ -91,12 +89,12 @@ def instantiate_item(template):
             equipment.max_hp_bonus = template['hp']
         return GameObject(glyph=glyph, name=name, color=color,
                           render_order=RENDER_ORDER_ITEM,
-                          components={libitem.Equipment: equipment})
+                          components={Equipment: equipment})
     elif 'on_use' in template:
         use_fn = getattr(pyro.abilities, template['on_use'])
         return GameObject(glyph=glyph, name=name, color=color,
                           render_order=RENDER_ORDER_ITEM,
-                          components={libitem.Item: libitem.Item(use_fn=use_fn)})
+                          components={Item: Item(use_fn=use_fn)})
 
 
 def make_item(name, item_templates):

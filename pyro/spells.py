@@ -1,6 +1,6 @@
-import pyro.components.ai as libai
-import pyro.components.fighter as libfighter
-import pyro.ai.confused as libconf
+from pyro.components.ai import AI
+from pyro.components.fighter import Fighter
+from pyro.ai.confused import Confused
 from pyro.settings import *
 
 
@@ -26,7 +26,7 @@ class LightningBolt(Spell):
         Spell.__init__(self, name, spell_range, strength)
 
     def cast(self, caster, targets):
-        targets[0].component(libfighter.Fighter).take_damage(self.strength())
+        targets[0].component(Fighter).take_damage(self.strength())
 
 
 class Heal(Spell):
@@ -34,7 +34,7 @@ class Heal(Spell):
         Spell.__init__(self, name, 0, strength)
 
     def cast(self, caster, targets):
-        targets[0].component(libfighter.Fighter).heal(self.strength())
+        targets[0].component(Fighter).heal(self.strength())
 
 
 class Confuse(Spell):
@@ -42,9 +42,9 @@ class Confuse(Spell):
         Spell.__init__(self, name, spell_range, 0)
 
     def cast(self, caster, targets):
-        old_ai = targets[0].component(libai.AI)
-        new_ai = libconf.Confused(old_ai)
-        targets[0].set_component(libai.AI, new_ai)
+        old_ai = targets[0].component(AI)
+        new_ai = Confused(old_ai)
+        targets[0].set_component(AI, new_ai)
 
 
 def lightning_bolt():

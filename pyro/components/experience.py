@@ -1,10 +1,10 @@
-import pyro.component as libcomp
+from pyro.component import Component
 from pyro.settings import *
 
 
-class Experience(libcomp.Component):
+class Experience(Component):
     def __init__(self, xp=0, level=0):
-        libcomp.Component.__init__(self)
+        Component.__init__(self)
         self.xp = xp
         self.level = level
 

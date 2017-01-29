@@ -1,6 +1,6 @@
 import math
 import libtcodpy as libtcod
-import pyro.utilities as libutils
+from pyro.utilities import is_blocked
 from pyro.settings import *
 
 
@@ -33,8 +33,7 @@ class GameObject:
         comp.initialize(self)
 
     def move(self, dx, dy):
-        if not libutils.is_blocked(self.game.map, self.game.objects,
-                                   self.x + dx, self.y + dy):
+        if not is_blocked(self.game.game_map, self.game.objects, self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
             return True
@@ -83,8 +82,8 @@ class GameObject:
         for y1 in range(MAP_HEIGHT):
             for x1 in range(MAP_WIDTH):
                 libtcod.map_set_properties(fov, x1, y1,
-                                           not self.game.map[x1][y1].block_sight,
-                                           not self.game.map[x1][y1].blocked)
+                                           not self.game.game_map[x1][y1].block_sight,
+                                           not self.game.game_map[x1][y1].blocked)
 
         # Scan all the objects to see if there are objects that must be
         # navigated around. Check also that the object isn't self or the

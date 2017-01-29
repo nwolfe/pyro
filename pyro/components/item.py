@@ -1,10 +1,10 @@
 import libtcodpy as libtcod
-import pyro.component as libcomp
+from pyro.component import Component
 
 
-class Item(libcomp.Component):
+class Item(Component):
     def __init__(self, use_fn=None):
-        libcomp.Component.__init__(self)
+        Component.__init__(self)
         self.use_fn = use_fn
         self.item_owner = None
 
@@ -113,9 +113,9 @@ class Equipment(Item):
                 self.owner.name, self.slot), libtcod.light_yellow)
 
 
-class Inventory(libcomp.Component):
+class Inventory(Component):
     def __init__(self, items=None):
-        libcomp.Component.__init__(self)
+        Component.__init__(self)
         self.items = items
         if items is None:
             self.items = []

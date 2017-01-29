@@ -1,13 +1,14 @@
-import pyro.components.ai as libai
+import libtcodpy as libtcod
+from pyro.components.ai import AI
 from pyro.settings import *
 
 
-class Confused(libai.AI):
+class Confused(AI):
     """Wanders in a random direction for the specified number of turns, then
     sets the owner's AI to the specified implementation."""
 
     def __init__(self, restore_ai=None, num_turns=CONFUSE_NUM_TURNS):
-        libai.AI.__init__(self)
+        AI.__init__(self)
         self.restore_ai = restore_ai
         self.num_turns = num_turns
 
@@ -19,6 +20,6 @@ class Confused(libai.AI):
             self.num_turns -= 1
         else:
             # Restore normal AI
-            self.owner.set_component(libai.AI, self.restore_ai)
+            self.owner.set_component(AI, self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             self.owner.game.message(msg, libtcod.red)

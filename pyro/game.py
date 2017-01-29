@@ -1,14 +1,14 @@
 import libtcodpy as libtcod
-import textwrap
-import pyro.components.fighter as libfighter
-import pyro.ui as libui
+from textwrap import wrap
+from pyro.components.fighter import Fighter
+from pyro.ui import render_all
 from pyro.settings import *
 
 
 class Game:
     def __init__(self,
                  state=None,
-                 map=None,
+                 game_map=None,
                  fov_map=None,
                  objects=None,
                  stairs=None,
@@ -16,7 +16,7 @@ class Game:
                  messages=None,
                  dungeon_level=1):
         self.state = state
-        self.map = map
+        self.game_map = game_map
         self.fov_map = fov_map
         self.stairs = stairs
         self.objects = objects
@@ -29,7 +29,7 @@ class Game:
 
     def message(self, text, color=libtcod.white):
         # Split the message if necessary, among multiple lines
-        new_msg_lines = textwrap.wrap(text, MSG_WIDTH)
+        new_msg_lines = wrap(text, MSG_WIDTH)
 
         for line in new_msg_lines:
             # If the buffer is full, remove the first line to make room
@@ -48,7 +48,7 @@ class Game:
             libtcod.console_flush()
             libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
                                         ui.keyboard, ui.mouse)
-            libui.render_all(ui, self, False)
+            render_all(ui, self, False)
 
             (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
@@ -68,24 +68,24 @@ class Game:
                 return None
 
             # Return the first clicked monster, otherwise continue looking
-            for object in self.objects:
-                if object != self.player:
-                    if object.component(libfighter.Fighter):
-                        if object.x == x and object.y == y:
-                            return object
+            for game_object in self.objects:
+                if game_object != self.player:
+                    if game_object.component(Fighter):
+                        if game_object.x == x and game_object.y == y:
+                            return game_object
 
     def closest_monster(self, max_range):
         # Find closest enemy, up to a maximum range, and in the player's FOV
         closest_enemy = None
         closest_dist = max_range + 1
 
-        for object in self.objects:
-            if object != self.player and object.component(libfighter.Fighter):
-                if libtcod.map_is_in_fov(self.fov_map, object.x, object.y):
+        for game_object in self.objects:
+            if game_object != self.player and game_object.component(Fighter):
+                if libtcod.map_is_in_fov(self.fov_map, game_object.x, game_object.y):
                     # Calculate distance between this object and the player
-                    dist = self.player.distance_to(object)
+                    dist = self.player.distance_to(game_object)
                     if dist < closest_dist:
                         closest_dist = dist
-                        closest_enemy = object
+                        closest_enemy = game_object
 
         return closest_enemy

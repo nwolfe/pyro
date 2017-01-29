@@ -1,10 +1,10 @@
 import libtcodpy as libtcod
-import pyro.component as libcomp
+from pyro.component import Component
 
 
-class Spellcaster(libcomp.Component):
+class Spellcaster(Component):
     def __init__(self, spell):
-        libcomp.Component.__init__(self)
+        Component.__init__(self)
         self.spell = spell
 
     def in_range(self, target):

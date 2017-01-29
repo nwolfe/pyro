@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
-import pyro.components.fighter as libfighter
-import pyro.components.item as libitem
+from pyro.components.fighter import Fighter
+from pyro.components.item import Item, Equipment
 from pyro.settings import *
 
 
@@ -76,7 +76,7 @@ def inventory_menu(console, inventory, header):
         options = []
         for item in inventory:
             text = item.name
-            equipment = item.component(libitem.Equipment)
+            equipment = item.component(Equipment)
             if equipment and equipment.is_equipped:
                 text = '{0} (on {1})'.format(text, equipment.slot)
             options.append(text)
@@ -84,7 +84,7 @@ def inventory_menu(console, inventory, header):
     if selection_index is None or len(inventory) == 0:
         return None
     else:
-        return inventory[selection_index].component(libitem.Item)
+        return inventory[selection_index].component(Item)
 
 
 def get_names_under_mouse(mouse, objects, fov_map):
@@ -132,9 +132,9 @@ def render_all(ui, game, fov_recompute):
         for y in range(MAP_HEIGHT):
             for x in range(MAP_WIDTH):
                 visible = libtcod.map_is_in_fov(game.fov_map, x, y)
-                wall = game.map[x][y].block_sight and game.map[x][y].blocked
+                wall = game.game_map[x][y].block_sight and game.game_map[x][y].blocked
                 if not visible:
-                    if game.map[x][y].explored:
+                    if game.game_map[x][y].explored:
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
                         libtcod.console_set_char_background(ui.console,
                                                             x, y, color,
@@ -142,18 +142,18 @@ def render_all(ui, game, fov_recompute):
                 else:
                     if wall:
                         color = COLOR_LIGHT_WALL
-                    elif game.map[x][y].block_sight:
+                    elif game.game_map[x][y].block_sight:
                         color = COLOR_LIGHT_GRASS
                     else:
                         color = COLOR_LIGHT_GROUND
                     libtcod.console_set_char_background(ui.console,
                                                         x, y, color,
                                                         libtcod.BKGND_SET)
-                    game.map[x][y].explored = True
+                    game.game_map[x][y].explored = True
 
     render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
-    for object in render_ordered:
-        object.draw(ui.console, game.map, game.fov_map)
+    for game_object in render_ordered:
+        game_object.draw(ui.console, game.game_map, game.fov_map)
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, MAP_WIDTH, MAP_HEIGHT, 0, 0, 0)
@@ -171,7 +171,7 @@ def render_all(ui, game, fov_recompute):
         y += 1
 
     # Show player's stats
-    fighter = game.player.component(libfighter.Fighter)
+    fighter = game.player.component(Fighter)
     render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
                   fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
 
