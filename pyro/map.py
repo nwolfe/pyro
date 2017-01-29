@@ -126,7 +126,8 @@ def place_door(x, y, map, objects):
     map[x][y].blocked = True
     map[x][y].block_sight = True
     door_comp = libdoor.Door(is_open=False, opened_glyph='-', closed_glyph='+')
-    door = GameObject(x, y, '+', 'door', libtcod.white, render_order=0,
+    door = GameObject(x, y, '+', 'door', libtcod.white,
+                      render_order=RENDER_ORDER_DOOR,
                       components={libdoor.Door: door_comp})
     objects.append(door)
 
@@ -229,7 +230,7 @@ def place_grass_tile(x, y, map, objects):
     grass_comp = libgrass.Grass(is_crushed=False, standing_glyph=':',
                                 crushed_glyph='.')
     grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
-                       render_order=0,
+                       render_order=RENDER_ORDER_GRASS,
                        components={libgrass.Grass: grass_comp})
     objects.append(grass)
 
@@ -355,7 +356,7 @@ def make_map(player, dungeon_level, object_factory):
 
     # Create stairs at the center of the last room
     stairs = GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
-                        render_order=0, always_visible=True)
+                        render_order=RENDER_ORDER_STAIRS, always_visible=True)
     objects.append(stairs)
 
     return map, objects, stairs

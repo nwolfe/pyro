@@ -26,7 +26,7 @@ def monster_death(monster, game):
     monster.glyph = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
-    monster.render_order = 0
+    monster.render_order = RENDER_ORDER_CORPSE
     monster.name = 'remains of {0}'.format(monster.name)
     monster.components.pop(libfighter.Fighter)
     monster.components.pop(libai.AI)
@@ -89,11 +89,13 @@ def instantiate_item(template):
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        return GameObject(glyph=glyph, name=name, color=color, render_order=0,
+        return GameObject(glyph=glyph, name=name, color=color,
+                          render_order=RENDER_ORDER_ITEM,
                           components={libitem.Equipment: equipment})
     elif 'on_use' in template:
         use_fn = getattr(pyro.abilities, template['on_use'])
-        return GameObject(glyph=glyph, name=name, color=color, render_order=0,
+        return GameObject(glyph=glyph, name=name, color=color,
+                          render_order=RENDER_ORDER_ITEM,
                           components={libitem.Item: libitem.Item(use_fn=use_fn)})
 
 

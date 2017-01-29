@@ -25,8 +25,6 @@
 
 * BUGS
 ** TODO Fix calls to self.mouse and self.key in Game, change to UI
-** TODO Lower monster corpse render order below critter
-** TODO Lower monster corpse render order below items
 ** TODO Fix missing messages from items after loading
 *** Problem due to persistence and the reference to Game from GameObject
 ** TODO Fix vanishing doppleganger casting bug

@@ -6,7 +6,8 @@ from pyro.settings import *
 
 class GameObject:
     def __init__(self, x=0, y=0, glyph=None, name=None, color=None, blocks=False,
-                 render_order=1, always_visible=False, components=None, game=None):
+                 render_order=RENDER_ORDER_DEFAULT, always_visible=False, components=None,
+                 game=None):
         self.x = x
         self.y = y
         self.glyph = glyph
