@@ -16,7 +16,6 @@
 **** Require the player to return to the top?
 
 * CODEBASE
-** TODO Add Item#player_owned? convenience method
 ** TODO Create Fireball Spell
 ** TODO Fix setup.py since code moved to pyro/
 ** TODO Eliminate use of constructors

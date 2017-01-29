@@ -25,7 +25,7 @@ class Item(libcomp.Component):
             self.item_owner = item_owner
             inventory.append(self.owner)
             self.owner.game.objects.remove(self.owner)
-            if item_owner == self.owner.game.player:
+            if self.player_owned():
                 self.owner.game.message('You picked up a {0}!'.format(
                     self.owner.name), libtcod.green)
             return True
@@ -38,7 +38,7 @@ class Item(libcomp.Component):
         self.owner.game.objects.append(self.owner)
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
-        if self.item_owner == self.owner.game.player:
+        if self.player_owned():
             self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
                                     libtcod.yellow)
 
@@ -52,6 +52,9 @@ class Item(libcomp.Component):
             if result != 'cancelled':
                 inventory = self.item_owner.component(Inventory).items
                 inventory.remove(self.owner)
+
+    def player_owned(self):
+        return self.item_owner == self.owner.game.player
 
 
 class Equipment(Item):
@@ -96,7 +99,7 @@ class Equipment(Item):
         if replacing is not None:
             replacing.unequip()
         self.is_equipped = True
-        if item_owner == self.owner.game.player:
+        if self.player_owned():
             msg = 'Equipped {0} on {1}.'.format(self.owner.name, self.slot)
             self.owner.game.message(msg, libtcod.light_green)
 
@@ -105,7 +108,7 @@ class Equipment(Item):
         if not self.is_equipped:
             return
         self.is_equipped = False
-        if self.item_owner == self.owner.game.player:
+        if self.player_owned():
             self.owner.game.message('Unequipped {0} from {1}.'.format(
                 self.owner.name, self.slot), libtcod.light_yellow)
 
