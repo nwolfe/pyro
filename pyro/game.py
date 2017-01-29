@@ -46,19 +46,17 @@ class Game:
             # Render the screen. This erases the inventory and shows the names of
             # objects under the mouse.
             libtcod.console_flush()
-            libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                        libtcod.EVENT_MOUSE,
-                                        self.key, self.mouse)
+            libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
+                                        ui.keyboard, ui.mouse)
             libui.render_all(ui, self, False)
 
-            (x, y) = (self.mouse.cx, self.mouse.cy)
+            (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
-            if (self.mouse.lbutton_pressed and
-                libtcod.map_is_in_fov(self.fov_map, x, y) and
-                (max_range is None or self.player.distance(x, y) <= max_range)):
-                return (x, y)
+            if (ui.mouse.lbutton_pressed and libtcod.map_is_in_fov(self.fov_map, x, y)
+                    and (max_range is None or self.player.distance(x, y) <= max_range)):
+                return x, y
 
-            if self.mouse.rbutton_pressed or self.key.vk == libtcod.KEY_ESCAPE:
+            if ui.mouse.rbutton_pressed or ui.keyboard.vk == libtcod.KEY_ESCAPE:
                 return None, None
 
     def target_monster(self, ui, max_range=None):
