@@ -25,11 +25,11 @@ class GameObject:
         else:
             self.components = {}
 
-    def component(self, klass):
-        return self.components.get(klass)
+    def component(self, component_class):
+        return self.components.get(component_class)
 
-    def set_component(self, klass, comp):
-        self.components[klass] = comp
+    def set_component(self, component_class, comp):
+        self.components[component_class] = comp
         comp.initialize(self)
 
     def move(self, dx, dy):
@@ -41,8 +41,8 @@ class GameObject:
         else:
             return False
 
-    def draw(self, console, map, fov_map):
-        always_visible = self.always_visible and map[self.x][self.y].explored
+    def draw(self, console, game_map, fov_map):
+        always_visible = self.always_visible and game_map[self.x][self.y].explored
         if always_visible or libtcod.map_is_in_fov(fov_map, self.x, self.y):
             # Set the color and then draw the character that
             # represents this object at its position

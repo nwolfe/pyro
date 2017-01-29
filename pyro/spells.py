@@ -5,9 +5,9 @@ from pyro.settings import *
 
 
 class Spell:
-    def __init__(self, name, range, strength):
+    def __init__(self, name, spell_range, strength):
         self.name = name
-        self.base_range = range
+        self.base_range = spell_range
         self.base_strength = strength
 
     def range(self):
@@ -21,9 +21,9 @@ class Spell:
 
 
 class LightningBolt(Spell):
-    def __init__(self, name='Lightning Bolt', range=LIGHTNING_RANGE,
+    def __init__(self, name='Lightning Bolt', spell_range=LIGHTNING_RANGE,
                  strength=LIGHTNING_DAMAGE):
-        Spell.__init__(self, name, range, strength)
+        Spell.__init__(self, name, spell_range, strength)
 
     def cast(self, caster, targets):
         targets[0].component(libfighter.Fighter).take_damage(self.strength())
@@ -38,8 +38,8 @@ class Heal(Spell):
 
 
 class Confuse(Spell):
-    def __init__(self, name='Confusion', range=CONFUSE_RANGE):
-        Spell.__init__(self, name, range, 0)
+    def __init__(self, name='Confusion', spell_range=CONFUSE_RANGE):
+        Spell.__init__(self, name, spell_range, 0)
 
     def cast(self, caster, targets):
         old_ai = targets[0].component(libai.AI)

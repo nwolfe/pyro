@@ -65,8 +65,8 @@ def make_monster(name, monster_templates):
             return instantiate_monster(template)
 
 
-def load_templates(file):
-    with open(file) as f:
+def load_templates(json_file):
+    with open(json_file) as f:
         templates = json.load(f)
 
         # For some reason the UI renderer can't handle Unicode strings so we

@@ -56,10 +56,10 @@ def cast_fireball(player, game, ui):
     game.message('The fireball explodes, burning everything within {0} tiles!'.
                  format(FIREBALL_RADIUS), libtcod.orange)
 
-    for object in game.objects:
-        if object.distance(x, y) <= FIREBALL_RADIUS:
-            fighter = object.component(libfighter.Fighter)
+    for game_object in game.objects:
+        if game_object.distance(x, y) <= FIREBALL_RADIUS:
+            fighter = game_object.component(libfighter.Fighter)
             if fighter:
                 game.message('The {0} gets burned for {1} hit points.'.format(
-                    object.name, FIREBALL_DAMAGE), libtcod.orange)
+                    game_object.name, FIREBALL_DAMAGE), libtcod.orange)
                 fighter.take_damage(FIREBALL_DAMAGE)

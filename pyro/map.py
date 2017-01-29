@@ -20,9 +20,9 @@ class Rect:
         self.y2 = y + h
 
     def center(self):
-        centerx = (self.x1 + self.x2) / 2
-        centery = (self.y1 + self.y2) / 2
-        return centerx, centery
+        center_x = (self.x1 + self.x2) / 2
+        center_y = (self.y1 + self.y2) / 2
+        return center_x, center_y
 
     def intersect(self, other):
         # Returns true if this rectangle intersects with the other one
@@ -78,36 +78,36 @@ def from_dungeon_level(table, dungeon_level):
     return 0
 
 
-def create_room(map, room, metamap):
+def create_room(game_map, room, meta_map):
     # Go through the tiles in the rectangle and make them passable
     for x in range(room.x1 + 1, room.x2):
         for y in range(room.y1 + 1, room.y2):
-            map[x][y].blocked = False
-            map[x][y].block_sight = False
+            game_map[x][y].blocked = False
+            game_map[x][y].block_sight = False
 
     # Mark the exterior tiles as walls
     for x in range(room.x1, room.x2+1):
-        metamap[x][room.y1].room_wall = True
-        metamap[x][room.y2].room_wall = True
+        meta_map[x][room.y1].room_wall = True
+        meta_map[x][room.y2].room_wall = True
     for y in range(room.y1, room.y2+1):
-        metamap[room.x1][y].room_wall = True
-        metamap[room.x2][y].room_wall = True
+        meta_map[room.x1][y].room_wall = True
+        meta_map[room.x2][y].room_wall = True
 
 
-def create_h_tunnel(map, x1, x2, y, metamap):
+def create_h_tunnel(game_map, x1, x2, y, meta_map):
     for x in range(min(x1, x2), max(x1, x2) + 1):
-        map[x][y].blocked = False
-        map[x][y].block_sight = False
-        if metamap[x][y].room_wall:
-            metamap[x][y].tunnelled = True
+        game_map[x][y].blocked = False
+        game_map[x][y].block_sight = False
+        if meta_map[x][y].room_wall:
+            meta_map[x][y].tunnelled = True
 
 
-def create_v_tunnel(map, y1, y2, x, metamap):
+def create_v_tunnel(game_map, y1, y2, x, meta_map):
     for y in range(min(y1, y2), max(y1, y2) + 1):
-        map[x][y].blocked = False
-        map[x][y].block_sight = False
-        if metamap[x][y].room_wall:
-            metamap[x][y].tunnelled = True
+        game_map[x][y].blocked = False
+        game_map[x][y].block_sight = False
+        if meta_map[x][y].room_wall:
+            meta_map[x][y].tunnelled = True
 
 
 def get_spawn_chances(templates, dungeon_level):
@@ -122,9 +122,9 @@ def get_spawn_chances(templates, dungeon_level):
     return chances
 
 
-def place_door(x, y, map, objects):
-    map[x][y].blocked = True
-    map[x][y].block_sight = True
+def place_door(x, y, game_map, objects):
+    game_map[x][y].blocked = True
+    game_map[x][y].block_sight = True
     door_comp = libdoor.Door(is_open=False, opened_glyph='-', closed_glyph='+')
     door = GameObject(x, y, '+', 'door', libtcod.white,
                       render_order=RENDER_ORDER_DOOR,
@@ -132,29 +132,29 @@ def place_door(x, y, map, objects):
     objects.append(door)
 
 
-def place_doors(map, objects, metamap):
+def place_doors(game_map, objects, meta_map):
     # Look for tunnelled walls as potential doors
     for x in range(MAP_WIDTH):
         for y in range(MAP_HEIGHT):
-            if metamap[x][y].tunnelled:
+            if meta_map[x][y].tunnelled:
                 # Don't place doors next to other doors
-                door_above = metamap[x][y+1].tunnelled
-                door_below = metamap[x][y-1].tunnelled
-                door_left = metamap[x-1][y].tunnelled
-                door_right = metamap[x+1][y].tunnelled
+                door_above = meta_map[x][y+1].tunnelled
+                door_below = meta_map[x][y-1].tunnelled
+                door_left = meta_map[x-1][y].tunnelled
+                door_right = meta_map[x+1][y].tunnelled
                 if door_above or door_below or door_left or door_right:
                     continue
 
                 # Make sure to place doors between two walls
-                wall_above = map[x][y+1].blocked
-                wall_below = map[x][y-1].blocked
-                wall_left = map[x-1][y].blocked
-                wall_right = map[x+1][y].blocked
+                wall_above = game_map[x][y+1].blocked
+                wall_below = game_map[x][y-1].blocked
+                wall_left = game_map[x-1][y].blocked
+                wall_right = game_map[x+1][y].blocked
                 if (wall_above and wall_below) or (wall_left and wall_right):
-                    place_door(x, y, map, objects)
+                    place_door(x, y, game_map, objects)
 
 
-def place_critters(room, map, objects, dungeon_level, object_factory):
+def place_critters(room, game_map, objects, dungeon_level, object_factory):
     # Random number of critters
     max_critters = from_dungeon_level([[6, 1],
                                        [5, 3],
@@ -175,7 +175,7 @@ def place_critters(room, map, objects, dungeon_level, object_factory):
         # Random position for critter
         point = room.random_point_inside()
 
-        if not libutils.is_blocked(map, objects, point.x, point.y):
+        if not libutils.is_blocked(game_map, objects, point.x, point.y):
             choice = random_choice(critter_chances)
             critter = object_factory.new_monster(choice)
             critter.x = point.x
@@ -183,7 +183,7 @@ def place_critters(room, map, objects, dungeon_level, object_factory):
             objects.append(critter)
 
 
-def place_monsters(room, map, objects, dungeon_level, object_factory):
+def place_monsters(room, game_map, objects, dungeon_level, object_factory):
     # Random number of monsters
     max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]], dungeon_level)
     num_monsters = libtcod.random_get_int(0, 0, max_monsters)
@@ -199,7 +199,7 @@ def place_monsters(room, map, objects, dungeon_level, object_factory):
         # Random position for monster
         point = room.random_point_inside()
 
-        if not libutils.is_blocked(map, objects, point.x, point.y):
+        if not libutils.is_blocked(game_map, objects, point.x, point.y):
             choice = random_choice(monster_chances)
             monster = object_factory.new_monster(choice)
             monster.x = point.x
@@ -207,7 +207,7 @@ def place_monsters(room, map, objects, dungeon_level, object_factory):
             objects.append(monster)
 
 
-def place_items(room, map, objects, dungeon_level, object_factory):
+def place_items(room, game_map, objects, dungeon_level, object_factory):
     # Random number of items
     max_items = from_dungeon_level([[1, 1], [2, 4]], dungeon_level)
     num_items = libtcod.random_get_int(0, 0, max_items)
@@ -217,7 +217,7 @@ def place_items(room, map, objects, dungeon_level, object_factory):
         # Random position for item
         point = room.random_point_inside()
 
-        if not libutils.is_blocked(map, objects, point.x, point.y):
+        if not libutils.is_blocked(game_map, objects, point.x, point.y):
             choice = random_choice(item_chances)
             item = object_factory.new_item(choice)
             item.x = point.x
@@ -225,8 +225,8 @@ def place_items(room, map, objects, dungeon_level, object_factory):
             objects.append(item)
 
 
-def place_grass_tile(x, y, map, objects):
-    map[x][y].block_sight = True
+def place_grass_tile(x, y, game_map, objects):
+    game_map[x][y].block_sight = True
     grass_comp = libgrass.Grass(is_crushed=False, standing_glyph=':',
                                 crushed_glyph='.')
     grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
@@ -244,25 +244,25 @@ def random_point_surrounding(point):
     return p
 
 
-def is_on_map(point, map):
-    x_in_bounds = point.x >= 0 and point.x < len(map)
-    y_in_bounds = point.y >= 0 and point.y < len(map[0])
+def is_on_map(point, game_map):
+    x_in_bounds = point.x >= 0 and point.x < len(game_map)
+    y_in_bounds = point.y >= 0 and point.y < len(game_map[0])
     return x_in_bounds and y_in_bounds
 
 
-def place_grass(room, map, objects):
+def place_grass(room, game_map, objects):
     if libtcod.random_get_int(0, 1, 2) == 1:
         grass_tiles = []
         point = room.random_point_inside()
-        while libutils.is_blocked(map, objects, point.x, point.y):
+        while libutils.is_blocked(game_map, objects, point.x, point.y):
             point = room.random_point_inside()
 
-        place_grass_tile(point.x, point.y, map, grass_tiles)
+        place_grass_tile(point.x, point.y, game_map, grass_tiles)
 
         num_grass = libtcod.random_get_int(0, 4, 8)
         for i in range(num_grass):
             point = random_point_surrounding(point)
-            while not is_on_map(point, map):
+            while not is_on_map(point, game_map):
                 point = random_point_surrounding(point)
 
             grass_at_point = False
@@ -274,8 +274,8 @@ def place_grass(room, map, objects):
             if grass_at_point:
                 continue
 
-            if not libutils.is_blocked(map, objects, point.x, point.y):
-                place_grass_tile(point.x, point.y, map, objects)
+            if not libutils.is_blocked(game_map, objects, point.x, point.y):
+                place_grass_tile(point.x, point.y, game_map, objects)
 
         for grass in grass_tiles:
             objects.append(grass)
@@ -302,12 +302,12 @@ def randomly_placed_rect():
 
 def make_map(player, dungeon_level, object_factory):
     objects = [player]
-    map = [[Tile(True)
-            for y in range(MAP_HEIGHT)]
-           for x in range(MAP_WIDTH)]
-    metamap = [[TileMeta()
-                for y in range(MAP_HEIGHT)]
-               for x in range(MAP_WIDTH)]
+    game_map = [[Tile(True)
+                 for _ in range(MAP_HEIGHT)]
+                for _ in range(MAP_WIDTH)]
+    meta_map = [[TileMeta()
+                 for _ in range(MAP_HEIGHT)]
+                for _ in range(MAP_WIDTH)]
     rooms = []
     num_rooms = 0
     new_x = 0
@@ -321,7 +321,7 @@ def make_map(player, dungeon_level, object_factory):
             continue
 
         # Room is valid, continue
-        create_room(map, new_room, metamap)
+        create_room(game_map, new_room, meta_map)
 
         (new_x, new_y) = new_room.center()
 
@@ -337,26 +337,26 @@ def make_map(player, dungeon_level, object_factory):
 
             if libtcod.random_get_int(0, 0, 1) == 1:
                 # First move horizontally, then vertically
-                create_h_tunnel(map, prev_x, new_x, prev_y, metamap)
-                create_v_tunnel(map, prev_y, new_y, new_x, metamap)
+                create_h_tunnel(game_map, prev_x, new_x, prev_y, meta_map)
+                create_v_tunnel(game_map, prev_y, new_y, new_x, meta_map)
             else:
                 # First move vertically, then horizontally
-                create_v_tunnel(map, prev_y, new_y, prev_x, metamap)
-                create_h_tunnel(map, prev_x, new_x, new_y, metamap)
+                create_v_tunnel(game_map, prev_y, new_y, prev_x, meta_map)
+                create_h_tunnel(game_map, prev_x, new_x, new_y, meta_map)
 
         # Finish
-        place_grass(new_room, map, objects)
-        place_monsters(new_room, map, objects, dungeon_level, object_factory)
-        place_items(new_room, map, objects, dungeon_level, object_factory)
-        place_critters(new_room, map, objects, dungeon_level, object_factory)
+        place_grass(new_room, game_map, objects)
+        place_monsters(new_room, game_map, objects, dungeon_level, object_factory)
+        place_items(new_room, game_map, objects, dungeon_level, object_factory)
+        place_critters(new_room, game_map, objects, dungeon_level, object_factory)
         rooms.append(new_room)
         num_rooms += 1
 
-    place_doors(map, objects, metamap)
+    place_doors(game_map, objects, meta_map)
 
     # Create stairs at the center of the last room
     stairs = GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
                         render_order=RENDER_ORDER_STAIRS, always_visible=True)
     objects.append(stairs)
 
-    return map, objects, stairs
+    return game_map, objects, stairs

@@ -18,10 +18,10 @@ def move_player_or_attack(dx, dy, game):
     x = game.player.x + dx
     y = game.player.y + dy
     target = None
-    for object in game.objects:
-        if object.component(libfighter.Fighter):
-            if object.x == x and object.y == y:
-                target = object
+    for game_object in game.objects:
+        if game_object.component(libfighter.Fighter):
+            if game_object.x == x and game_object.y == y:
+                target = game_object
                 break
 
     if target:
@@ -30,14 +30,14 @@ def move_player_or_attack(dx, dy, game):
     else:
         door = None
         grass = None
-        for object in game.objects:
-            if object.component(libdoor.Door):
-                if object.x == x and object.y == y:
-                    door = object.component(libdoor.Door)
-            elif object.component(libgrass.Grass):
-                if object.x == x and object.y == y:
-                    if not object.component(libgrass.Grass).is_crushed:
-                        grass = object.component(libgrass.Grass)
+        for game_object in game.objects:
+            if game_object.component(libdoor.Door):
+                if game_object.x == x and game_object.y == y:
+                    door = game_object.component(libdoor.Door)
+            elif game_object.component(libgrass.Grass):
+                if game_object.x == x and game_object.y == y:
+                    if not game_object.component(libgrass.Grass).is_crushed:
+                        grass = game_object.component(libgrass.Grass)
 
             if door and grass:
                 break
@@ -55,13 +55,13 @@ def move_player_or_attack(dx, dy, game):
 def close_nearest_door(game):
     x = game.player.x
     y = game.player.y
-    for object in game.objects:
-        if object.component(libdoor.Door):
-            close_x = (object.x == x or object.x == x-1 or object.x == x+1)
-            close_y = (object.y == y or object.y == y-1 or object.y == y+1)
-            player_on_door = (object.x == x and object.y == y)
+    for game_object in game.objects:
+        if game_object.component(libdoor.Door):
+            close_x = (game_object.x == x or game_object.x == x-1 or game_object.x == x+1)
+            close_y = (game_object.y == y or game_object.y == y-1 or game_object.y == y+1)
+            player_on_door = (game_object.x == x and game_object.y == y)
             if close_x and close_y and not player_on_door:
-                object.component(libdoor.Door).close()
+                game_object.component(libdoor.Door).close()
                 break
 
 
@@ -123,10 +123,10 @@ def handle_keys(ui, game, object_factory):
         return False, None
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
-        for object in game.objects:
-            item = object.component(libitem.Item)
+        for game_object in game.objects:
+            item = game_object.component(libitem.Item)
             if item:
-                if object.x == game.player.x and object.y == game.player.y:
+                if game_object.x == game.player.x and game_object.y == game.player.y:
                     item.pick_up(game.player)
                     break
         return False, None
@@ -170,14 +170,14 @@ def player_death(player, game):
     player.color = libtcod.dark_red
 
 
-def make_fov_map(map):
+def make_fov_map(game_map):
     # Create the FOV map according to the generated map
     fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
     for y in range(MAP_HEIGHT):
         for x in range(MAP_WIDTH):
             libtcod.map_set_properties(fov_map, x, y,
-                                       not map[x][y].block_sight,
-                                       not map[x][y].blocked)
+                                       not game_map[x][y].block_sight,
+                                       not game_map[x][y].blocked)
     return fov_map
 
 
@@ -224,12 +224,12 @@ def new_game(object_factory):
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
-    (map, objects, stairs) = libmap.make_map(player, dungeon_level, object_factory)
-    fov_map = make_fov_map(map)
+    (game_map, objects, stairs) = libmap.make_map(player, dungeon_level, object_factory)
+    fov_map = make_fov_map(game_map)
 
     messages = []
 
-    game = libgame.Game('playing', map, fov_map, objects, stairs,
+    game = libgame.Game('playing', game_map, fov_map, objects, stairs,
                         player, messages, dungeon_level)
 
     # Initial equipment: a dagger and scroll of lightning bolt
@@ -263,22 +263,22 @@ def next_dungeon_level(game, object_factory):
     game.message(msg, libtcod.red)
     game.dungeon_level += 1
 
-    (map, objects, stairs) = libmap.make_map(game.player, game.dungeon_level,
-                                             object_factory)
-    fov_map = make_fov_map(map)
+    (game_map, objects, stairs) = libmap.make_map(game.player, game.dungeon_level,
+                                                  object_factory)
+    fov_map = make_fov_map(game_map)
 
-    game.map = map
+    game.map = game_map
     game.fov_map = fov_map
     game.objects = objects
     game.stairs = stairs
 
-    for object in game.objects:
-        object.game = game
+    for game_object in game.objects:
+        game_object.game = game
 
 
 def play_game(game, ui, object_factory):
-    for object in game.objects:
-        object.game = game
+    for game_object in game.objects:
+        game_object.game = game
 
     fov_recompute = True
     libtcod.console_clear(ui.console)
@@ -292,8 +292,8 @@ def play_game(game, ui, object_factory):
 
         check_player_level_up(game, ui.console)
 
-        for object in game.objects:
-            object.clear(ui.console)
+        for game_object in game.objects:
+            game_object.clear(ui.console)
 
         (fov_recompute, player_action) = handle_keys(ui, game, object_factory)
 
@@ -302,40 +302,40 @@ def play_game(game, ui, object_factory):
             break
 
         if game.state == 'playing' and player_action != 'idle':
-            for object in game.objects:
-                ai = object.component(libai.AI)
+            for game_object in game.objects:
+                ai = game_object.component(libai.AI)
                 if ai:
                     ai.take_turn()
 
 
 def save_game(game):
     # Open an empty shelve (possibly overwriting an old one) to write the data
-    file = shelve.open('savegame', 'n')
-    file['map'] = game.map
-    file['objects'] = game.objects
-    file['player_index'] = game.objects.index(game.player)
-    file['messages'] = game.messages
-    file['state'] = game.state
-    file['stairs_index'] = game.objects.index(game.stairs)
-    file['dungeon_level'] = game.dungeon_level
-    file.close()
+    save_file = shelve.open('savegame', 'n')
+    save_file['map'] = game.map
+    save_file['objects'] = game.objects
+    save_file['player_index'] = game.objects.index(game.player)
+    save_file['messages'] = game.messages
+    save_file['state'] = game.state
+    save_file['stairs_index'] = game.objects.index(game.stairs)
+    save_file['dungeon_level'] = game.dungeon_level
+    save_file.close()
 
 
 def load_game():
     # Open the previously saved shelve and load the game data
-    file = shelve.open('savegame', 'r')
-    map = file['map']
-    objects = file['objects']
-    player = objects[file['player_index']]
-    messages = file['messages']
-    state = file['state']
-    stairs = objects[file['stairs_index']]
-    dungeon_level = file['dungeon_level']
-    file.close()
+    save_file = shelve.open('savegame', 'r')
+    game_map = save_file['map']
+    objects = save_file['objects']
+    player = objects[save_file['player_index']]
+    messages = save_file['messages']
+    state = save_file['state']
+    stairs = objects[save_file['stairs_index']]
+    dungeon_level = save_file['dungeon_level']
+    save_file.close()
 
-    fov_map = make_fov_map(map)
+    fov_map = make_fov_map(game_map)
 
-    return libgame.Game(state, map, fov_map, objects, stairs, player, messages,
+    return libgame.Game(state, game_map, fov_map, objects, stairs, player, messages,
                         dungeon_level)
 
 

@@ -70,8 +70,8 @@ class Equipment(Item):
         self.is_equipped = False
         self.item_owner = None
 
-    def initialize(self, object):
-        self.owner = object
+    def initialize(self, game_object):
+        self.owner = game_object
         self.owner.components[Item] = self
 
     def pick_up(self, item_owner):
