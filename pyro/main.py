@@ -348,12 +348,6 @@ def main_menu(ui):
 
         # Show the game's title and credits
         libtcod.console_set_default_foreground(ui.console, libtcod.light_yellow)
-        libtcod.console_print_ex(ui.console, SCREEN_WIDTH/2, (SCREEN_HEIGHT/2)-4,
-                                 libtcod.BKGND_NONE, libtcod.CENTER,
-                                 'TOMBS OF THE ANCIENT KINGS')
-        libtcod.console_print_ex(ui.console, SCREEN_WIDTH/2, SCREEN_HEIGHT-2,
-                                 libtcod.BKGND_NONE, libtcod.CENTER,
-                                 'By N. Wolfe')
 
         # Show options and wait for the player's choice
         options = ['Play a new game', 'Continue last game', 'Quit']
