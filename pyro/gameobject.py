@@ -74,7 +74,7 @@ class GameObject:
     def distance(self, x, y):
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
-    def move_astar(self, target):
+    def move_astar(self, target, passthrough=False):
         # Create a FOV map that has the dimensions of the map
         fov = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
 
@@ -90,10 +90,13 @@ class GameObject:
         # target (so that the start and the end points are free).
         # The AI class handles the situation if self is next to the target so
         # it will not use this A* function anyway.
-        for obj in self.game.objects:
-            if obj.blocks and obj != self and obj != target:
-                # Set the tile as a wall so it must be navigated around
-                libtcod.map_set_properties(fov, obj.x, obj.y, True, False)
+        # Things like projectiles should just "pass through" objects rather
+        # than fly around them.
+        if not passthrough:
+            for obj in self.game.objects:
+                if obj.blocks and obj != self and obj != target:
+                    # Set the tile as a wall so it must be navigated around
+                    libtcod.map_set_properties(fov, obj.x, obj.y, True, False)
 
         # Allocate an A* path
         # The 1.41 is the normal diagonal cost of moving, it can be set as 0.0

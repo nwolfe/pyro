@@ -1,5 +1,8 @@
+import libtcodpy as libtcod
 from pyro.components.ai import AI
 from pyro.components.fighter import Fighter
+from pyro.components.projectile import Projectile
+from pyro.gameobject import GameObject
 from pyro.ai.confused import Confused
 from pyro.settings import *
 
@@ -26,7 +29,13 @@ class LightningBolt(Spell):
         Spell.__init__(self, name, spell_range, strength)
 
     def cast(self, caster, targets):
-        targets[0].component(Fighter).take_damage(self.strength())
+        def on_hit(target):
+            target.component(Fighter).take_damage(self.strength())
+        bolt = Projectile(source=caster, target=targets[0], on_hit_fn=on_hit)
+        obj = GameObject(name='Bolt of Lightning', glyph='*',
+                         components={Projectile: bolt},
+                         color=libtcod.blue, blocks=False, game=caster.game)
+        caster.game.objects.append(obj)
 
 
 class Heal(Spell):

@@ -1,7 +1,6 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
-** TODO Ranged/missile combat animation
 ** TODO Monsters drop items when killed?
 ** TODO Add weapon/spell accuracy attribute
 ** Menu

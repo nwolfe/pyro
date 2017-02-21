@@ -11,6 +11,7 @@ from pyro.components.experience import Experience
 from pyro.components.item import Item, Inventory, Equipment
 from pyro.components.door import Door
 from pyro.components.grass import Grass
+from pyro.components.projectile import Projectile
 from pyro.settings import *
 
 
@@ -273,6 +274,16 @@ def next_dungeon_level(game, object_factory):
         game_object.game = game
 
 
+def update_projectiles(game):
+    projectiles_found = False
+    for game_object in game.objects:
+        projectile = game_object.component(Projectile)
+        if projectile:
+            projectile.tick()
+            projectiles_found = True
+    return projectiles_found
+
+
 def play_game(game, ui, object_factory):
     for game_object in game.objects:
         game_object.game = game
@@ -291,6 +302,9 @@ def play_game(game, ui, object_factory):
 
         for game_object in game.objects:
             game_object.clear(ui.console)
+
+        if update_projectiles(game):
+            continue
 
         (fov_recompute, player_action) = handle_keys(ui, game, object_factory)
 
