@@ -19,7 +19,7 @@ class Spell:
     def strength(self):
         return self.base_strength
 
-    def cast(self, caster, targets):
+    def cast(self, caster, target):
         return
 
 
@@ -28,10 +28,10 @@ class LightningBolt(Spell):
                  strength=LIGHTNING_DAMAGE):
         Spell.__init__(self, name, spell_range, strength)
 
-    def cast(self, caster, targets):
-        def on_hit(target):
-            target.component(Fighter).take_damage(self.strength())
-        bolt = Projectile(source=caster, target=targets[0], on_hit_fn=on_hit)
+    def cast(self, caster, target):
+        def on_hit(t):
+            t.component(Fighter).take_damage(self.strength())
+        bolt = Projectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Bolt of Lightning', glyph='*',
                          components={Projectile: bolt},
                          color=libtcod.blue, blocks=False, game=caster.game)
@@ -42,18 +42,18 @@ class Heal(Spell):
     def __init__(self, name='Healing', strength=HEAL_AMOUNT):
         Spell.__init__(self, name, 0, strength)
 
-    def cast(self, caster, targets):
-        targets[0].component(Fighter).heal(self.strength())
+    def cast(self, caster, target):
+        target.component(Fighter).heal(self.strength())
 
 
 class Confuse(Spell):
     def __init__(self, name='Confusion', spell_range=CONFUSE_RANGE):
         Spell.__init__(self, name, spell_range, 0)
 
-    def cast(self, caster, targets):
-        old_ai = targets[0].component(AI)
+    def cast(self, caster, target):
+        old_ai = target.component(AI)
         new_ai = Confused(old_ai)
-        targets[0].set_component(AI, new_ai)
+        target.set_component(AI, new_ai)
 
 
 def lightning_bolt():

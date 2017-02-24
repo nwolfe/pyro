@@ -15,4 +15,4 @@ class AggressiveSpellcaster(AI):
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
-                monster.component(Spellcaster).cast_spell([player])
+                monster.component(Spellcaster).cast_spell(player)
