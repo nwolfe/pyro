@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
 import json
-import pyro.abilities
 import pyro.ai.confused
 import pyro.ai.aggressive
 import pyro.ai.aggressive_spellcaster
@@ -10,7 +9,7 @@ from pyro.gameobject import GameObject
 from pyro.components.ai import AI
 from pyro.components.experience import Experience
 from pyro.components.fighter import Fighter
-from pyro.components.item import Item, Equipment
+from pyro.components.item import Item, Equipment, SpellItemUse
 from pyro.components.spellcaster import Spellcaster
 from pyro.settings import *
 
@@ -75,6 +74,14 @@ def load_templates(json_file):
         return templates
 
 
+ITEM_USES = dict(
+    cast_heal=pyro.spells.Heal,
+    cast_lightning_bolt=pyro.spells.LightningBolt,
+    cast_confuse=pyro.spells.Confuse,
+    cast_fireball=pyro.spells.Fireball
+)
+
+
 def instantiate_item(template):
     name = template['name']
     glyph = template['glyph']
@@ -91,10 +98,11 @@ def instantiate_item(template):
                           render_order=RENDER_ORDER_ITEM,
                           components={Equipment: equipment})
     elif 'on_use' in template:
-        use_fn = getattr(pyro.abilities, template['on_use'])
+        spell = ITEM_USES[template['on_use']]()
+        item = Item(on_use=SpellItemUse(spell))
         return GameObject(glyph=glyph, name=name, color=color,
                           render_order=RENDER_ORDER_ITEM,
-                          components={Item: Item(use_fn=use_fn)})
+                          components={Item: item})
 
 
 def make_item(name, item_templates):

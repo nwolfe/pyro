@@ -2,10 +2,27 @@ import libtcodpy as libtcod
 from pyro.component import Component
 
 
+class ItemUse:
+    def __init__(self):
+        pass
+
+    def use(self, item_owner, game, ui):
+        pass
+
+
+class SpellItemUse(ItemUse):
+    def __init__(self, spell):
+        ItemUse.__init__(self)
+        self.spell = spell
+
+    def use(self, item_owner, game, ui):
+        self.spell.player_cast(item_owner, game, ui)
+
+
 class Item(Component):
-    def __init__(self, use_fn=None):
+    def __init__(self, on_use=None):
         Component.__init__(self)
-        self.use_fn = use_fn
+        self.on_use = on_use
         self.item_owner = None
 
     def pick_up(self, item_owner):
@@ -44,11 +61,11 @@ class Item(Component):
 
     def use(self, ui):
         # Call the use_fn if we have one
-        if self.use_fn is None:
+        if self.on_use is None:
             self.owner.game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            result = self.use_fn(self.item_owner, self.owner.game, ui)
+            result = self.on_use.use(self.item_owner, self.owner.game, ui)
             if result != 'cancelled':
                 inventory = self.item_owner.component(Inventory).items
                 inventory.remove(self.owner)

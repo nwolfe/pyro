@@ -15,7 +15,8 @@
 **** Require the player to return to the top?
 
 * CODEBASE
-** TODO Create Fireball Spell
+** TODO Finish Fireball spell
+** TODO Separate Item and Equipment classes
 ** TODO Fix setup.py since code moved to pyro/
 ** TODO Eliminate use of constructors
 *** Behavior should just be in a real method
