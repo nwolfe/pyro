@@ -25,6 +25,12 @@ class Spell:
     def player_cast(self, player, game, ui):
         pass
 
+    def initialize_player(self):
+        pass
+
+    def initialize_monster(self):
+        pass
+
 
 class LightningBolt(Spell):
     def __init__(self, name='Lightning Bolt', spell_range=LIGHTNING_RANGE,
@@ -53,6 +59,9 @@ class LightningBolt(Spell):
         msg = msg.format(monster.name, self.strength())
         game.message(msg, libtcod.light_blue)
         self.cast(player, monster)
+
+    def initialize_monster(self):
+        self.base_strength = 5
 
 
 class Heal(Spell):
@@ -96,12 +105,26 @@ class Confuse(Spell):
 
 
 class Fireball(Spell):
-    def __init__(self, name='Fireball', spell_range=5, strength=FIREBALL_DAMAGE):
+    def __init__(self, name='Fireball', spell_range=4, strength=FIREBALL_DAMAGE):
         Spell.__init__(self, name, spell_range, strength)
+        self.radius = FIREBALL_RADIUS
+
+    def initialize_monster(self):
+        self.base_strength = 15
+        self.radius = 2
 
     def cast(self, caster, target):
-        # TODO write enemy behavior
-        pass
+        x = target.x
+        y = target.y
+        caster.game.message('The fireball explodes, burning everything within {0} tiles!'.
+                            format(self.radius), libtcod.orange)
+        for game_object in caster.game.objects:
+            if game_object.distance(x, y) <= self.radius:
+                fighter = game_object.component(Fighter)
+                if fighter:
+                    caster.game.message('The {0} gets burned for {1} hit points.'.format(
+                        game_object.name, self.strength()), libtcod.orange)
+                    fighter.take_damage(self.strength())
 
     def player_cast(self, player, game, ui):
         # Ask the player for a target tile to throw a fireball at
@@ -112,16 +135,12 @@ class Fireball(Spell):
             return 'cancelled'
 
         game.message('The fireball explodes, burning everything within {0} tiles!'.
-                     format(FIREBALL_RADIUS), libtcod.orange)
+                     format(self.radius), libtcod.orange)
 
         for game_object in game.objects:
-            if game_object.distance(x, y) <= FIREBALL_RADIUS:
+            if game_object.distance(x, y) <= self.radius:
                 fighter = game_object.component(Fighter)
                 if fighter:
                     game.message('The {0} gets burned for {1} hit points.'.format(
                         game_object.name, self.strength()), libtcod.orange)
                     fighter.take_damage(self.strength())
-
-
-def lightning_bolt():
-    return LightningBolt(strength=5)

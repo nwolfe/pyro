@@ -39,6 +39,12 @@ MONSTER_AI_CLASSES = dict(
 )
 
 
+MONSTER_SPELLS = dict(
+    lightning_bolt=pyro.spells.LightningBolt,
+    fireball=pyro.spells.Fireball
+)
+
+
 def instantiate_monster(template):
     name = template['name']
     glyph = template['glyph']
@@ -49,8 +55,8 @@ def instantiate_monster(template):
                            template['power'], death_fn=monster_death)
     components = {Fighter: fighter_comp, AI: ai_comp, Experience: exp_comp}
     if 'spell' in template:
-        spell_fn = getattr(pyro.spells, template['spell'])
-        spell = spell_fn()
+        spell = MONSTER_SPELLS[template['spell']]()
+        spell.initialize_monster()
         components[Spellcaster] = Spellcaster(spell)
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
                       components=components)

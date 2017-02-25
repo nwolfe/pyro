@@ -243,6 +243,11 @@ def new_game(object_factory):
     player_inventory.items.append(spell)
     spell.game = game
 
+    spell = object_factory.new_item('Scroll Of Fireball')
+    spell.component(Item).item_owner = player
+    player_inventory.items.append(spell)
+    spell.game = game
+
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
 
