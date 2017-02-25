@@ -21,7 +21,7 @@ class SpellItemUse(ItemUse):
 
 class Item(Component):
     def __init__(self, on_use=None):
-        Component.__init__(self)
+        Component.__init__(self, component_type=Item)
         self.on_use = on_use
         self.item_owner = None
 
@@ -80,6 +80,7 @@ class Equipment(Item):
 
     def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
         Item.__init__(self)
+        self.type = Equipment
         self.slot = slot
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
@@ -87,8 +88,8 @@ class Equipment(Item):
         self.is_equipped = False
         self.item_owner = None
 
-    def initialize(self, game_object):
-        self.owner = game_object
+    def set_owner(self, game_object):
+        Item.set_owner(self, game_object)
         self.owner.components[Item] = self
 
     def pick_up(self, item_owner):
@@ -132,7 +133,7 @@ class Equipment(Item):
 
 class Inventory(Component):
     def __init__(self, items=None):
-        Component.__init__(self)
+        Component.__init__(self, component_type=Inventory)
         self.items = items
         if items is None:
             self.items = []

@@ -4,7 +4,7 @@ from pyro.settings import *
 
 class Experience(Component):
     def __init__(self, xp=0, level=0):
-        Component.__init__(self)
+        Component.__init__(self, component_type=Experience)
         self.xp = xp
         self.level = level
 

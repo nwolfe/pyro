@@ -1,8 +1,9 @@
 
 
 class Component:
-    def __init__(self):
+    def __init__(self, component_type=None):
+        self.type = component_type
         self.owner = None
 
-    def initialize(self, game_object):
+    def set_owner(self, game_object):
         self.owner = game_object

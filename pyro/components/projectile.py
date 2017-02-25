@@ -3,14 +3,14 @@ from pyro.component import Component
 
 class Projectile(Component):
     def __init__(self, source, on_hit_fn):
-        Component.__init__(self)
+        Component.__init__(self, component_type=Projectile)
         self.source = source
         self.on_hit_fn = on_hit_fn
 
-    def initialize(self, owner):
-        Component.initialize(self, owner)
-        owner.x = self.source.x
-        owner.y = self.source.y
+    def set_owner(self, game_object):
+        Component.set_owner(self, game_object)
+        game_object.x = self.source.x
+        game_object.y = self.source.y
 
     def destroy(self):
         self.owner.game.objects.remove(self.owner)

@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 from pyro.components.ai import AI
 from pyro.components.fighter import Fighter
-from pyro.components.projectile import Projectile, TargetProjectile, PositionProjectile
+from pyro.components.projectile import TargetProjectile, PositionProjectile
 from pyro.gameobject import GameObject
 from pyro.ai.confused import Confused
 from pyro.settings import *
@@ -35,7 +35,7 @@ class LightningBolt(Spell):
             t.component(Fighter).take_damage(self.strength)
         bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Bolt of Lightning', glyph='*',
-                         components={Projectile: bolt},
+                         components=[bolt],
                          color=libtcod.blue, blocks=False, game=caster.game)
         caster.game.objects.append(obj)
 
@@ -79,7 +79,7 @@ class Confuse(Spell):
     def cast(self, caster, target):
         old_ai = target.component(AI)
         new_ai = Confused(old_ai)
-        target.set_component(AI, new_ai)
+        target.set_component(new_ai)
 
     def player_cast(self, player, game, ui):
         # Ask the player for a target to confuse
@@ -116,7 +116,7 @@ class Fireball(Spell):
                         fighter.take_damage(self.strength)
         fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components={Projectile: fireball}, blocks=False,
+                         components=[fireball], blocks=False,
                          game=caster.game)
         caster.game.objects.append(obj)
 
@@ -140,6 +140,6 @@ class Fireball(Spell):
                         fighter.take_damage(self.strength)
         fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components={Projectile: fireball}, blocks=False,
+                         components=[fireball], blocks=False,
                          game=game)
         game.objects.append(obj)

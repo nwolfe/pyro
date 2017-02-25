@@ -7,7 +7,7 @@ class PassiveAggressive(AI):
     """Neutral, until the player attacks. May wander in a random direction."""
 
     def take_damage(self, damage):
-        self.owner.set_component(AI, Aggressive())
+        self.owner.set_component(Aggressive())
 
     def take_turn(self):
         # 25% chance to move one square in a random direction

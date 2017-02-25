@@ -53,11 +53,11 @@ def instantiate_monster(template):
     exp_comp = Experience(template['experience'])
     fighter_comp = Fighter(template['hp'], template['defense'],
                            template['power'], death_fn=monster_death)
-    components = {Fighter: fighter_comp, AI: ai_comp, Experience: exp_comp}
+    components = [fighter_comp, ai_comp, exp_comp]
     if 'spell' in template:
         spell = MONSTER_SPELLS[template['spell']]()
         spell.initialize_monster()
-        components[Spellcaster] = Spellcaster(spell)
+        components.append(Spellcaster(spell))
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
                       components=components)
 
@@ -102,13 +102,13 @@ def instantiate_item(template):
             equipment.max_hp_bonus = template['hp']
         return GameObject(glyph=glyph, name=name, color=color,
                           render_order=RENDER_ORDER_ITEM,
-                          components={Equipment: equipment})
+                          components=[equipment])
     elif 'on_use' in template:
         spell = ITEM_USES[template['on_use']]()
         item = Item(on_use=SpellItemUse(spell))
         return GameObject(glyph=glyph, name=name, color=color,
                           render_order=RENDER_ORDER_ITEM,
-                          components={Item: item})
+                          components=[item])
 
 
 def make_item(name, item_templates):

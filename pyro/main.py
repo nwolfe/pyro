@@ -217,9 +217,7 @@ def new_game(object_factory):
     fighter_comp = Fighter(hp=100, defense=1, power=2, death_fn=player_death)
     player_inventory = Inventory(items=[])
     player = GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
-                        components={Fighter: fighter_comp,
-                                    Experience: exp_comp,
-                                    Inventory: player_inventory})
+                        components=[exp_comp, fighter_comp, player_inventory])
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1

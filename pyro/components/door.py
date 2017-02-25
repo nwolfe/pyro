@@ -4,7 +4,7 @@ from pyro.component import Component
 
 class Door(Component):
     def __init__(self, is_open=False, opened_glyph='-', closed_glyph='+'):
-        Component.__init__(self)
+        Component.__init__(self, component_type=Door)
         self.is_open = is_open
         self.opened_glyph = opened_glyph
         self.closed_glyph = closed_glyph

@@ -128,7 +128,7 @@ def place_door(x, y, game_map, objects):
     door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
     door = GameObject(x, y, '+', 'door', libtcod.white,
                       render_order=RENDER_ORDER_DOOR,
-                      components={Door: door_comp})
+                      components=[door_comp])
     objects.append(door)
 
 
@@ -230,7 +230,7 @@ def place_grass_tile(x, y, game_map, objects):
     grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
     grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
                        render_order=RENDER_ORDER_GRASS,
-                       components={Grass: grass_comp})
+                       components=[grass_comp])
     objects.append(grass)
 
 

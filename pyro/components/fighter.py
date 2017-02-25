@@ -7,7 +7,7 @@ from pyro.components.item import get_all_equipped
 class Fighter(Component):
     """Combat-related properties and methods (monster, player, NPC)."""
     def __init__(self, hp, defense, power, death_fn=None):
-        Component.__init__(self)
+        Component.__init__(self, component_type=Fighter)
         self.hp = hp
         self.base_max_hp = hp
         self.base_defense = defense

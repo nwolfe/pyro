@@ -18,19 +18,17 @@ class GameObject:
         self.blocks = blocks
         self.game = game
 
+        self.components = {}
         if components:
-            self.components = components
-            for comp in self.components.values():
-                comp.initialize(self)
-        else:
-            self.components = {}
+            for comp in components:
+                self.set_component(comp)
 
     def component(self, component_class):
         return self.components.get(component_class)
 
-    def set_component(self, component_class, comp):
-        self.components[component_class] = comp
-        comp.initialize(self)
+    def set_component(self, comp):
+        self.components[comp.type] = comp
+        comp.set_owner(self)
 
     def move(self, dx, dy):
         if not is_blocked(self.game.game_map, self.game.objects, self.x + dx, self.y + dy):

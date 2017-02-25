@@ -20,6 +20,6 @@ class Confused(AI):
             self.num_turns -= 1
         else:
             # Restore normal AI
-            self.owner.set_component(AI, self.restore_ai)
+            self.owner.set_component(self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
             self.owner.game.message(msg, libtcod.red)
