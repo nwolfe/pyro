@@ -13,7 +13,7 @@ class Projectile(Component):
         game_object.y = self.source.y
 
     def destroy(self):
-        self.owner.game.objects.remove(self.owner)
+        self.owner.remove_from_game()
 
     def tick(self):
         pass

@@ -41,7 +41,7 @@ class Item(Component):
         else:
             self.item_owner = item_owner
             inventory.append(self.owner)
-            self.owner.game.objects.remove(self.owner)
+            self.owner.remove_from_game()
             if self.player_owned():
                 self.owner.game.message('You picked up a {0}!'.format(
                     self.owner.name), libtcod.green)
@@ -52,7 +52,7 @@ class Item(Component):
         # Place at owner's coordinates.
         inventory = self.item_owner.component(Inventory).items
         inventory.remove(self.owner)
-        self.owner.game.objects.append(self.owner)
+        self.owner.add_to_game()
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
         if self.player_owned():

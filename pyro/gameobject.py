@@ -1,6 +1,5 @@
 import math
 import libtcodpy as libtcod
-from pyro.utilities import is_blocked
 from pyro.settings import *
 
 
@@ -30,8 +29,14 @@ class GameObject:
         self.components[comp.type] = comp
         comp.set_owner(self)
 
+    def add_to_game(self):
+        self.game.add_object(self)
+
+    def remove_from_game(self):
+        self.game.remove_object(self)
+
     def move(self, dx, dy):
-        if not is_blocked(self.game.game_map, self.game.objects, self.x + dx, self.y + dy):
+        if not self.game.is_blocked(self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
             return True

@@ -37,7 +37,7 @@ class LightningBolt(Spell):
         obj = GameObject(name='Bolt of Lightning', glyph='*',
                          components=[bolt],
                          color=libtcod.blue, blocks=False, game=caster.game)
-        caster.game.objects.append(obj)
+        caster.game.add_object(obj)
 
     def player_cast(self, player, game, ui):
         # Find the closest enemy (inside a maximum range) and damage it
@@ -118,7 +118,7 @@ class Fireball(Spell):
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
                          components=[fireball], blocks=False,
                          game=caster.game)
-        caster.game.objects.append(obj)
+        caster.game.add_object(obj)
 
     def player_cast(self, player, game, ui):
         # Ask the player for a target tile to throw a fireball at
@@ -142,4 +142,4 @@ class Fireball(Spell):
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
                          components=[fireball], blocks=False,
                          game=game)
-        game.objects.append(obj)
+        game.add_object(obj)

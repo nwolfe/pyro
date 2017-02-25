@@ -2,6 +2,7 @@ import libtcodpy as libtcod
 from textwrap import wrap
 from pyro.components.fighter import Fighter
 from pyro.ui import render_all
+from pyro.utilities import is_blocked
 from pyro.settings import *
 
 
@@ -26,6 +27,15 @@ class Game:
 
         if self.messages is None:
             self.messages = []
+
+    def add_object(self, game_object):
+        self.objects.append(game_object)
+
+    def remove_object(self, game_object):
+        self.objects.remove(game_object)
+
+    def is_blocked(self, x, y):
+        return is_blocked(self.game_map, self.objects, x, y)
 
     def message(self, text, color=libtcod.white):
         # Split the message if necessary, among multiple lines
