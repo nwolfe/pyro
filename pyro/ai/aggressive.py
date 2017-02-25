@@ -11,7 +11,7 @@ class Aggressive(AI):
         if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
             # Move towards player if far away
             if monster.distance_to(monster.game.player) >= 2:
-                monster.move_astar(monster.game.player)
+                monster.move_astar(monster.game.player.x, monster.game.player.y)
 
             # Close enough, attack! (If the player is still alive)
             elif monster.game.player.component(Fighter).hp > 0:

@@ -1,7 +1,7 @@
 import libtcodpy as libtcod
 from pyro.components.ai import AI
 from pyro.components.fighter import Fighter
-from pyro.components.projectile import Projectile
+from pyro.components.projectile import Projectile, TargetProjectile, PositionProjectile
 from pyro.gameobject import GameObject
 from pyro.ai.confused import Confused
 from pyro.settings import *
@@ -38,9 +38,9 @@ class LightningBolt(Spell):
         Spell.__init__(self, name, spell_range, strength)
 
     def cast(self, caster, target):
-        def on_hit(t):
+        def on_hit(source, t):
             t.component(Fighter).take_damage(self.strength())
-        bolt = Projectile(source=caster, target=target, on_hit_fn=on_hit)
+        bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Bolt of Lightning', glyph='*',
                          components={Projectile: bolt},
                          color=libtcod.blue, blocks=False, game=caster.game)
@@ -114,17 +114,21 @@ class Fireball(Spell):
         self.radius = 2
 
     def cast(self, caster, target):
-        x = target.x
-        y = target.y
-        caster.game.message('The fireball explodes, burning everything within {0} tiles!'.
-                            format(self.radius), libtcod.orange)
-        for game_object in caster.game.objects:
-            if game_object.distance(x, y) <= self.radius:
-                fighter = game_object.component(Fighter)
-                if fighter:
-                    caster.game.message('The {0} gets burned for {1} hit points.'.format(
-                        game_object.name, self.strength()), libtcod.orange)
-                    fighter.take_damage(self.strength())
+        def on_hit(source, t):
+            source.game.message('The fireball explodes, burning everything within {0} tiles!'.
+                                format(self.radius), libtcod.orange)
+            for game_object in source.game.objects:
+                if game_object.distance(t.x, t.y) <= self.radius:
+                    fighter = game_object.component(Fighter)
+                    if fighter:
+                        source.game.message('The {0} gets burned for {1} hit points.'.format(
+                            game_object.name, self.strength()), libtcod.orange)
+                        fighter.take_damage(self.strength())
+        fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
+        obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
+                         components={Projectile: fireball}, blocks=False,
+                         game=caster.game)
+        caster.game.objects.append(obj)
 
     def player_cast(self, player, game, ui):
         # Ask the player for a target tile to throw a fireball at
@@ -134,13 +138,18 @@ class Fireball(Spell):
         if x is None:
             return 'cancelled'
 
-        game.message('The fireball explodes, burning everything within {0} tiles!'.
-                     format(self.radius), libtcod.orange)
-
-        for game_object in game.objects:
-            if game_object.distance(x, y) <= self.radius:
-                fighter = game_object.component(Fighter)
-                if fighter:
-                    game.message('The {0} gets burned for {1} hit points.'.format(
-                        game_object.name, self.strength()), libtcod.orange)
-                    fighter.take_damage(self.strength())
+        def on_hit(source, target_x, target_y):
+            source.game.message('The fireball explodes, burning everything within {0} tiles!'.
+                                format(self.radius), libtcod.orange)
+            for game_object in game.objects:
+                if game_object.distance(target_x, target_y) <= self.radius:
+                    fighter = game_object.component(Fighter)
+                    if fighter:
+                        game.message('The {0} gets burned for {1} hit points.'.format(
+                            game_object.name, self.strength()), libtcod.orange)
+                        fighter.take_damage(self.strength())
+        fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
+        obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
+                         components={Projectile: fireball}, blocks=False,
+                         game=game)
+        game.objects.append(obj)

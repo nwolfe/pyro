@@ -11,7 +11,7 @@ class AggressiveSpellcaster(AI):
         if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
             # Move towards player if far away
             if not monster.component(Spellcaster).in_range(player):
-                monster.move_astar(player)
+                monster.move_astar(player.x, player.y)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
