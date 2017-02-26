@@ -163,7 +163,7 @@ def handle_keys(ui, game, object_factory):
         return False, 'idle'
 
 
-def player_death(player, game):
+def player_death(player, attacker, game):
     game.message('You died!')
     game.state = 'dead'
 
@@ -216,7 +216,7 @@ def new_game(object_factory):
     exp_comp = Experience(xp=0, level=1)
     fighter_comp = Fighter(hp=100, defense=1, power=2, death_fn=player_death)
     player_inventory = Inventory(items=[])
-    player = GameObject(0, 0, '@', 'player', libtcod.white, blocks=True,
+    player = GameObject(0, 0, '@', 'Player', libtcod.white, blocks=True,
                         components=[exp_comp, fighter_comp, player_inventory])
 
     # Generate map (not drawn to the screen yet)

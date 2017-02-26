@@ -16,7 +16,6 @@
 **** Require the player to return to the top?
 
 * CODEBASE
-** TODO Finish Fireball spell
 ** TODO Separate Item and Equipment classes
 ** TODO Fix setup.py since code moved to pyro/
 ** TODO Eliminate use of constructors
@@ -25,7 +24,6 @@
 *** TODO Replace random / rng function calls
 
 * BUGS
-** TODO Death Experience should go to attacker, not hardcoded to player
 ** TODO Fix missing messages from items after loading
 *** Problem due to persistence and the reference to Game from GameObject
 ** TODO Fix vanishing doppleganger casting bug

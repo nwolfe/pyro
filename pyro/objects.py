@@ -14,19 +14,21 @@ from pyro.components.spellcaster import Spellcaster
 from pyro.settings import *
 
 
-def monster_death(monster, game):
+def monster_death(monster, attacker, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
     exp = monster.component(Experience)
-    game.message('The {0} is dead! You gain {1} experience points.'.
-                 format(monster.name.capitalize(), exp.xp),
-                 libtcod.orange)
-    game.player.component(Experience).xp += exp.xp
+    if attacker == game.player:
+        game.message('The {0} is dead! You gain {1} experience points.'.
+                     format(monster.name, exp.xp), libtcod.orange)
+    else:
+        game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
+    attacker.component(Experience).xp += exp.xp
     monster.glyph = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False
     monster.render_order = RENDER_ORDER_CORPSE
-    monster.name = 'remains of {0}'.format(monster.name)
+    monster.name = 'Remains of {0}'.format(monster.name)
     monster.components.pop(Fighter)
     monster.components.pop(AI)
 

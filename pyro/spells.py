@@ -32,7 +32,7 @@ class LightningBolt(Spell):
 
     def cast(self, caster, target):
         def on_hit(source, t):
-            t.component(Fighter).take_damage(self.strength)
+            t.component(Fighter).take_damage(self.strength, source)
         bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Bolt of Lightning', glyph='*',
                          components=[bolt],
@@ -113,7 +113,7 @@ class Fireball(Spell):
                     if fighter:
                         source.game.message('The {0} gets burned for {1} hit points.'.format(
                             game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(self.strength)
+                        fighter.take_damage(self.strength, source)
         fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
                          components=[fireball], blocks=False,
@@ -137,7 +137,7 @@ class Fireball(Spell):
                     if fighter:
                         game.message('The {0} gets burned for {1} hit points.'.format(
                             game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(self.strength)
+                        fighter.take_damage(self.strength, source)
         fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
                          components=[fireball], blocks=False,

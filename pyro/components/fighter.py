@@ -29,13 +29,13 @@ class Fighter(Component):
         bonus = sum(equipment.max_hp_bonus for equipment in equipped)
         return self.base_max_hp + bonus
 
-    def take_damage(self, damage):
+    def take_damage(self, damage, attacker):
         if damage > 0:
             self.hp -= damage
 
         # Check for death and call the death function if there is one
         if self.hp <= 0 and self.death_fn:
-            self.death_fn(self.owner, self.owner.game)
+            self.death_fn(self.owner, attacker, self.owner.game)
 
         # Notify the AI that we were hit
         ai = self.owner.component(AI)
@@ -51,7 +51,7 @@ class Fighter(Component):
     def attack(self, target):
         if libtcod.random_get_int(0, 1, 10) == 1:
             msg = '{0} attacks {1} but misses!'.format(
-                self.owner.name.capitalize(), target.name)
+                self.owner.name, target.name)
             self.owner.game.message(msg)
             return
 
@@ -60,13 +60,13 @@ class Fighter(Component):
 
         if damage > 0:
             msg = '{0} attacks {1} for {2} hit points.'.format(
-                self.owner.name.capitalize(), target.name, damage)
+                self.owner.name, target.name, damage)
             if self.owner == self.owner.game.player:
                 self.owner.game.message(msg, libtcod.light_green)
             else:
                 self.owner.game.message('- ' + msg, libtcod.light_red)
-            fighter.take_damage(damage)
+            fighter.take_damage(damage, self.owner)
         else:
             msg = '{0} attacks {1} but it has no effect!'.format(
-                self.owner.name.capitalize(), target.name)
+                self.owner.name, target.name)
             self.owner.game.message(msg)
