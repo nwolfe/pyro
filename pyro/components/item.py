@@ -29,18 +29,16 @@ class Item(Component):
         inventory = item_owner.component(Inventory)
         if inventory is None:
             return False
-        else:
-            inventory = inventory.items
 
         # Add to owner's inventory and remove from the map
-        if len(inventory) >= 26:
+        if inventory.is_full():
             if item_owner == self.owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
                 self.owner.game.message(msg.format(self.owner.name), libtcod.red)
             return False
         else:
             self.item_owner = item_owner
-            inventory.append(self.owner)
+            inventory.add_item(self.owner)
             self.owner.remove_from_game()
             if self.player_owned():
                 self.owner.game.message('You picked up a {0}!'.format(
@@ -50,8 +48,7 @@ class Item(Component):
     def drop(self):
         # Remove from the inventory and add to the map.
         # Place at owner's coordinates.
-        inventory = self.item_owner.component(Inventory).items
-        inventory.remove(self.owner)
+        self.item_owner.component(Inventory).remove_item(self.owner)
         self.owner.add_to_game()
         self.owner.x = self.item_owner.x
         self.owner.y = self.item_owner.y
@@ -67,8 +64,7 @@ class Item(Component):
             # Destroy after use, unless it was cancelled for some reason
             result = self.on_use.use(self.item_owner, self.owner.game, ui)
             if result != 'cancelled':
-                inventory = self.item_owner.component(Inventory).items
-                inventory.remove(self.owner)
+                self.item_owner.component(Inventory).remove_item(self.owner)
 
     def player_owned(self):
         return self.item_owner == self.owner.game.player
@@ -137,6 +133,15 @@ class Inventory(Component):
         self.items = items
         if items is None:
             self.items = []
+
+    def add_item(self, item):
+        self.items.append(item)
+
+    def remove_item(self, item):
+        self.items.remove(item)
+
+    def is_full(self):
+        return len(self.items) >= 26
 
 
 def get_equipped_in_slot(item_owner, slot):

@@ -1,6 +1,7 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
+** TODO Dark rooms + torches
 ** TODO Monsters drop items when killed?
 ** TODO Add weapon/spell accuracy attribute
 ** Menu
