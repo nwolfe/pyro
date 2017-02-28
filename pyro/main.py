@@ -12,6 +12,7 @@ from pyro.components.item import Item, Inventory, Equipment
 from pyro.components.door import Door
 from pyro.components.grass import Grass
 from pyro.components.projectile import Projectile
+from pyro.events import EventListener
 from pyro.settings import *
 
 
@@ -163,14 +164,6 @@ def handle_keys(ui, game, object_factory):
         return False, 'idle'
 
 
-def player_death(player, attacker, game):
-    game.message('You died!')
-    game.state = 'dead'
-
-    player.glyph = '%'
-    player.color = libtcod.dark_red
-
-
 def make_fov_map(game_map):
     # Create the FOV map according to the generated map
     fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
@@ -211,13 +204,24 @@ def check_player_level_up(game, console):
             fighter.base_defense += 1
 
 
+class PlayerDeath(EventListener):
+    def handle_event(self, player, event, context):
+        if event == 'death':
+            player.game.message('You died!')
+            player.game.state = 'dead'
+
+            player.glyph = '%'
+            player.color = libtcod.dark_red
+
+
 def new_game(object_factory):
     # Create the player
     exp_comp = Experience(xp=0, level=1)
-    fighter_comp = Fighter(hp=100, defense=1, power=2, death_fn=player_death)
+    fighter_comp = Fighter(hp=100, defense=1, power=2)
     player_inventory = Inventory(items=[])
     player = GameObject(0, 0, '@', 'Player', libtcod.white, blocks=True,
-                        components=[exp_comp, fighter_comp, player_inventory])
+                        components=[exp_comp, fighter_comp, player_inventory],
+                        listeners=[PlayerDeath()])
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1

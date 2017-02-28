@@ -6,13 +6,12 @@ from pyro.components.item import get_all_equipped
 
 class Fighter(Component):
     """Combat-related properties and methods (monster, player, NPC)."""
-    def __init__(self, hp, defense, power, death_fn=None):
+    def __init__(self, hp, defense, power):
         Component.__init__(self, component_type=Fighter)
         self.hp = hp
         self.base_max_hp = hp
         self.base_defense = defense
         self.base_power = power
-        self.death_fn = death_fn
 
     def power(self):
         equipped = get_all_equipped(self.owner)
@@ -32,13 +31,10 @@ class Fighter(Component):
     def take_damage(self, damage, attacker):
         if damage > 0:
             self.hp -= damage
+            self.owner.fire_event('take_damage', dict(attacker=attacker))
 
-        # Check for death and call the death function if there is one
-        if self.hp <= 0 and self.death_fn:
-            self.death_fn(self.owner, attacker, self.owner.game)
-
-        context = dict(source=self, damage=damage, attacker=attacker)
-        self.owner.fire_event('take_damage', context)
+        if self.hp <= 0:
+            self.owner.fire_event('death', dict(attacker=attacker))
 
     def heal(self, amount):
         # Heal by the given amount, without going over the maximum

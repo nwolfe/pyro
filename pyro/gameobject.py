@@ -7,8 +7,8 @@ from pyro.settings import *
 class GameObject(EventSource):
     def __init__(self, x=0, y=0, glyph=None, name=None, color=None, blocks=False,
                  render_order=RENDER_ORDER_DEFAULT, always_visible=False, components=None,
-                 game=None):
-        EventSource.__init__(self)
+                 game=None, listeners=None):
+        EventSource.__init__(self, listeners)
         self.x = x
         self.y = y
         self.glyph = glyph

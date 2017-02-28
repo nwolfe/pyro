@@ -11,6 +11,7 @@ from pyro.components.experience import Experience
 from pyro.components.fighter import Fighter
 from pyro.components.item import Item, Equipment, SpellItemUse
 from pyro.components.spellcaster import Spellcaster
+from pyro.events import EventListener
 from pyro.settings import *
 
 
@@ -33,6 +34,12 @@ def monster_death(monster, attacker, game):
     monster.remove_component(AI)
 
 
+class MonsterDeath(EventListener):
+    def handle_event(self, source, event, context):
+        if event == 'death':
+            monster_death(source, context['attacker'], source.game)
+
+
 MONSTER_AI_CLASSES = dict(
     aggressive=pyro.ai.aggressive.Aggressive,
     aggressive_spellcaster=pyro.ai.aggressive_spellcaster.AggressiveSpellcaster,
@@ -53,15 +60,14 @@ def instantiate_monster(template):
     color = getattr(libtcod, template['color'])
     ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = Experience(template['experience'])
-    fighter_comp = Fighter(template['hp'], template['defense'],
-                           template['power'], death_fn=monster_death)
+    fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
     components = [fighter_comp, ai_comp, exp_comp]
     if 'spell' in template:
         spell = MONSTER_SPELLS[template['spell']]()
         spell.initialize_monster()
         components.append(Spellcaster(spell))
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
-                      components=components)
+                      components=components, listeners=[MonsterDeath()])
 
 
 def make_monster(name, monster_templates):
