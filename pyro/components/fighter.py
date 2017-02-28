@@ -37,10 +37,8 @@ class Fighter(Component):
         if self.hp <= 0 and self.death_fn:
             self.death_fn(self.owner, attacker, self.owner.game)
 
-        # Notify the AI that we were hit
-        ai = self.owner.component(AI)
-        if ai:
-            ai.take_damage(damage)
+        context = dict(source=self, damage=damage, attacker=attacker)
+        self.owner.fire_event('take_damage', context)
 
     def heal(self, amount):
         # Heal by the given amount, without going over the maximum

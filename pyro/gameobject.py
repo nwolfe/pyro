@@ -1,12 +1,14 @@
 import math
 import libtcodpy as libtcod
+from pyro.events import EventSource
 from pyro.settings import *
 
 
-class GameObject:
+class GameObject(EventSource):
     def __init__(self, x=0, y=0, glyph=None, name=None, color=None, blocks=False,
                  render_order=RENDER_ORDER_DEFAULT, always_visible=False, components=None,
                  game=None):
+        EventSource.__init__(self)
         self.x = x
         self.y = y
         self.glyph = glyph
@@ -22,12 +24,17 @@ class GameObject:
             for comp in components:
                 self.set_component(comp)
 
-    def component(self, component_class):
-        return self.components.get(component_class)
+    def component(self, component_type):
+        return self.components.get(component_type)
 
-    def set_component(self, comp):
-        self.components[comp.type] = comp
-        comp.set_owner(self)
+    def set_component(self, component):
+        self.remove_component(component.type)
+        self.components[component.type] = component
+        component.set_owner(self)
+
+    def remove_component(self, component_type):
+        if component_type in self.components:
+            self.components.pop(component_type).remove_owner(self)
 
     def add_to_game(self):
         self.game.add_object(self)

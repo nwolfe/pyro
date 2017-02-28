@@ -16,6 +16,7 @@
 **** Require the player to return to the top?
 
 * CODEBASE
+** TODO Don't assume player is the target in AIs
 ** TODO Separate Item and Equipment classes
 ** TODO Fix setup.py since code moved to pyro/
 ** TODO Eliminate use of constructors

@@ -7,3 +7,6 @@ class Component:
 
     def set_owner(self, game_object):
         self.owner = game_object
+
+    def remove_owner(self, game_object):
+        pass

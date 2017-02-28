@@ -29,8 +29,8 @@ def monster_death(monster, attacker, game):
     monster.blocks = False
     monster.render_order = RENDER_ORDER_CORPSE
     monster.name = 'Remains of {0}'.format(monster.name)
-    monster.components.pop(Fighter)
-    monster.components.pop(AI)
+    monster.remove_component(Fighter)
+    monster.remove_component(AI)
 
 
 MONSTER_AI_CLASSES = dict(
