@@ -112,14 +112,6 @@ def handle_keys(ui, game, object_factory):
         return move_player_or_attack(-1, 0, game)
     elif libtcod.KEY_RIGHT == ui.keyboard.vk:
         return move_player_or_attack(1, 0, game)
-    elif key_char == 'q': # up-left
-        return move_player_or_attack(-1, -1, game)
-    elif key_char == 'e': # up-right
-        return move_player_or_attack(1, -1, game)
-    elif key_char == 'z': # down-left
-        return move_player_or_attack(-1, 1, game)
-    elif key_char == 'x': # down-right
-        return move_player_or_attack(1, 1, game)
     elif key_char == 'f':
         # Don't move, let the monsters come to you
         return False, None
