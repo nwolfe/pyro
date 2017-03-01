@@ -18,6 +18,7 @@
 **** Require the player to return to the top?
 
 * CODEBASE
+** TODO Make spells configurable via JSON
 ** TODO Make dungeon generation settings dynamic and change them between levels
 ** TODO Don't assume player is the target in AIs
 ** TODO Separate Item and Equipment classes

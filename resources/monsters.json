@@ -46,7 +46,7 @@
   {
     "name": "Kobold Wizard",
     "glyph": "w",
-    "color": "dark_green",
+    "color": "darker_green",
     "ai": "aggressive_spellcaster",
     "spell": "lightning_bolt",
     "experience": 100,
