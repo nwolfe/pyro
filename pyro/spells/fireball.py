@@ -2,14 +2,13 @@ import libtcodpy as libtcod
 from pyro.components.fighter import Fighter
 from pyro.components.projectile import TargetProjectile, PositionProjectile
 from pyro.gameobject import GameObject
-from pyro.settings import FIREBALL_DAMAGE, FIREBALL_RADIUS
 from pyro.spell import Spell
 
 
 class Fireball(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Fireball', spell_range=4, strength=FIREBALL_DAMAGE)
-        self.radius = FIREBALL_RADIUS
+        Spell.__init__(self, 'Fireball', spell_range=4, strength=25)
+        self.radius = 3
 
     def initialize_monster(self):
         self.strength = 15

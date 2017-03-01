@@ -1,13 +1,12 @@
 import libtcodpy as libtcod
 from pyro.ai.confused import Confused
 from pyro.components.ai import AI
-from pyro.settings import CONFUSE_RANGE
 from pyro.spell import Spell
 
 
 class Confuse(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Confusion', CONFUSE_RANGE, strength=0)
+        Spell.__init__(self, 'Confusion', spell_range=8, strength=0)
 
     def cast(self, caster, target):
         old_ai = target.component(AI)

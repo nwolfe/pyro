@@ -4,7 +4,10 @@ import pyro.ai.confused
 import pyro.ai.aggressive
 import pyro.ai.aggressive_spellcaster
 import pyro.ai.passive_aggressive
-import pyro.spells
+import pyro.spells.confuse
+import pyro.spells.fireball
+import pyro.spells.heal
+import pyro.spells.lightning_bolt
 from pyro.gameobject import GameObject
 from pyro.components.ai import AI
 from pyro.components.experience import Experience
@@ -49,8 +52,8 @@ MONSTER_AI_CLASSES = dict(
 
 
 MONSTER_SPELLS = dict(
-    lightning_bolt=pyro.spells.LightningBolt,
-    fireball=pyro.spells.Fireball
+    lightning_bolt=pyro.spells.lightning_bolt.LightningBolt,
+    fireball=pyro.spells.fireball.Fireball
 )
 
 
@@ -89,10 +92,10 @@ def load_templates(json_file):
 
 
 ITEM_USES = dict(
-    cast_heal=pyro.spells.Heal,
-    cast_lightning_bolt=pyro.spells.LightningBolt,
-    cast_confuse=pyro.spells.Confuse,
-    cast_fireball=pyro.spells.Fireball
+    cast_heal=pyro.spells.heal.Heal,
+    cast_lightning_bolt=pyro.spells.lightning_bolt.LightningBolt,
+    cast_confuse=pyro.spells.confuse.Confuse,
+    cast_fireball=pyro.spells.fireball.Fireball
 )
 
 

@@ -1,6 +1,8 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
+** TODO Add Damage Over Time spells (fire, poison, etc)
+** TODO Put Heal spell on a monster! Make it a boss and put it next to the stairs?
 ** TODO Dark rooms + torches
 ** TODO Monsters drop items when killed?
 ** TODO Add weapon/spell accuracy attribute
@@ -16,6 +18,7 @@
 **** Require the player to return to the top?
 
 * CODEBASE
+** TODO Make dungeon generation settings dynamic and change them between levels
 ** TODO Don't assume player is the target in AIs
 ** TODO Separate Item and Equipment classes
 ** TODO Fix setup.py since code moved to pyro/
