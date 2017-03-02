@@ -1,9 +1,9 @@
 import libtcodpy as libtcod
 from textwrap import wrap
-from pyro.components.fighter import Fighter
+from pyro.components import Fighter
 from pyro.ui import render_all
 from pyro.utilities import is_blocked
-from pyro.settings import *
+from pyro.settings import MSG_WIDTH, MSG_HEIGHT
 
 
 class Game:

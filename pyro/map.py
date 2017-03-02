@@ -1,7 +1,6 @@
 import libtcodpy as libtcod
 from pyro.gameobject import GameObject
-from pyro.components.door import Door
-from pyro.components.grass import Grass
+from pyro.components import Door, Grass
 from pyro.utilities import is_blocked
 from pyro.settings import *
 

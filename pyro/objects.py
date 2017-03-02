@@ -1,21 +1,31 @@
-import libtcodpy as libtcod
 import json
-import pyro.ai.confused
-import pyro.ai.aggressive
-import pyro.ai.aggressive_spellcaster
-import pyro.ai.passive_aggressive
-import pyro.spells.confuse
-import pyro.spells.fireball
-import pyro.spells.heal
-import pyro.spells.lightning_bolt
+import libtcodpy as libtcod
+from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
+from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster
+from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
-from pyro.components.ai import AI
-from pyro.components.experience import Experience
-from pyro.components.fighter import Fighter
-from pyro.components.item import Item, Equipment, SpellItemUse
-from pyro.components.spellcaster import Spellcaster
 from pyro.events import EventListener
 from pyro.settings import RENDER_ORDER_CORPSE, RENDER_ORDER_ITEM
+
+
+MONSTER_AI_CLASSES = dict(
+    aggressive=Aggressive,
+    aggressive_spellcaster=AggressiveSpellcaster,
+    passive_aggressive=PassiveAggressive,
+    confused=Confused
+)
+
+MONSTER_SPELLS = dict(
+    lightning_bolt=LightningBolt,
+    fireball=Fireball
+)
+
+ITEM_USES = dict(
+    cast_heal=Heal,
+    cast_lightning_bolt=LightningBolt,
+    cast_confuse=Confuse,
+    cast_fireball=Fireball
+)
 
 
 def monster_death(monster, attacker, game):
@@ -41,20 +51,6 @@ class MonsterDeath(EventListener):
     def handle_event(self, source, event, context):
         if event == 'death':
             monster_death(source, context['attacker'], source.game)
-
-
-MONSTER_AI_CLASSES = dict(
-    aggressive=pyro.ai.aggressive.Aggressive,
-    aggressive_spellcaster=pyro.ai.aggressive_spellcaster.AggressiveSpellcaster,
-    passive_aggressive=pyro.ai.passive_aggressive.PassiveAggressive,
-    confused=pyro.ai.confused.Confused
-)
-
-
-MONSTER_SPELLS = dict(
-    lightning_bolt=pyro.spells.lightning_bolt.LightningBolt,
-    fireball=pyro.spells.fireball.Fireball
-)
 
 
 def instantiate_spell(spell_template):
@@ -98,14 +94,6 @@ def load_templates(json_file):
             t['glyph'] = str(t['glyph'])
 
         return templates
-
-
-ITEM_USES = dict(
-    cast_heal=pyro.spells.heal.Heal,
-    cast_lightning_bolt=pyro.spells.lightning_bolt.LightningBolt,
-    cast_confuse=pyro.spells.confuse.Confuse,
-    cast_fireball=pyro.spells.fireball.Fireball
-)
 
 
 def instantiate_item(template):

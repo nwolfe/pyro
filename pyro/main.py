@@ -5,13 +5,7 @@ from pyro.map import make_map
 from pyro.game import Game
 from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
 from pyro.gameobject import GameObject
-from pyro.components.ai import AI
-from pyro.components.fighter import Fighter
-from pyro.components.experience import Experience
-from pyro.components.item import Item, Inventory, Equipment
-from pyro.components.door import Door
-from pyro.components.grass import Grass
-from pyro.components.projectile import Projectile
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Grass, Projectile
 from pyro.events import EventListener
 from pyro.settings import *
 

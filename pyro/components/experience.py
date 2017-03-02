@@ -1,5 +1,5 @@
 from pyro.component import Component
-from pyro.settings import *
+from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR
 
 
 class Experience(Component):

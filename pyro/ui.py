@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components.fighter import Fighter
-from pyro.components.item import Item, Equipment
+from pyro.components import Fighter, Item, Equipment
 from pyro.settings import *
 
 

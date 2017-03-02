@@ -1,0 +1,4 @@
+from aggressive import Aggressive
+from aggressive_spellcaster import AggressiveSpellcaster
+from confused import Confused
+from passive_aggressive import PassiveAggressive

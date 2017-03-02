@@ -1,7 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components.ai import AI
-from pyro.components.spellcaster import Spellcaster
-from pyro.components.fighter import Fighter
+from pyro.components import AI, Spellcaster, Fighter
 
 
 class AggressiveSpellcaster(AI):

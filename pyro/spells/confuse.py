@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
-from pyro.ai.confused import Confused
-from pyro.components.ai import AI
+from pyro.ai import Confused
+from pyro.components import AI
 from pyro.spell import Spell
 
 

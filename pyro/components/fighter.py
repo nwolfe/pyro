@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
 from pyro.component import Component
-from pyro.components.ai import AI
 from pyro.components.item import get_all_equipped
 
 

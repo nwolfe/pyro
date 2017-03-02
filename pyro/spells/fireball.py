@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components.fighter import Fighter
-from pyro.components.projectile import TargetProjectile, PositionProjectile
+from pyro.components import Fighter, TargetProjectile, PositionProjectile
 from pyro.gameobject import GameObject
 from pyro.spell import Spell
 

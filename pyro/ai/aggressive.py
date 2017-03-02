@@ -1,6 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components.ai import AI
-from pyro.components.fighter import Fighter
+from pyro.components import AI, Fighter
 
 
 class Aggressive(AI):

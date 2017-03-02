@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components.ai import AI
+from pyro.components import AI
 
 
 class Confused(AI):

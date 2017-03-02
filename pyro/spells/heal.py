@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components.fighter import Fighter
+from pyro.components import Fighter
 from pyro.spell import Spell
 
 
