@@ -219,23 +219,19 @@ def new_game(object_factory):
     game = Game('playing', game_map, fov_map, objects, stairs,
                 player, messages, dungeon_level)
 
+    object_factory.game = game
+
     # Initial equipment: a dagger and scroll of lightning bolt
     dagger = object_factory.new_item('Dagger')
-    dagger.component(Equipment).item_owner = player
-    dagger.component(Equipment).is_equipped = True
-    player_inventory.items.append(dagger)
-    dagger.game = game
+    dagger.component(Item).pick_up(player)
 
     spell = object_factory.new_item('Scroll Of Lightning Bolt')
-    spell.component(Item).item_owner = player
-    player_inventory.items.append(spell)
-    spell.game = game
+    spell.component(Item).pick_up(player)
 
     spell = object_factory.new_item('Scroll Of Fireball')
-    spell.component(Item).item_owner = player
-    player_inventory.items.append(spell)
-    spell.game = game
+    spell.component(Item).pick_up(player)
 
+    game.messages = []
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
     game.message(m, libtcod.red)
 

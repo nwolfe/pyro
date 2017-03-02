@@ -126,16 +126,21 @@ def make_item(name, item_templates):
 
 
 class GameObjectFactory:
-    def __init__(self):
+    def __init__(self, game=None):
         self.monster_templates = None
         self.item_templates = None
+        self.game = game
 
     def load_templates(self, monster_file, item_file):
         self.monster_templates = load_templates(monster_file)
         self.item_templates = load_templates(item_file)
 
     def new_monster(self, monster_name):
-        return make_monster(monster_name, self.monster_templates)
+        monster = make_monster(monster_name, self.monster_templates)
+        monster.game = self.game
+        return monster
 
     def new_item(self, item_name):
-        return make_item(item_name, self.item_templates)
+        item = make_item(item_name, self.item_templates)
+        item.game = self.game
+        return item

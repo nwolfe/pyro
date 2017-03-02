@@ -32,7 +32,8 @@ class Game:
         self.objects.append(game_object)
 
     def remove_object(self, game_object):
-        self.objects.remove(game_object)
+        if game_object in self.objects:
+            self.objects.remove(game_object)
 
     def is_blocked(self, x, y):
         return is_blocked(self.game_map, self.objects, x, y)
