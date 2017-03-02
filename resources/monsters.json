@@ -60,7 +60,12 @@
     "glyph": "M",
     "color": "darker_blue",
     "ai": "aggressive_spellcaster",
-    "spell": "fireball",
+    "spell": {
+      "name": "fireball",
+      "range": 4,
+      "strength": 15,
+      "radius": 2
+    },
     "experience": 200,
     "hp": 20,
     "defense": 1,

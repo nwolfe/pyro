@@ -9,15 +9,14 @@ class LightningBolt(Spell):
     def __init__(self):
         Spell.__init__(self, 'Lightning Bolt', spell_range=5, strength=40)
 
-    def initialize_monster(self):
+    def configure_monster_defaults(self):
         self.strength = 5
 
     def cast(self, caster, target):
         def on_hit(source, t):
             t.component(Fighter).take_damage(self.strength, source)
         bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        obj = GameObject(name='Bolt of Lightning', glyph='*',
-                         components=[bolt],
+        obj = GameObject(name='Bolt of Lightning', glyph='*', components=[bolt],
                          color=libtcod.blue, blocks=False, game=caster.game)
         caster.game.add_object(obj)
 

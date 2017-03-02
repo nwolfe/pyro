@@ -15,7 +15,7 @@ from pyro.components.fighter import Fighter
 from pyro.components.item import Item, Equipment, SpellItemUse
 from pyro.components.spellcaster import Spellcaster
 from pyro.events import EventListener
-from pyro.settings import *
+from pyro.settings import RENDER_ORDER_CORPSE, RENDER_ORDER_ITEM
 
 
 def monster_death(monster, attacker, game):
@@ -57,6 +57,16 @@ MONSTER_SPELLS = dict(
 )
 
 
+def instantiate_spell(spell_template):
+    if type(spell_template) is dict:
+        spell = MONSTER_SPELLS[spell_template['name']]()
+        spell.configure(spell_template)
+    else:
+        spell = MONSTER_SPELLS[spell_template]()
+        spell.configure_monster_defaults()
+    return spell
+
+
 def instantiate_monster(template):
     name = template['name']
     glyph = template['glyph']
@@ -66,8 +76,7 @@ def instantiate_monster(template):
     fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
     components = [fighter_comp, ai_comp, exp_comp]
     if 'spell' in template:
-        spell = MONSTER_SPELLS[template['spell']]()
-        spell.initialize_monster()
+        spell = instantiate_spell(template['spell'])
         components.append(Spellcaster(spell))
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
                       components=components, listeners=[MonsterDeath()])

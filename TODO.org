@@ -18,15 +18,11 @@
 **** Require the player to return to the top?
 
 * CODEBASE
-** TODO Make spells configurable via JSON
+** TODO Eliminate range & strength fields from Spell by adding a can_hit method
+** TODO Eliminate game parameter from Spell methods
 ** TODO Make dungeon generation settings dynamic and change them between levels
 ** TODO Don't assume player is the target in AIs
-** TODO Separate Item and Equipment classes
 ** TODO Fix setup.py since code moved to pyro/
-** TODO Eliminate use of constructors
-*** Behavior should just be in a real method
-** Refactor libtcod -> pygame
-*** TODO Replace random / rng function calls
 
 * BUGS
 ** TODO Fix missing messages from items after loading

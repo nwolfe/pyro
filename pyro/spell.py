@@ -6,7 +6,11 @@ class Spell:
         self.range = spell_range
         self.strength = strength
 
-    def initialize_monster(self):
+    def configure(self, settings):
+        self.range = settings.get('range', self.range)
+        self.strength = settings.get('strength', self.strength)
+
+    def configure_monster_defaults(self):
         pass
 
     def cast(self, caster, target):

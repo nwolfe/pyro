@@ -10,9 +10,13 @@ class Fireball(Spell):
         Spell.__init__(self, 'Fireball', spell_range=4, strength=25)
         self.radius = 3
 
-    def initialize_monster(self):
+    def configure_monster_defaults(self):
         self.strength = 15
         self.radius = 2
+
+    def configure(self, settings):
+        Spell.configure(self, settings)
+        self.radius = settings.get('radius', self.radius)
 
     def cast(self, caster, target):
         def on_hit(source, t):
