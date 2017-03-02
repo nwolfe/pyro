@@ -7,7 +7,9 @@ from pyro.spell import Spell
 
 class Fireball(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Fireball', spell_range=4, strength=25)
+        Spell.__init__(self, 'Fireball')
+        self.range = 4
+        self.strength = 25
         self.radius = 3
 
     def configure_monster_defaults(self):
@@ -15,8 +17,12 @@ class Fireball(Spell):
         self.radius = 2
 
     def configure(self, settings):
-        Spell.configure(self, settings)
+        self.range = settings.get('range', self.range)
+        self.strength = settings.get('strength', self.strength)
         self.radius = settings.get('radius', self.radius)
+
+    def in_range(self, caster, target):
+        return caster.distance_to(target) <= self.range
 
     def cast(self, caster, target):
         def on_hit(source, t):
@@ -34,6 +40,7 @@ class Fireball(Spell):
                          components=[fireball], blocks=False,
                          game=caster.game)
         caster.game.add_object(obj)
+        return self.strength
 
     def player_cast(self, player, game, ui):
         # Ask the player for a target tile to throw a fireball at

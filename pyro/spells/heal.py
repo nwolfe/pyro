@@ -5,7 +5,14 @@ from pyro.spell import Spell
 
 class Heal(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Healing', spell_range=0, strength=40)
+        Spell.__init__(self, 'Healing')
+        self.strength = 40
+
+    def configure(self, settings):
+        self.strength = settings.get('strength', self.strength)
+
+    def in_range(self, caster, target):
+        return caster == target
 
     def cast(self, caster, target):
         target.component(Fighter).heal(self.strength)

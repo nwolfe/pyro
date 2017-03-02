@@ -5,7 +5,6 @@
 ** TODO Put Heal spell on a monster! Make it a boss and put it next to the stairs?
 ** TODO Dark rooms + torches
 ** TODO Monsters drop items when killed?
-** TODO Add weapon/spell accuracy attribute
 ** Menu
 *** TODO ESC closes the menu and returns to the game
 *** TODO Add 'Continue' menu option
@@ -18,7 +17,8 @@
 **** Require the player to return to the top?
 
 * CODEBASE
-** TODO Eliminate range & strength fields from Spell by adding a can_hit method
+** TODO Add weapon/spell accuracy attribute
+** TODO Add chance to hit % to Spell configuration
 ** TODO Eliminate game parameter from Spell methods
 ** TODO Make dungeon generation settings dynamic and change them between levels
 ** TODO Don't assume player is the target in AIs

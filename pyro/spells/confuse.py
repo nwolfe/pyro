@@ -6,7 +6,14 @@ from pyro.spell import Spell
 
 class Confuse(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Confusion', spell_range=8, strength=0)
+        Spell.__init__(self, 'Confusion')
+        self.range = 8
+
+    def configure(self, settings):
+        self.range = settings.get('range', self.range)
+
+    def in_range(self, caster, target):
+        return caster.distance_to(target) <= self.range
 
     def cast(self, caster, target):
         old_ai = target.component(AI)

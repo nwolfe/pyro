@@ -7,10 +7,19 @@ from pyro.spell import Spell
 
 class LightningBolt(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Lightning Bolt', spell_range=5, strength=40)
+        Spell.__init__(self, 'Lightning Bolt')
+        self.range = 5
+        self.strength = 40
 
     def configure_monster_defaults(self):
         self.strength = 5
+
+    def configure(self, settings):
+        self.range = settings.get('range', self.range)
+        self.strength = settings.get('strength', self.strength)
+
+    def in_range(self, caster, target):
+        return caster.distance_to(target) <= self.range
 
     def cast(self, caster, target):
         def on_hit(source, t):
@@ -19,6 +28,7 @@ class LightningBolt(Spell):
         obj = GameObject(name='Bolt of Lightning', glyph='*', components=[bolt],
                          color=libtcod.blue, blocks=False, game=caster.game)
         caster.game.add_object(obj)
+        return self.strength
 
     def player_cast(self, player, game, ui):
         # Find the closest enemy (inside a maximum range) and damage it

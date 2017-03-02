@@ -1,16 +1,16 @@
 
 
 class Spell:
-    def __init__(self, name, spell_range, strength):
+    def __init__(self, name):
         self.name = name
-        self.range = spell_range
-        self.strength = strength
 
     def configure(self, settings):
-        self.range = settings.get('range', self.range)
-        self.strength = settings.get('strength', self.strength)
+        pass
 
     def configure_monster_defaults(self):
+        pass
+
+    def in_range(self, caster, target):
         pass
 
     def cast(self, caster, target):
