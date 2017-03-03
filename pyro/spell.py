@@ -7,9 +7,6 @@ class Spell:
     def configure(self, settings):
         pass
 
-    def configure_monster_defaults(self):
-        pass
-
     def in_range(self, caster, target):
         pass
 

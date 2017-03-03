@@ -5,7 +5,7 @@ from pyro.map import make_map
 from pyro.game import Game
 from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
 from pyro.gameobject import GameObject
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Grass, Projectile
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Grass, Projectile
 from pyro.events import EventListener
 from pyro.settings import *
 
@@ -203,7 +203,9 @@ class PlayerDeath(EventListener):
 def new_game(object_factory):
     # Create the player
     exp_comp = Experience(xp=0, level=1)
-    fighter_comp = Fighter(hp=100, defense=1, power=2)
+    fighter_comp = Fighter(hp=PLAYER_DEFAULT_HP,
+                           defense=PLAYER_DEFAULT_DEFENSE,
+                           power=PLAYER_DEFAULT_POWER)
     player_inventory = Inventory(items=[])
     player = GameObject(0, 0, '@', 'Player', libtcod.white, blocks=True,
                         components=[exp_comp, fighter_comp, player_inventory],

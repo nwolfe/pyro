@@ -15,16 +15,18 @@ MONSTER_AI_CLASSES = dict(
     confused=Confused
 )
 
-MONSTER_SPELLS = dict(
-    lightning_bolt=LightningBolt,
-    fireball=Fireball
+SPELLS = dict(
+    confuse=Confuse,
+    fireball=Fireball,
+    heal=Heal,
+    lightning_bolt=LightningBolt
 )
 
 ITEM_USES = dict(
-    cast_heal=Heal,
-    cast_lightning_bolt=LightningBolt,
-    cast_confuse=Confuse,
-    cast_fireball=Fireball
+    cast_heal='heal',
+    cast_lightning_bolt='lightning_bolt',
+    cast_confuse='confuse',
+    cast_fireball='fireball'
 )
 
 
@@ -53,13 +55,12 @@ class MonsterDeath(EventListener):
             monster_death(source, context['attacker'], source.game)
 
 
-def instantiate_spell(spell_template):
-    if type(spell_template) is dict:
-        spell = MONSTER_SPELLS[spell_template['name']]()
-        spell.configure(spell_template)
+def instantiate_spell(template):
+    if type(template) is dict:
+        spell = SPELLS[template['name']]()
+        spell.configure(template)
     else:
-        spell = MONSTER_SPELLS[spell_template]()
-        spell.configure_monster_defaults()
+        spell = SPELLS[template]()
     return spell
 
 
@@ -112,7 +113,7 @@ def instantiate_item(template):
                           render_order=RENDER_ORDER_ITEM,
                           components=[equipment])
     elif 'on_use' in template:
-        spell = ITEM_USES[template['on_use']]()
+        spell = instantiate_spell(ITEM_USES[template['on_use']])
         item = Item(on_use=SpellItemUse(spell))
         return GameObject(glyph=glyph, name=name, color=color,
                           render_order=RENDER_ORDER_ITEM,

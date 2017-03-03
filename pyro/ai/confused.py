@@ -1,12 +1,13 @@
 import libtcodpy as libtcod
 from pyro.components import AI
+from pyro.settings import SPELL_CONFUSE_TURNS
 
 
 class Confused(AI):
     """Wanders in a random direction for the specified number of turns, then
     sets the owner's AI to the specified implementation."""
 
-    def __init__(self, restore_ai=None, num_turns=10):
+    def __init__(self, restore_ai=None, num_turns=SPELL_CONFUSE_TURNS):
         AI.__init__(self)
         self.restore_ai = restore_ai
         self.num_turns = num_turns

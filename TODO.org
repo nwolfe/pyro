@@ -1,6 +1,7 @@
 #+STARTUP: showeverything
 
 * GAMEPLAY
+** TODO Add wall blocks to insides of rooms (similar to grass)
 ** TODO Add Damage Over Time spells (fire, poison, etc)
 ** TODO Put Heal spell on a monster! Make it a boss and put it next to the stairs?
 ** TODO Dark rooms + torches

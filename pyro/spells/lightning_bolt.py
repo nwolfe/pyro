@@ -2,16 +2,14 @@ import libtcodpy as libtcod
 from pyro.components import Fighter, TargetProjectile
 from pyro.gameobject import GameObject
 from pyro.spell import Spell
+from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 
 
 class LightningBolt(Spell):
     def __init__(self):
         Spell.__init__(self, 'Lightning Bolt')
-        self.range = 5
-        self.strength = 40
-
-    def configure_monster_defaults(self):
-        self.strength = 5
+        self.range = SPELL_LIGHTNING_BOLT_RANGE
+        self.strength = SPELL_LIGHTNING_BOLT_STRENGTH
 
     def configure(self, settings):
         self.range = settings.get('range', self.range)

@@ -2,18 +2,15 @@ import libtcodpy as libtcod
 from pyro.components import Fighter, TargetProjectile, PositionProjectile
 from pyro.gameobject import GameObject
 from pyro.spell import Spell
+from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
 
 class Fireball(Spell):
     def __init__(self):
         Spell.__init__(self, 'Fireball')
-        self.range = 4
-        self.strength = 25
-        self.radius = 3
-
-    def configure_monster_defaults(self):
-        self.strength = 15
-        self.radius = 2
+        self.range = SPELL_FIREBALL_RANGE
+        self.strength = SPELL_FIREBALL_STRENGTH
+        self.radius = SPELL_FIREBALL_RADIUS
 
     def configure(self, settings):
         self.range = settings.get('range', self.range)
