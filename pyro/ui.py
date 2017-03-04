@@ -125,7 +125,7 @@ def render_all(ui, game, fov_recompute):
     if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
         libtcod.map_compute_fov(game.fov_map, game.player.x, game.player.y,
-                                TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+                                TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
 
         # Set tile background colors according to FOV
         for y in range(MAP_HEIGHT):

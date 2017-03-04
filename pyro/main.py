@@ -177,17 +177,17 @@ def check_player_level_up(game, console):
     choice = None
     while choice is None:
         fighter = player.component(Fighter)
-        options = ['Constitution (+20 HP, from {})'.format(fighter.base_max_hp),
-                   'Strength (+1 attack, from {})'.format(fighter.base_power),
-                   'Agility (+1 defense, from {})'.format(fighter.base_defense)]
+        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, fighter.base_max_hp),
+                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, fighter.base_power),
+                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, fighter.base_defense)]
         choice = menu(console, 'Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
-            fighter.base_max_hp += 20
-            fighter.hp += 20
+            fighter.base_max_hp += LEVEL_UP_STAT_HP
+            fighter.hp += LEVEL_UP_STAT_HP
         elif choice == 1:
-            fighter.base_power += 1
+            fighter.base_power += LEVEL_UP_STAT_POWER
         elif choice == 2:
-            fighter.base_defense += 1
+            fighter.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
 class PlayerDeath(EventListener):
@@ -231,6 +231,9 @@ def new_game(object_factory):
     spell.component(Item).pick_up(player)
 
     spell = object_factory.new_item('Scroll Of Fireball')
+    spell.component(Item).pick_up(player)
+
+    spell = object_factory.new_item('Scroll Of Confusion')
     spell.component(Item).pick_up(player)
 
     game.messages = []
