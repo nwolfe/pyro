@@ -61,6 +61,9 @@ class Game:
                                         ui.keyboard, ui.mouse)
             render_all(ui, self, False)
 
+            for game_object in self.objects:
+                game_object.clear(ui.console)
+
             (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
             if (ui.mouse.lbutton_pressed and libtcod.map_is_in_fov(self.fov_map, x, y)
