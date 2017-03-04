@@ -16,7 +16,7 @@ class SpellItemUse(ItemUse):
         self.spell = spell
 
     def use(self, item_owner, game, ui):
-        self.spell.player_cast(item_owner, game, ui)
+        return self.spell.player_cast(item_owner, game, ui)
 
 
 class Item(Component):
