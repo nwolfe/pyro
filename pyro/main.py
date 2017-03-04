@@ -277,19 +277,6 @@ def update_projectiles(game):
     return projectiles_found
 
 
-def animate_projectiles(game):
-    while update_projectiles(game):
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                    libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
-
-        render_all(ui, game, True)
-
-        libtcod.console_flush()
-
-        for game_object in game.objects:
-            game_object.clear(ui.console)
-
-
 def play_game(game, ui, object_factory):
     for game_object in game.objects:
         game_object.game = game
@@ -297,20 +284,15 @@ def play_game(game, ui, object_factory):
     fov_recompute = True
     libtcod.console_clear(ui.console)
     while not libtcod.console_is_window_closed():
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                    libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
-
         render_all(ui, game, fov_recompute)
 
-        libtcod.console_flush()
-
-        for game_object in game.objects:
-            game_object.clear(ui.console)
-
-        animate_projectiles(game)
+        while update_projectiles(game):
+            render_all(ui, game, True)
 
         check_player_level_up(game, ui.console)
 
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
+                                    libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
         (fov_recompute, player_action) = handle_keys(ui, game, object_factory)
 
         if player_action == 'exit':

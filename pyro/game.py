@@ -56,13 +56,9 @@ class Game:
         while True:
             # Render the screen. This erases the inventory and shows the names of
             # objects under the mouse.
-            libtcod.console_flush()
             libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
                                         ui.keyboard, ui.mouse)
             render_all(ui, self, False)
-
-            for game_object in self.objects:
-                game_object.clear(ui.console)
 
             (x, y) = (ui.mouse.cx, ui.mouse.cy)
 

@@ -190,3 +190,7 @@ def render_all(ui, game, fov_recompute):
     # Blit the contents of the GUI panel to the root console
     libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
                          PANEL_Y)
+
+    libtcod.console_flush()
+    for game_object in game.objects:
+        game_object.clear(ui.console)
