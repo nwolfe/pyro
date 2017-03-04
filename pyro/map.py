@@ -153,57 +153,36 @@ def place_doors(game_map, objects, meta_map):
                     place_door(x, y, game_map, objects)
 
 
-def place_critters(room, game_map, objects, dungeon_level, object_factory):
-    # Random number of critters
-    max_critters = from_dungeon_level([[6, 1],
-                                       [5, 3],
-                                       [4, 5],
-                                       [3, 7],
-                                       [2, 9]],
-                                      dungeon_level)
-    num_critters = libtcod.random_get_int(0, 0, max_critters)
-    critters = filter(lambda m: m['ai'] == 'passive_aggressive',
-                      object_factory.monster_templates)
-    critter_chances = get_spawn_chances(critters, dungeon_level)
+CREATURE_CHANCES = dict(
+    critter=[[6, 1], [5, 3], [4, 5], [3, 7], [2, 9]],
+    mob=[[2, 1], [3, 4], [5, 6]]
+)
+
+
+def place_creatures(creature_type, room, game_map, objects, dungeon_level, object_factory):
+    creatures = filter(lambda m: m['type'] == creature_type, object_factory.monster_templates)
+    if len(creatures) == 0:
+        return
+
+    # Random number of creatures
+    max_creatures = from_dungeon_level(CREATURE_CHANCES[creature_type], dungeon_level)
+    num_creatures = libtcod.random_get_int(0, 0, max_creatures)
+    creature_chances = get_spawn_chances(creatures, dungeon_level)
 
     chance = libtcod.random_get_int(0, 1, 100)
     if chance <= 5:
-        num_critters = max_critters * 3
+        num_creatures = max_creatures * 3
 
-    for i in range(num_critters):
-        # Random position for critter
+    for i in range(num_creatures):
+        # Random position for creature
         point = room.random_point_inside()
 
         if not is_blocked(game_map, objects, point.x, point.y):
-            choice = random_choice(critter_chances)
-            critter = object_factory.new_monster(choice)
-            critter.x = point.x
-            critter.y = point.y
-            objects.append(critter)
-
-
-def place_monsters(room, game_map, objects, dungeon_level, object_factory):
-    # Random number of monsters
-    max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]], dungeon_level)
-    num_monsters = libtcod.random_get_int(0, 0, max_monsters)
-    monsters = filter(lambda m: m['ai'] != 'passive_aggressive',
-                      object_factory.monster_templates)
-    monster_chances = get_spawn_chances(monsters, dungeon_level)
-
-    chance = libtcod.random_get_int(0, 1, 100)
-    if chance <= 5:
-        num_monsters = max_monsters * 3
-
-    for i in range(num_monsters):
-        # Random position for monster
-        point = room.random_point_inside()
-
-        if not is_blocked(game_map, objects, point.x, point.y):
-            choice = random_choice(monster_chances)
-            monster = object_factory.new_monster(choice)
-            monster.x = point.x
-            monster.y = point.y
-            objects.append(monster)
+            choice = random_choice(creature_chances)
+            creature = object_factory.new_monster(choice)
+            creature.x = point.x
+            creature.y = point.y
+            objects.append(creature)
 
 
 def place_items(room, game_map, objects, dungeon_level, object_factory):
@@ -344,9 +323,9 @@ def make_map(player, dungeon_level, object_factory):
 
         # Finish
         place_grass(new_room, game_map, objects)
-        place_monsters(new_room, game_map, objects, dungeon_level, object_factory)
+        place_creatures('mob', new_room, game_map, objects, dungeon_level, object_factory)
         place_items(new_room, game_map, objects, dungeon_level, object_factory)
-        place_critters(new_room, game_map, objects, dungeon_level, object_factory)
+        place_creatures('critter', new_room, game_map, objects, dungeon_level, object_factory)
         rooms.append(new_room)
         num_rooms += 1
 
