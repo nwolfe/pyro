@@ -1,0 +1,27 @@
+
+GAMEPLAY
+TODO Add wall blocks to insides of rooms (similar to grass)
+TODO Add Damage Over Time spells (fire, poison, etc)
+TODO Put Heal spell on a monster! Make it a boss and put it next to the stairs?
+TODO Dark rooms + torches
+TODO Monsters drop items when killed?
+TODO ESC closes the menu and returns to the game
+TODO Add 'Continue' menu option
+TODO Add 'Save Game' menu option
+TODO Add 'Save and Quit' menu option
+TODO Add 'Quit' menu option (no save)
+TODO Replace stairs on Level 26 with something else
+    Finish the game on Level 26? Or
+    Require the player to return to the top?
+
+CODEBASE
+TODO Add weapon/spell accuracy attribute
+TODO Add chance to hit % to Spell configuration
+TODO Eliminate game parameter from Spell methods
+TODO Make dungeon generation settings dynamic and change them between levels
+TODO Don't assume player is the target in AIs
+
+BUGS
+TODO Fix setup.py since code moved to pyro/
+TODO Fix missing messages from items after loading
+    Problem due to persistence and the reference to Game from GameObject
