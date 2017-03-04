@@ -12,7 +12,7 @@ class Experience(Component):
         return LEVEL_UP_BASE + self.level * LEVEL_UP_FACTOR
 
     def can_level_up(self):
-        return self.xp <= self.required_for_level_up()
+        return self.xp >= self.required_for_level_up()
 
     def level_up(self):
         required = self.required_for_level_up()

@@ -162,11 +162,10 @@ def make_fov_map(game_map):
 
 
 def check_player_level_up(game, console):
-    player = game.player
-    exp = player.component(Experience)
+    exp = game.player.component(Experience)
 
     # See if the player's XP is enough to level up
-    if exp.can_level_up():
+    if not exp.can_level_up():
         return
 
     # Ding! Level up!
@@ -176,7 +175,7 @@ def check_player_level_up(game, console):
 
     choice = None
     while choice is None:
-        fighter = player.component(Fighter)
+        fighter = game.player.component(Fighter)
         options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, fighter.base_max_hp),
                    'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, fighter.base_power),
                    'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, fighter.base_defense)]
