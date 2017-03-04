@@ -1,5 +1,5 @@
 import libtcodpy as libtcod
-from pyro.components import Fighter, Item, Equipment
+from pyro.components import Fighter, Item, Equipment, Experience
 from pyro.settings import *
 
 
@@ -173,9 +173,12 @@ def render_all(ui, game, fov_recompute):
     fighter = game.player.component(Fighter)
     render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
                   fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
+    experience = game.player.component(Experience)
+    render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
+                  libtcod.green, libtcod.darkest_green)
 
     # Show the dungeon level
-    libtcod.console_print_ex(ui.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
+    libtcod.console_print_ex(ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
