@@ -185,6 +185,19 @@ def place_creatures(creature_type, room, game_map, objects, dungeon_level, objec
             objects.append(creature)
 
 
+def place_boss(room_x, room_y, objects, object_factory):
+    bosses = filter(lambda m: m['type'] == 'boss', object_factory.monster_templates)
+    if len(bosses) == 0:
+        return
+
+    # Randomly select a boss and place it near the center of the room
+    boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
+    boss = object_factory.new_monster(boss['name'])
+    nearby = random_point_surrounding(Point(room_x, room_y))
+    boss.x, boss.y = nearby.x, nearby.y
+    objects.append(boss)
+
+
 def place_items(room, game_map, objects, dungeon_level, object_factory):
     # Random number of items
     max_items = from_dungeon_level([[1, 1], [2, 4]], dungeon_level)
@@ -330,6 +343,7 @@ def make_map(player, dungeon_level, object_factory):
         num_rooms += 1
 
     place_doors(game_map, objects, meta_map)
+    place_boss(new_x, new_y, objects, object_factory)
 
     # Create stairs at the center of the last room
     stairs = GameObject(new_x, new_y, '>', 'stairs', libtcod.white,

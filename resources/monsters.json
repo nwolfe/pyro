@@ -61,7 +61,7 @@
   },
   {
     "name": "Troll Mage",
-    "type": "mob",
+    "type": "boss",
     "glyph": "M",
     "color": "darker_blue",
     "ai": "aggressive_spellcaster",
@@ -72,9 +72,8 @@
       "radius": 2
     },
     "experience": 200,
-    "hp": 20,
-    "defense": 1,
-    "power": 4,
-    "spawn": 20
+    "hp": 30,
+    "defense": 3,
+    "power": 4
   }
 ]
