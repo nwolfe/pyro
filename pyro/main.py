@@ -1,5 +1,5 @@
 import shelve
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.objects import GameObjectFactory
 from pyro.map import make_map
 from pyro.game import Game

@@ -1,5 +1,5 @@
 import math
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.events import EventSource
 from pyro.settings import RENDER_ORDER_DEFAULT, MAP_WIDTH, MAP_HEIGHT
 

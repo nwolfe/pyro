@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.components import AI
 from pyro.ai import Aggressive
 from pyro.events import EventListener

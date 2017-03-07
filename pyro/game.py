@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 from textwrap import wrap
 from pyro.components import Fighter
 from pyro.ui import render_all

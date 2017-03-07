@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.component import Component
 from pyro.components.item import get_all_equipped
 

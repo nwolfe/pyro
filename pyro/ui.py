@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.components import Fighter, Item, Equipment, Experience
 from pyro.settings import *
 

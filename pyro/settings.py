@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 
 # Tile colors
 COLOR_DARK_WALL = libtcod.Color(0, 0, 100)

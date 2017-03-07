@@ -1,5 +1,5 @@
 import json
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
 from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt

@@ -1,4 +1,4 @@
-import libtcodpy as libtcod
+import tcod as libtcod
 from pyro.components import Fighter
 from pyro.spell import Spell
 from pyro.settings import SPELL_HEAL_STRENGTH
