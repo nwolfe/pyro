@@ -18,7 +18,8 @@ TODO Replace stairs on Level 26 with something else
     Require the player to return to the top?
 
 CODEBASE
-TODO Add pip requirements.txt for libtcod-cffi dependency
+TODO Finish upgrade to tdl from libtcod-cffi
+TODO Add pip requirements.txt for tdl/libtcod-cffi dependency
 TODO Add weapon/spell accuracy attribute
 TODO Add chance to hit % to Spell configuration
 TODO Eliminate game parameter from Spell methods
