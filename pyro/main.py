@@ -134,7 +134,7 @@ def handle_keys(ui, game, object_factory):
         if selected_item:
             selected_item.drop()
         return False, None
-    elif key_char == '>':
+    elif libtcod.KEY_ENTER == ui.keyboard.vk:
         # Go down the stairs to the next level
         if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
             next_dungeon_level(game, object_factory)
