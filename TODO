@@ -1,5 +1,6 @@
 
 GAME
+TODO Spawn monsters in hallways
 TODO Locked doors
 TODO Decompose corpses
 TODO Add wall blocks to insides of rooms (similar to grass)
@@ -17,6 +18,7 @@ TODO Replace stairs on Level 26 with something else
     Require the player to return to the top?
 
 CODEBASE
+TODO Add pip requirements.txt for libtcod-cffi dependency
 TODO Add weapon/spell accuracy attribute
 TODO Add chance to hit % to Spell configuration
 TODO Eliminate game parameter from Spell methods
