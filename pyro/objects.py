@@ -74,7 +74,10 @@ def instantiate_monster(template):
     components = [fighter_comp, ai_comp, exp_comp]
     if 'spell' in template:
         spell = instantiate_spell(template['spell'])
-        components.append(Spellcaster(spell))
+        components.append(Spellcaster([spell]))
+    elif 'spells' in template:
+        spells = [instantiate_spell(spell) for spell in template['spells']]
+        components.append(Spellcaster(spells))
     return GameObject(glyph=glyph, name=name, color=color, blocks=True,
                       components=components, listeners=[MonsterDeath()])
 

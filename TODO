@@ -1,5 +1,6 @@
 
 GAME
+TODO Creature rendering order: bosses, mobs, creatures
 TODO Spawn monsters in hallways
 TODO Locked doors
 TODO Decompose corpses

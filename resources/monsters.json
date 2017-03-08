@@ -75,5 +75,25 @@
     "hp": 30,
     "defense": 3,
     "power": 4
+  },
+  {
+    "name": "King Wizard",
+    "type": "boss",
+    "glyph": "W",
+    "color": "white",
+    "ai": "aggressive_spellcaster",
+    "spells": [
+      "lightning_bolt",
+      {
+        "name": "fireball",
+        "range": 6,
+        "strength": 10,
+        "radius": 1
+      }
+    ],
+    "experience": 200,
+    "hp": 40,
+    "defense": 2,
+    "power": 2
   }
 ]
