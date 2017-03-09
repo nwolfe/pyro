@@ -1,8 +1,14 @@
 
 
+class SpellType:
+    ATTACK = 'attack'
+    HEAL = 'heal'
+
+
 class Spell:
-    def __init__(self, name):
+    def __init__(self, name, spell_type):
         self.name = name
+        self.type = spell_type
 
     def configure(self, settings):
         pass

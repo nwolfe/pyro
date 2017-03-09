@@ -89,11 +89,15 @@
         "range": 6,
         "strength": 10,
         "radius": 1
+      },
+      {
+        "name": "heal",
+        "strength": 3
       }
     ],
     "experience": 200,
-    "hp": 40,
-    "defense": 2,
-    "power": 2
+    "hp": 20,
+    "defense": 1,
+    "power": 1
   }
 ]

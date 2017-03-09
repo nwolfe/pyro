@@ -1,5 +1,6 @@
 import tcod as libtcod
 from pyro.components import AI, Spellcaster, Fighter
+from pyro.spell import SpellType
 
 
 class AggressiveSpellcaster(AI):
@@ -7,10 +8,20 @@ class AggressiveSpellcaster(AI):
         monster = self.owner
         player = monster.game.player
         if libtcod.map_is_in_fov(monster.game.fov_map, monster.x, monster.y):
+            # Heal yourself if damaged
+            if monster.component(Fighter).hp < monster.component(Fighter).max_hp():
+                heals = self.owner.component(Spellcaster).get_spells(SpellType.HEAL)
+                if len(heals) > 0:
+                    self.owner.component(Spellcaster).cast_spell(heals[0], self.owner)
+                    return
+
             # Move towards player if far away
-            if not monster.component(Spellcaster).in_range(player):
+            if not monster.component(Spellcaster).in_range(player, SpellType.ATTACK):
                 monster.move_astar(player.x, player.y)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
-                monster.component(Spellcaster).cast_spell(player)
+                attacks = self.owner.component(Spellcaster).get_spells(SpellType.ATTACK)
+                if len(attacks) > 0:
+                    random_attack = attacks[libtcod.random_get_int(0, 0, len(attacks)-1)]
+                    self.owner.component(Spellcaster).cast_spell(random_attack, player)

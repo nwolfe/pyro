@@ -1,13 +1,13 @@
 import tcod as libtcod
 from pyro.ai import Confused
 from pyro.components import AI
-from pyro.spell import Spell
+from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_CONFUSE_RANGE, SPELL_CONFUSE_TURNS
 
 
 class Confuse(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Confusion')
+        Spell.__init__(self, 'Confusion', SpellType.ATTACK)
         self.range = SPELL_CONFUSE_RANGE
         self.num_turns = SPELL_CONFUSE_TURNS
 

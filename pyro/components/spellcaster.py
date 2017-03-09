@@ -1,39 +1,37 @@
 import tcod as libtcod
-from random import shuffle
 from pyro.component import Component
+from pyro.spell import SpellType
 
 
 class Spellcaster(Component):
     def __init__(self, spells):
         Component.__init__(self, component_type=Spellcaster)
-        self.spells = spells
+        self.spells = {SpellType.ATTACK: [], SpellType.HEAL: []}
+        for spell in spells:
+            self.spells[spell.type].append(spell)
 
-    def in_range(self, target):
-        for spell in self.spells:
+    def get_spells(self, spell_type):
+        return self.spells[spell_type]
+
+    def in_range(self, target, spell_type):
+        for spell in self.spells[spell_type]:
             if spell.in_range(self.owner, target):
                 return True
         return False
 
-    def cast_spell(self, target):
-        spell = self.choose_spell(target)
-        if spell is None:
-            return
-
-        # Only 40% chance to hit
-        if libtcod.random_get_int(0, 1, 5) <= 2:
-            damage = spell.cast(self.owner, target)
-            msg = 'The {0} strikes you with a {1}! You take {2} damage.'
-            msg = msg.format(self.owner.name, spell.name, damage)
-            self.owner.game.message('- ' + msg, libtcod.red)
-        else:
-            msg = 'The {0} casts a {1} but it fizzles!'
-            msg = msg.format(self.owner.name, spell.name)
+    def cast_spell(self, spell, target):
+        if SpellType.ATTACK == spell.type:
+            # Only 40% chance to hit
+            if libtcod.random_get_int(0, 1, 5) <= 2:
+                damage = spell.cast(self.owner, target)
+                msg = 'The {0} strikes you with a {1}! You take {2} damage.'
+                msg = msg.format(self.owner.name, spell.name, damage)
+                self.owner.game.message('- ' + msg, libtcod.red)
+            else:
+                msg = 'The {0} casts a {1} but it fizzles!'
+                msg = msg.format(self.owner.name, spell.name)
+                self.owner.game.message(msg)
+        elif SpellType.HEAL == spell.type:
+            spell.cast(self.owner, target)
+            msg = 'The {0} heals itself!'.format(self.owner.name)
             self.owner.game.message(msg)
-
-    def choose_spell(self, target):
-        # Randomly pick spells and return the first that's in range
-        shuffle(self.spells)
-        for spell in self.spells:
-            if spell.in_range(self.owner, target):
-                return spell
-        return None
