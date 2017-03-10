@@ -98,13 +98,13 @@ def handle_keys(ui, game, object_factory):
 
     key_char = chr(ui.keyboard.c)
 
-    if libtcod.KEY_UP == ui.keyboard.vk:
+    if libtcod.KEY_UP == ui.keyboard.vk or key_char == 'k':
         return move_player_or_attack(0, -1, game)
-    elif libtcod.KEY_DOWN == ui.keyboard.vk:
+    elif libtcod.KEY_DOWN == ui.keyboard.vk or key_char == 'j':
         return move_player_or_attack(0, 1, game)
-    elif libtcod.KEY_LEFT == ui.keyboard.vk:
+    elif libtcod.KEY_LEFT == ui.keyboard.vk or key_char == 'h':
         return move_player_or_attack(-1, 0, game)
-    elif libtcod.KEY_RIGHT == ui.keyboard.vk:
+    elif libtcod.KEY_RIGHT == ui.keyboard.vk or key_char == 'l':
         return move_player_or_attack(1, 0, game)
     elif key_char == 'f':
         # Don't move, let the monsters come to you
