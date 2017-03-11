@@ -48,68 +48,121 @@ class TileMeta:
         self.tunnelled = False
 
 
-class MapBuilder:
-    def __init__(self, map_height, map_width, game_objects, game_object_factory, dungeon_level):
-        self.game_map = [[Tile(True)
-                          for _ in range(map_height)]
-                         for _ in range(map_width)]
+class Map:
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+        self.game_map = [[Tile(blocked=True)
+                          for _ in range(height)]
+                         for _ in range(width)]
+        self.fov_map = self.make_fov_map()
+
+    def make_fov_map(self):
+        # Create the FOV map according to the generated map
+        fov_map = libtcod.map_new(self.width, self.height)
+        for y in range(self.height):
+            for x in range(self.width):
+                libtcod.map_set_properties(fov_map, x, y,
+                                           not self.game_map[x][y].block_sight,
+                                           not self.game_map[x][y].blocked)
+        return fov_map
+
+    def is_in_fov(self, x, y):
+        return libtcod.map_is_in_fov(self.fov_map, x, y)
+
+    def is_on_map(self, x, y):
+        x_in_bounds = 0 <= x < self.width
+        y_in_bounds = 0 <= y < self.height
+        return x_in_bounds and y_in_bounds
+
+    def block_movement(self, x, y):
+        self.game_map[x][y].blocked = True
+
+    def unblock_movement(self, x, y):
+        self.game_map[x][y].blocked = False
+
+    def movement_blocked(self, x, y):
+        return self.game_map[x][y].blocked
+
+    def block_vision(self, x, y):
+        self.game_map[x][y].block_sight = True
+        libtcod.map_set_properties(self.fov_map, x, y, isTrans=False, isWalk=False)
+
+    def unblock_vision(self, x, y):
+        self.game_map[x][y].block_sight = False
+        libtcod.map_set_properties(self.fov_map, x, y, isTrans=True, isWalk=True)
+
+    def vision_blocked(self, x, y):
+        return self.game_map[x][y].block_sight
+
+    def is_explored(self, x, y):
+        return self.game_map[x][y].explored
+
+    def mark_explored(self, x, y):
+        self.game_map[x][y].explored = True
+
+
+class LevelBuilder:
+    def __init__(self, game_map, game_objects, game_object_factory, dungeon_level):
+        self.map = game_map
         self.meta_map = [[TileMeta()
-                          for _ in range(map_height)]
-                         for _ in range(map_width)]
+                          for _ in range(game_map.height)]
+                         for _ in range(game_map.width)]
         self.game_objects = game_objects
         self.game_object_factory = game_object_factory
         self.dungeon_level = dungeon_level
 
-    def build(self):
-        return self.game_map
+    def mark_wall_tile(self, x, y):
+        self.meta_map[x][y].room_wall = True
+
+    def is_wall_tile(self, x, y):
+        return self.meta_map[x][y].room_wall
+
+    def mark_tunnelled(self, x, y):
+        self.meta_map[x][y].tunnelled = True
 
     def create_room(self, room):
         # Go through the tiles in the rectangle and make them passable
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
-                self.game_map[x][y].blocked = False
-                self.game_map[x][y].block_sight = False
+                self.map.unblock_movement(x, y)
+                self.map.unblock_vision(x, y)
 
         # Mark the exterior tiles as walls
         for x in range(room.x1, room.x2+1):
-            self.meta_map[x][room.y1].room_wall = True
-            self.meta_map[x][room.y2].room_wall = True
+            self.mark_wall_tile(x, room.y1)
+            self.mark_wall_tile(x, room.y2)
         for y in range(room.y1, room.y2+1):
-            self.meta_map[room.x1][y].room_wall = True
-            self.meta_map[room.x2][y].room_wall = True
+            self.mark_wall_tile(room.x1, y)
+            self.mark_wall_tile(room.x2, y)
 
     def create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.game_map[x][y].blocked = False
-            self.game_map[x][y].block_sight = False
-            if self.meta_map[x][y].room_wall:
-                self.meta_map[x][y].tunnelled = True
+            self.map.unblock_movement(x, y)
+            self.map.unblock_vision(x, y)
+            if self.is_wall_tile(x, y):
+                self.mark_tunnelled(x, y)
 
     def create_v_tunnel(self, y1, y2, x):
         for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.game_map[x][y].blocked = False
-            self.game_map[x][y].block_sight = False
-            if self.meta_map[x][y].room_wall:
-                self.meta_map[x][y].tunnelled = True
+            self.map.unblock_movement(x, y)
+            self.map.unblock_vision(x, y)
+            if self.is_wall_tile(x, y):
+                self.mark_tunnelled(x, y)
 
     def place_grass_tile(self, x, y):
-        self.game_map[x][y].block_sight = True
+        self.map.block_vision(x, y)
         grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
         grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
                            render_order=RENDER_ORDER_GRASS,
                            components=[grass_comp])
         self.game_objects.append(grass)
 
-    def is_on_map(self, point):
-        x_in_bounds = 0 <= point.x < len(self.game_map)
-        y_in_bounds = 0 <= point.y < len(self.game_map[0])
-        return x_in_bounds and y_in_bounds
-
     def place_grass(self, room):
         if libtcod.random_get_int(0, 1, 2) == 1:
             grass_tiles = []
             point = room.random_point_inside()
-            while is_blocked(self.game_map, self.game_objects, point.x, point.y):
+            while is_blocked(self.map, self.game_objects, point.x, point.y):
                 point = room.random_point_inside()
 
             self.place_grass_tile(point.x, point.y)
@@ -117,7 +170,7 @@ class MapBuilder:
             num_grass = libtcod.random_get_int(0, 4, 8)
             for i in range(num_grass):
                 point = random_point_surrounding(point)
-                while not self.is_on_map(point):
+                while not self.map.is_on_map(point.x, point.y):
                     point = random_point_surrounding(point)
 
                 grass_at_point = False
@@ -129,7 +182,7 @@ class MapBuilder:
                 if grass_at_point:
                     continue
 
-                if not is_blocked(self.game_map, self.game_objects, point.x, point.y):
+                if not is_blocked(self.map, self.game_objects, point.x, point.y):
                     self.place_grass_tile(point.x, point.y)
 
             for grass in grass_tiles:
@@ -158,7 +211,7 @@ class MapBuilder:
             # Random position for creature
             point = room.random_point_inside()
 
-            if not is_blocked(self.game_map, self.game_objects, point.x, point.y):
+            if not is_blocked(self.map, self.game_objects, point.x, point.y):
                 choice = random_choice(creature_chances)
                 creature = self.game_object_factory.new_monster(choice)
                 creature.x = point.x
@@ -187,7 +240,7 @@ class MapBuilder:
             # Random position for item
             point = room.random_point_inside()
 
-            if not is_blocked(self.game_map, self.game_objects, point.x, point.y):
+            if not is_blocked(self.map, self.game_objects, point.x, point.y):
                 choice = random_choice(item_chances)
                 item = self.game_object_factory.new_item(choice)
                 item.x = point.x
@@ -196,8 +249,8 @@ class MapBuilder:
 
     def place_doors(self):
         # Look for tunnelled walls as potential doors
-        for x in range(MAP_WIDTH):
-            for y in range(MAP_HEIGHT):
+        for x in range(self.map.width):
+            for y in range(self.map.height):
                 if self.meta_map[x][y].tunnelled:
                     # Don't place doors next to other doors
                     door_above = self.meta_map[x][y+1].tunnelled
@@ -208,13 +261,13 @@ class MapBuilder:
                         continue
 
                     # Make sure to place doors between two walls
-                    wall_above = self.game_map[x][y+1].blocked
-                    wall_below = self.game_map[x][y-1].blocked
-                    wall_left = self.game_map[x-1][y].blocked
-                    wall_right = self.game_map[x+1][y].blocked
+                    wall_above = self.map.movement_blocked(x, y+1)
+                    wall_below = self.map.movement_blocked(x, y-1)
+                    wall_left = self.map.movement_blocked(x-1, y)
+                    wall_right = self.map.movement_blocked(x+1, y)
                     if (wall_above and wall_below) or (wall_left and wall_right):
-                        self.game_map[x][y].blocked = True
-                        self.game_map[x][y].block_sight = True
+                        self.map.block_movement(x, y)
+                        self.map.block_vision(x, y)
                         door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
                         door = GameObject(x, y, '+', 'door', libtcod.white,
                                           render_order=RENDER_ORDER_DOOR,
@@ -279,35 +332,35 @@ def room_overlaps_existing(room, existing):
     return False
 
 
-def randomly_placed_rect():
+def randomly_placed_rect(game_map):
     # Random width and height
     w = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
     h = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
 
     # Random position without going out of the boundaries of the map
-    x = libtcod.random_get_int(0, 0, MAP_WIDTH - w - 1)
-    y = libtcod.random_get_int(0, 0, MAP_HEIGHT - h - 1)
+    x = libtcod.random_get_int(0, 0, game_map.width - w - 1)
+    y = libtcod.random_get_int(0, 0, game_map.height - h - 1)
 
     return Rect(x, y, w, h)
 
 
 def make_map(player, dungeon_level, object_factory):
     objects = [player]
-    builder = MapBuilder(MAP_HEIGHT, MAP_WIDTH, objects, object_factory, dungeon_level)
+    game_map = Map(MAP_HEIGHT, MAP_WIDTH)
+    builder = LevelBuilder(game_map, objects, object_factory, dungeon_level)
     rooms = []
     num_rooms = 0
     new_x = 0
     new_y = 0
 
     for r in range(MAX_ROOMS):
-        new_room = randomly_placed_rect()
+        new_room = randomly_placed_rect(game_map)
 
         # Throw the new room away if it overlaps with an existing one
         if room_overlaps_existing(new_room, rooms):
             continue
 
         # Room is valid, continue
-        # create_room(game_map, new_room, meta_map)
         builder.create_room(new_room)
 
         (new_x, new_y) = new_room.center()
@@ -349,4 +402,4 @@ def make_map(player, dungeon_level, object_factory):
     # Put a boss near the stairs
     builder.place_boss(new_x, new_y)
 
-    return builder.build(), objects, stairs
+    return game_map, objects, stairs

@@ -1,7 +1,7 @@
 import math
 import tcod as libtcod
 from pyro.events import EventSource
-from pyro.settings import RENDER_ORDER_DEFAULT, MAP_WIDTH, MAP_HEIGHT
+from pyro.settings import RENDER_ORDER_DEFAULT
 
 
 class GameObject(EventSource):
@@ -50,9 +50,9 @@ class GameObject(EventSource):
         else:
             return False
 
-    def draw(self, console, game_map, fov_map):
-        always_visible = self.always_visible and game_map[self.x][self.y].explored
-        if always_visible or libtcod.map_is_in_fov(fov_map, self.x, self.y):
+    def draw(self, console):
+        always_visible = self.always_visible and self.game.game_map.is_explored(self.x, self.y)
+        if always_visible or self.game.game_map.is_in_fov(self.x, self.y):
             # Set the color and then draw the character that
             # represents this object at its position
             libtcod.console_set_default_foreground(console, self.color)
@@ -86,14 +86,7 @@ class GameObject(EventSource):
 
     def move_astar(self, x, y, passthrough=False):
         # Create a FOV map that has the dimensions of the map
-        fov = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
-
-        # Scan the current map each turn and set all the walls as unwalkable
-        for y1 in range(MAP_HEIGHT):
-            for x1 in range(MAP_WIDTH):
-                libtcod.map_set_properties(fov, x1, y1,
-                                           not self.game.game_map[x1][y1].block_sight,
-                                           not self.game.game_map[x1][y1].blocked)
+        fov = self.game.game_map.make_fov_map()
 
         # Scan all the objects to see if there are objects that must be
         # navigated around. Check also that the object isn't self or the
@@ -106,7 +99,7 @@ class GameObject(EventSource):
             for obj in self.game.objects:
                 if obj.blocks and obj != self and obj.x != x and obj.y != y:
                     # Set the tile as a wall so it must be navigated around
-                    libtcod.map_set_properties(fov, obj.x, obj.y, True, False)
+                    libtcod.map_set_properties(fov, obj.x, obj.y, isTrans=True, isWalk=False)
 
         # Allocate an A* path
         # The 1.41 is the normal diagonal cost of moving, it can be set as 0.0

@@ -1,4 +1,3 @@
-import tcod as libtcod
 from pyro.component import Component
 
 
@@ -12,6 +11,4 @@ class Grass(Component):
     def crush(self):
         self.is_crushed = True
         self.owner.glyph = self.crushed_glyph
-        self.owner.game.game_map[self.owner.x][self.owner.y].block_sight = False
-        libtcod.map_set_properties(self.owner.game.fov_map,
-                                   self.owner.x, self.owner.y, True, True)
+        self.owner.game.game_map.unblock_vision(self.owner.x, self.owner.y)

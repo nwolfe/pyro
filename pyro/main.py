@@ -150,17 +150,6 @@ def handle_keys(ui, game, object_factory):
         return False, 'idle'
 
 
-def make_fov_map(game_map):
-    # Create the FOV map according to the generated map
-    fov_map = libtcod.map_new(MAP_WIDTH, MAP_HEIGHT)
-    for y in range(MAP_HEIGHT):
-        for x in range(MAP_WIDTH):
-            libtcod.map_set_properties(fov_map, x, y,
-                                       not game_map[x][y].block_sight,
-                                       not game_map[x][y].blocked)
-    return fov_map
-
-
 def check_player_level_up(game, console):
     exp = game.player.component(Experience)
 
@@ -213,12 +202,10 @@ def new_game(object_factory):
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
     (game_map, objects, stairs) = make_map(player, dungeon_level, object_factory)
-    fov_map = make_fov_map(game_map)
 
     messages = []
 
-    game = Game('playing', game_map, fov_map, objects, stairs,
-                player, messages, dungeon_level)
+    game = Game('playing', game_map, objects, stairs, player, messages, dungeon_level)
 
     object_factory.game = game
 
@@ -256,10 +243,8 @@ def next_dungeon_level(game, object_factory):
     game.dungeon_level += 1
 
     (game_map, objects, stairs) = make_map(game.player, game.dungeon_level, object_factory)
-    fov_map = make_fov_map(game_map)
 
     game.game_map = game_map
-    game.fov_map = fov_map
     game.objects = objects
     game.stairs = stairs
 
@@ -331,9 +316,7 @@ def load_game():
     dungeon_level = save_file['dungeon_level']
     save_file.close()
 
-    fov_map = make_fov_map(game_map)
-
-    return Game(state, game_map, fov_map, objects, stairs, player, messages, dungeon_level)
+    return Game(state, game_map, objects, stairs, player, messages, dungeon_level)
 
 
 def main_menu(ui):

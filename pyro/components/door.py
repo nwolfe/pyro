@@ -1,4 +1,3 @@
-import tcod as libtcod
 from pyro.component import Component
 
 
@@ -13,16 +12,12 @@ class Door(Component):
         self.is_open = True
         self.owner.blocks = False
         self.owner.glyph = self.opened_glyph
-        self.owner.game.game_map[self.owner.x][self.owner.y].blocked = False
-        self.owner.game.game_map[self.owner.x][self.owner.y].block_sight = False
-        libtcod.map_set_properties(self.owner.game.fov_map,
-                                   self.owner.x, self.owner.y, True, True)
+        self.owner.game.game_map.unblock_movement(self.owner.x, self.owner.y)
+        self.owner.game.game_map.unblock_vision(self.owner.x, self.owner.y)
 
     def close(self):
         self.is_open = False
         self.owner.blocks = True
         self.owner.glyph = self.closed_glyph
-        self.owner.game.game_map[self.owner.x][self.owner.y].blocked = True
-        self.owner.game.game_map[self.owner.x][self.owner.y].block_sight = True
-        libtcod.map_set_properties(self.owner.game.fov_map,
-                                   self.owner.x, self.owner.y, False, False)
+        self.owner.game.game_map.block_movement(self.owner.x, self.owner.y)
+        self.owner.game.game_map.block_vision(self.owner.x, self.owner.y)
