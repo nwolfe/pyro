@@ -5,7 +5,7 @@ from pyro.map import make_map
 from pyro.game import Game
 from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
 from pyro.gameobject import GameObject
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Grass, Projectile
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Grass, Projectile, Movement
 from pyro.events import EventListener
 from pyro.settings import *
 
@@ -38,7 +38,8 @@ def move_player_or_attack(dx, dy, game):
             if door and grass:
                 break
 
-        moved = game.player.move(dx, dy)
+        movement = game.player.component(Movement)
+        moved = movement.move(dx, dy) if movement else False
         if moved:
             if grass:
                 grass.crush()
@@ -196,7 +197,7 @@ def new_game(object_factory):
                            power=PLAYER_DEFAULT_POWER)
     player_inventory = Inventory(items=[])
     player = GameObject(0, 0, '@', 'Player', libtcod.white, blocks=True,
-                        components=[exp_comp, fighter_comp, player_inventory],
+                        components=[Movement(), exp_comp, fighter_comp, player_inventory],
                         listeners=[PlayerDeath()])
 
     # Generate map (not drawn to the screen yet)

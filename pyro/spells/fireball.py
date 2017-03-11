@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile, PositionProjectile
+from pyro.components import Fighter, TargetProjectile, PositionProjectile, Movement
 from pyro.gameobject import GameObject
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
@@ -33,7 +33,7 @@ class Fireball(Spell):
                         fighter.take_damage(self.strength, source)
         fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components=[fireball], blocks=False,
+                         components=[fireball, Movement()], blocks=False,
                          game=caster.game)
         caster.game.add_object(obj)
         return self.strength
@@ -58,6 +58,6 @@ class Fireball(Spell):
                         fighter.take_damage(self.strength, source)
         fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
         obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components=[fireball], blocks=False,
+                         components=[fireball, Movement()], blocks=False,
                          game=game)
         game.add_object(obj)

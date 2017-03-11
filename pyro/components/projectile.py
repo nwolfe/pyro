@@ -1,4 +1,5 @@
 from pyro.component import Component
+from pyro.components import Movement
 
 
 class Projectile(Component):
@@ -29,7 +30,8 @@ class TargetProjectile(Projectile):
             self.on_hit_fn(self.source, self.target)
             self.destroy()
         else:
-            self.owner.move_astar(self.target.x, self.target.y, passthrough=True)
+            self.owner.component(Movement).move_astar(
+                self.target.x, self.target.y, passthrough=True)
 
 
 class PositionProjectile(Projectile):
@@ -43,4 +45,5 @@ class PositionProjectile(Projectile):
             self.on_hit_fn(self.source, self.target_x, self.target_y)
             self.destroy()
         else:
-            self.owner.move_astar(self.target_x, self.target_y, passthrough=True)
+            self.owner.component(Movement).move_astar(
+                self.target_x, self.target_y, passthrough=True)

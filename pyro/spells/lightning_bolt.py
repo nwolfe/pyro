@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile
+from pyro.components import Fighter, TargetProjectile, Movement
 from pyro.gameobject import GameObject
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
@@ -22,7 +22,7 @@ class LightningBolt(Spell):
         def on_hit(source, t):
             t.component(Fighter).take_damage(self.strength, source)
         bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        obj = GameObject(name='Bolt of Lightning', glyph='*', components=[bolt],
+        obj = GameObject(name='Bolt of Lightning', glyph='*', components=[bolt, Movement()],
                          color=libtcod.blue, blocks=False, game=caster.game)
         caster.game.add_object(obj)
         return self.strength

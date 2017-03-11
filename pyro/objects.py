@@ -1,7 +1,7 @@
 import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster
+from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.events import EventListener
@@ -71,7 +71,7 @@ def instantiate_monster(template):
     ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = Experience(template['experience'])
     fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
-    components = [fighter_comp, ai_comp, exp_comp]
+    components = [fighter_comp, ai_comp, exp_comp, Movement()]
     if 'spell' in template:
         spell = instantiate_spell(template['spell'])
         components.append(Spellcaster([spell]))
