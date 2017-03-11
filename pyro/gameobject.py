@@ -51,8 +51,8 @@ class GameObject(EventSource):
             return False
 
     def draw(self, console):
-        always_visible = self.always_visible and self.game.game_map.is_explored(self.x, self.y)
-        if always_visible or self.game.game_map.is_in_fov(self.x, self.y):
+        always_visible = self.always_visible and self.game.map.is_explored(self.x, self.y)
+        if always_visible or self.game.map.is_in_fov(self.x, self.y):
             # Set the color and then draw the character that
             # represents this object at its position
             libtcod.console_set_default_foreground(console, self.color)
@@ -86,7 +86,7 @@ class GameObject(EventSource):
 
     def move_astar(self, x, y, passthrough=False):
         # Create a FOV map that has the dimensions of the map
-        fov = self.game.game_map.make_fov_map()
+        fov = self.game.map.make_fov_map()
 
         # Scan all the objects to see if there are objects that must be
         # navigated around. Check also that the object isn't self or the

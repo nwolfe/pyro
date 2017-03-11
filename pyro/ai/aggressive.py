@@ -6,7 +6,7 @@ class Aggressive(AI):
 
     def take_turn(self):
         monster = self.owner
-        if monster.game.game_map.is_in_fov(monster.x, monster.y):
+        if monster.game.map.is_in_fov(monster.x, monster.y):
             # Move towards player if far away
             if monster.distance_to(monster.game.player) >= 2:
                 monster.move_astar(monster.game.player.x, monster.game.player.y)

@@ -9,14 +9,14 @@ from pyro.settings import MSG_WIDTH, MSG_HEIGHT
 class Game:
     def __init__(self,
                  state=None,
-                 game_map=None,
+                 map=None,
                  objects=None,
                  stairs=None,
                  player=None,
                  messages=None,
                  dungeon_level=1):
         self.state = state
-        self.game_map = game_map
+        self.map = map
         self.stairs = stairs
         self.objects = objects
         self.player = player
@@ -34,7 +34,7 @@ class Game:
             self.objects.remove(game_object)
 
     def is_blocked(self, x, y):
-        return is_blocked(self.game_map, self.objects, x, y)
+        return is_blocked(self.map, self.objects, x, y)
 
     def message(self, text, color=libtcod.white):
         # Split the message if necessary, among multiple lines
@@ -60,7 +60,7 @@ class Game:
 
             (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
-            if (ui.mouse.lbutton_pressed and self.game_map.is_in_fov(x, y)
+            if (ui.mouse.lbutton_pressed and self.map.is_in_fov(x, y)
                     and (max_range is None or self.player.distance(x, y) <= max_range)):
                 return x, y
 
@@ -89,7 +89,7 @@ class Game:
 
         for game_object in self.objects:
             if game_object != self.player and game_object.component(Fighter):
-                if self.game_map.is_in_fov(game_object.x, game_object.y):
+                if self.map.is_in_fov(game_object.x, game_object.y):
                     # Calculate distance between this object and the player
                     dist = self.player.distance_to(game_object)
                     if dist < closest_dist:

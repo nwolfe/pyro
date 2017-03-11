@@ -244,7 +244,7 @@ def next_dungeon_level(game, object_factory):
 
     (game_map, objects, stairs) = make_map(game.player, game.dungeon_level, object_factory)
 
-    game.game_map = game_map
+    game.map = game_map
     game.objects = objects
     game.stairs = stairs
 
@@ -294,7 +294,7 @@ def play_game(game, ui, object_factory):
 def save_game(game):
     # Open an empty shelve (possibly overwriting an old one) to write the data
     save_file = shelve.open('savegame', 'n')
-    save_file['map'] = game.game_map
+    save_file['map'] = game.map
     save_file['objects'] = game.objects
     save_file['player_index'] = game.objects.index(game.player)
     save_file['messages'] = game.messages

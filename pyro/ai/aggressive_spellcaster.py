@@ -7,7 +7,7 @@ class AggressiveSpellcaster(AI):
     def take_turn(self):
         monster = self.owner
         player = monster.game.player
-        if monster.game.game_map.is_in_fov(monster.x, monster.y):
+        if monster.game.map.is_in_fov(monster.x, monster.y):
             # Heal yourself if damaged
             if monster.component(Fighter).hp < monster.component(Fighter).max_hp():
                 heals = self.owner.component(Spellcaster).get_spells(SpellType.HEAL)

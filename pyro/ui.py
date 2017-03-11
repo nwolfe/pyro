@@ -122,19 +122,18 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
 
 
 def render_all(ui, game, fov_recompute):
-    game_map = game.game_map
     if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
-        libtcod.map_compute_fov(game_map.fov_map, game.player.x, game.player.y,
+        libtcod.map_compute_fov(game.map.fov_map, game.player.x, game.player.y,
                                 TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
 
         # Set tile background colors according to FOV
-        for y in range(game_map.height):
-            for x in range(game_map.width):
-                visible = game_map.is_in_fov(x, y)
-                wall = game_map.movement_blocked(x, y) and game_map.vision_blocked(x, y)
+        for y in range(game.map.height):
+            for x in range(game.map.width):
+                visible = game.map.is_in_fov(x, y)
+                wall = game.map.movement_blocked(x, y) and game.map.vision_blocked(x, y)
                 if not visible:
-                    if game_map.is_explored(x, y):
+                    if game.map.is_explored(x, y):
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
                         libtcod.console_set_char_background(ui.console,
                                                             x, y, color,
@@ -142,21 +141,21 @@ def render_all(ui, game, fov_recompute):
                 else:
                     if wall:
                         color = COLOR_LIGHT_WALL
-                    elif game_map.vision_blocked(x, y):
+                    elif game.map.vision_blocked(x, y):
                         color = COLOR_LIGHT_GRASS
                     else:
                         color = COLOR_LIGHT_GROUND
                     libtcod.console_set_char_background(ui.console,
                                                         x, y, color,
                                                         libtcod.BKGND_SET)
-                    game_map.mark_explored(x, y)
+                    game.map.mark_explored(x, y)
 
     render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
     for game_object in render_ordered:
         game_object.draw(ui.console)
 
     # Blit the contents of the game (non-GUI) console to the root console
-    libtcod.console_blit(ui.console, 0, 0, game_map.width, game_map.height, 0, 0, 0)
+    libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
 
     # Prepare to render the GUI panel
     libtcod.console_set_default_background(ui.panel, libtcod.black)
@@ -183,7 +182,7 @@ def render_all(ui, game, fov_recompute):
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
-    names = get_names_under_mouse(ui.mouse, game.objects, game_map)
+    names = get_names_under_mouse(ui.mouse, game.objects, game.map)
     libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
     libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                              names)
