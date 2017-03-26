@@ -263,33 +263,60 @@ def update_projectiles(game):
     return projectiles_found
 
 
+class Screen:
+    def __init__(self):
+        pass
+
+    def update(self):
+        pass
+
+    def render(self):
+        pass
+
+
+class DefaultScreen(Screen):
+    def __init__(self, ui, game, factory):
+        Screen.__init__(self)
+        self.ui = ui
+        self.game = game
+        self.factory = factory
+        self.fov_recompute = True
+
+    def render(self):
+        render_all(self.ui, self.game, self.fov_recompute)
+
+    def update(self):
+        self.fov_recompute, player_action = handle_keys(self.ui, self.game, self.factory)
+        if player_action == 'exit':
+            return True
+        if self.game.state == 'playing' and player_action != 'idle':
+            for game_object in self.game.objects:
+                ai = game_object.component(AI)
+                if ai:
+                    ai.take_turn()
+        return False
+
+
 def play_game(game, ui, object_factory):
     for game_object in game.objects:
         game_object.game = game
 
-    fov_recompute = True
     libtcod.console_clear(ui.console)
+    screen = DefaultScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
-        render_all(ui, game, fov_recompute)
+        screen.render()
 
         while update_projectiles(game):
-            render_all(ui, game, True)
+            render_all(ui, game, False)
 
         check_player_level_up(game, ui.console)
 
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
-        (fov_recompute, player_action) = handle_keys(ui, game, object_factory)
 
-        if player_action == 'exit':
-            save_game(game)
+        escape = screen.update()
+        if escape:
             break
-
-        if game.state == 'playing' and player_action != 'idle':
-            for game_object in game.objects:
-                ai = game_object.component(AI)
-                if ai:
-                    ai.take_turn()
 
 
 def save_game(game):
