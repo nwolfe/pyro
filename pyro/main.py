@@ -304,7 +304,23 @@ class WalkAction(Action):
         self.dx, self.dy = dx, dy
 
     def on_perform(self):
+        # TODO Inline move_player_or_attack
         move_player_or_attack(self.dx, self.dy, self.game)
+        return ActionResult.SUCCESS
+
+
+class PickUpAction(Action):
+    def __init__(self):
+        Action.__init__(self)
+
+    # TODO Do this properly; use self.actor not game.player
+    def on_perform(self):
+        # Pick up first item in the player's tile
+        for go in self.game.objects:
+            item = go.component(Item)
+            if item:
+                if go.x == self.game.player.x and go.y == self.game.player.y:
+                    item.pick_up(self.game.player)
         return ActionResult.SUCCESS
 
 
@@ -315,6 +331,7 @@ class EngineScreen(Screen):
         self.ui = ui
         self.factory = factory
         self.fov_recompute = True
+        # TODO This logic can't be here
         self.hero = Hero(game.player, game)
         actors = [self.hero]
         for go in self.game.objects:
@@ -324,6 +341,8 @@ class EngineScreen(Screen):
 
     def handle_input(self, keyboard):
         action = None
+        key_char = chr(keyboard.c)
+        # TODO Implement all keybindings
         if libtcod.KEY_ESCAPE == keyboard.vk:
             return 'exit'
         elif libtcod.KEY_UP == keyboard.vk:
@@ -334,6 +353,8 @@ class EngineScreen(Screen):
             action = WalkAction(-1, 0)
         elif libtcod.KEY_RIGHT == keyboard.vk:
             action = WalkAction(1, 0)
+        elif 'g' == key_char:
+            action = PickUpAction()
         if action:
             self.hero.next_action = action
         return None
@@ -345,6 +366,7 @@ class EngineScreen(Screen):
         if 'exit' == self.handle_input(self.ui.keyboard):
             return True
         result = self.engine.update()
+        # TODO Create Effects for Events and update them
         return False
 
 
