@@ -1,5 +1,6 @@
 import shelve
 import tcod as libtcod
+from pyro.engine import Monster, GameEngine, Hero, Action, ActionResult
 from pyro.objects import GameObjectFactory
 from pyro.map import make_map
 from pyro.game import Game
@@ -297,12 +298,63 @@ class DefaultScreen(Screen):
         return False
 
 
+class WalkAction(Action):
+    def __init__(self, dx, dy):
+        Action.__init__(self)
+        self.dx, self.dy = dx, dy
+
+    def on_perform(self):
+        move_player_or_attack(self.dx, self.dy, self.game)
+        return ActionResult.SUCCESS
+
+
+class EngineScreen(Screen):
+    def __init__(self, ui, game, factory):
+        Screen.__init__(self)
+        self.game = game
+        self.ui = ui
+        self.factory = factory
+        self.fov_recompute = True
+        self.hero = Hero(game.player, game)
+        actors = [self.hero]
+        for go in self.game.objects:
+            if go.component(AI):
+                actors.append(Monster(go, self.game))
+        self.engine = GameEngine(actors)
+
+    def handle_input(self, keyboard):
+        action = None
+        if libtcod.KEY_ESCAPE == keyboard.vk:
+            return 'exit'
+        elif libtcod.KEY_UP == keyboard.vk:
+            action = WalkAction(0, -1)
+        elif libtcod.KEY_DOWN == keyboard.vk:
+            action = WalkAction(0, 1)
+        elif libtcod.KEY_LEFT == keyboard.vk:
+            action = WalkAction(-1, 0)
+        elif libtcod.KEY_RIGHT == keyboard.vk:
+            action = WalkAction(1, 0)
+        if action:
+            self.hero.next_action = action
+        return None
+
+    def render(self):
+        render_all(self.ui, self.game, self.fov_recompute)
+
+    def update(self):
+        if 'exit' == self.handle_input(self.ui.keyboard):
+            return True
+        result = self.engine.update()
+        return False
+
+
 def play_game(game, ui, object_factory):
     for game_object in game.objects:
         game_object.game = game
 
     libtcod.console_clear(ui.console)
-    screen = DefaultScreen(ui, game, object_factory)
+    # screen = DefaultScreen(ui, game, object_factory)
+    screen = EngineScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
         screen.render()
 
