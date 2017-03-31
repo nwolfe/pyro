@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.engine import Monster, GameEngine, Hero, Action, ActionResult
+from pyro.engine import Monster, GameEngine, Hero, Action, ActionResult, EventType
 from pyro.objects import GameObjectFactory
 from pyro.map import make_map
 from pyro.game import Game
@@ -360,6 +360,7 @@ class EngineScreen(Screen):
         return None
 
     def render(self):
+        # TODO render effects
         render_all(self.ui, self.game, self.fov_recompute)
 
     def update(self):
@@ -367,6 +368,12 @@ class EngineScreen(Screen):
             return True
         result = self.engine.update()
         # TODO Create Effects for Events and update them
+        # for event in result.events:
+        #     if EventType.HIT == event.type:
+        #         pass
+        #     elif EventType.BOLT == event.type:
+        #         pass
+
         return False
 
 

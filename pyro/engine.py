@@ -2,11 +2,6 @@ from pyro.components import AI
 from pyro.energy import Energy, NORMAL_SPEED
 
 
-class Event:
-    def __init__(self):
-        pass
-
-
 class Actor:
     def __init__(self, game, pos):
         self.energy = Energy()
@@ -81,6 +76,15 @@ class Action:
         return ActionResult(alternate=action)
 
 
+# class LosAction(Action):
+#     def __init__(self, target_x, target_y):
+#         Action.__init__(self)
+#         self.target_x = target_x
+#         self.target_y = target_y
+#
+#     # def on_perform(self):
+
+
 class AIAdapterAction(Action):
     def __init__(self, monster_ai):
         Action.__init__(self)
@@ -110,6 +114,22 @@ class GameResult:
 
     def needs_refresh(self):
         return self.made_progress or len(self.events) > 0
+
+
+class Event:
+    def __init__(self, kind, pos):
+        self.type = kind
+        self.pos = pos
+
+
+class EventType:
+    BOLT = None
+    HIT = None
+    def __init__(self, name):
+        self.name = name
+
+EventType.BOLT = EventType('bolt')
+EventType.HIT = EventType('hit')
 
 
 class GameEngine:
