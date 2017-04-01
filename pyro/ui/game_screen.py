@@ -44,19 +44,12 @@ class EngineScreen(Screen):
             self.hero.next_action = action
         return None
 
-    def render(self):
-        render_all(self.ui, self.game, self.fov_recompute)
-        # TODO render effects
-        # for effect in self.effects:
-        #     effect.render(self.game, self.ui)
-        # libtcod.console_blit(self.ui.console, 0, 0, self.game.map.width, self.game.map.height, 0, 0, 0)
-        # libtcod.console_flush()
-
     def update(self):
         if 'exit' == self.handle_input(self.ui.keyboard):
             return True
+
         result = self.engine.update()
-        # TODO Create Effects for Events and update them
+
         for event in result.events:
             if EventType.HIT == event.type:
                 self.effects.append(HitEffect(event.actor))
@@ -65,80 +58,84 @@ class EngineScreen(Screen):
 
         return False
 
+    def render(self):
+        if self.fov_recompute:
+            # Recompute FOV if needed (i.e. the player moved)
+            libtcod.map_compute_fov(self.game.map.fov_map, self.game.player.pos.x, self.game.player.pos.y,
+                                    TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
 
-def render_all(ui, game, fov_recompute):
-    if fov_recompute:
-        # Recompute FOV if needed (i.e. the player moved)
-        libtcod.map_compute_fov(game.map.fov_map, game.player.pos.x, game.player.pos.y,
-                                TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
-
-        # Set tile background colors according to FOV
-        for y in range(game.map.height):
-            for x in range(game.map.width):
-                visible = game.map.is_in_fov(x, y)
-                wall = game.map.movement_blocked(x, y) and game.map.vision_blocked(x, y)
-                if not visible:
-                    if game.map.is_explored(x, y):
-                        color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
-                        libtcod.console_set_char_background(ui.console,
+            # Set tile background colors according to FOV
+            for y in range(self.game.map.height):
+                for x in range(self.game.map.width):
+                    visible = self.game.map.is_in_fov(x, y)
+                    wall = self.game.map.movement_blocked(x, y) and self.game.map.vision_blocked(x, y)
+                    if not visible:
+                        if self.game.map.is_explored(x, y):
+                            color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
+                            libtcod.console_set_char_background(self.ui.console,
+                                                                x, y, color,
+                                                                libtcod.BKGND_SET)
+                    else:
+                        if wall:
+                            color = COLOR_LIGHT_WALL
+                        elif self.game.map.vision_blocked(x, y):
+                            color = COLOR_LIGHT_GRASS
+                        else:
+                            color = COLOR_LIGHT_GROUND
+                        libtcod.console_set_char_background(self.ui.console,
                                                             x, y, color,
                                                             libtcod.BKGND_SET)
-                else:
-                    if wall:
-                        color = COLOR_LIGHT_WALL
-                    elif game.map.vision_blocked(x, y):
-                        color = COLOR_LIGHT_GRASS
-                    else:
-                        color = COLOR_LIGHT_GROUND
-                    libtcod.console_set_char_background(ui.console,
-                                                        x, y, color,
-                                                        libtcod.BKGND_SET)
-                    game.map.mark_explored(x, y)
+                        self.game.map.mark_explored(x, y)
 
-    render_ordered = sorted(game.objects, key=lambda o: o.component(Graphics).render_order)
-    for game_object in render_ordered:
-        game_object.component(Graphics).draw(ui.console)
+        # Draw game objects
+        render_ordered = sorted(self.game.objects, key=lambda o: o.component(Graphics).render_order)
+        for game_object in render_ordered:
+            game_object.component(Graphics).draw(self.ui.console)
 
-    # Blit the contents of the game (non-GUI) console to the root console
-    libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
+        # Draw effects
+        for effect in self.effects:
+            effect.render(self.game, self.ui)
 
-    # Prepare to render the GUI panel
-    libtcod.console_set_default_background(ui.panel, libtcod.black)
-    libtcod.console_clear(ui.panel)
+        # Blit the contents of the game (non-GUI) console to the root console
+        libtcod.console_blit(self.ui.console, 0, 0, self.game.map.width, self.game.map.height, 0, 0, 0)
 
-    # Print game messages, one line at a time
-    y = 1
-    for (line, color) in game.messages:
-        libtcod.console_set_default_foreground(ui.panel, color)
-        libtcod.console_print_ex(ui.panel, MSG_X, y, libtcod.BKGND_NONE,
-                                 libtcod.LEFT, line)
-        y += 1
+        # Prepare to render the GUI panel
+        libtcod.console_set_default_background(self.ui.panel, libtcod.black)
+        libtcod.console_clear(self.ui.panel)
 
-    # Show player's stats
-    fighter = game.player.component(Fighter)
-    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
-                  fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
-    experience = game.player.component(Experience)
-    render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
-                  libtcod.green, libtcod.darkest_green)
+        # Print game messages, one line at a time
+        y = 1
+        for (line, color) in self.game.messages:
+            libtcod.console_set_default_foreground(self.ui.panel, color)
+            libtcod.console_print_ex(self.ui.panel, MSG_X, y, libtcod.BKGND_NONE,
+                                     libtcod.LEFT, line)
+            y += 1
 
-    # Show the dungeon level
-    libtcod.console_print_ex(ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
-                             'Dungeon Level {}'.format(game.dungeon_level))
+        # Show player's stats
+        fighter = self.game.player.component(Fighter)
+        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
+                      fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
+        experience = self.game.player.component(Experience)
+        render_ui_bar(self.ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
+                      libtcod.green, libtcod.darkest_green)
 
-    # Display names of objects under the mouse
-    names = get_names_under_mouse(ui.mouse, game.objects, game.map)
-    libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
-    libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
-                             names)
+        # Show the dungeon level
+        libtcod.console_print_ex(self.ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
+                                 'Dungeon Level {}'.format(self.game.dungeon_level))
 
-    # Blit the contents of the GUI panel to the root console
-    libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
-                         PANEL_Y)
+        # Display names of objects under the mouse
+        names = get_names_under_mouse(self.ui.mouse, self.game.objects, self.game.map)
+        libtcod.console_set_default_foreground(self.ui.panel, libtcod.light_gray)
+        libtcod.console_print_ex(self.ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+                                 names)
 
-    libtcod.console_flush()
-    for game_object in game.objects:
-        game_object.component(Graphics).clear(ui.console)
+        # Blit the contents of the GUI panel to the root console
+        libtcod.console_blit(self.ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
+                             PANEL_Y)
+
+        libtcod.console_flush()
+        for game_object in self.game.objects:
+            game_object.component(Graphics).clear(self.ui.console)
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,

@@ -20,11 +20,12 @@ class HitEffect(Effect):
 
     def update(self, game):
         self.frame += 1
-        return self.frame < 23
+        return self.frame < 4
 
     def render(self, game, ui):
-        libtcod.console_set_default_foreground(ui.console, libtcod.red)
-        libtcod.console_put_char(ui.console, self.actor.pos.x, self.actor.pos.y, '-', libtcod.BKGND_NONE)
+        x, y = self.actor.pos.x, self.actor.pos.y
+        libtcod.console_set_default_foreground(ui.console, libtcod.dark_red)
+        libtcod.console_put_char(ui.console, x, y, '*', libtcod.BKGND_NONE)
 
 
 class BoltEffect(Effect):
