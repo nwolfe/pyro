@@ -1,15 +1,218 @@
 import shelve
 import tcod as libtcod
-from pyro.direction import Direction
-from pyro.engine import Monster, GameEngine, Hero, Action, ActionResult, AttackAction
-from pyro.objects import GameObjectFactory
-from pyro.map import make_map
-from pyro.game import Game
-from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
-from pyro.gameobject import GameObject
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Graphics, Grass, Projectile, Movement
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Projectile, Movement
 from pyro.events import EventListener
+from pyro.game import Game
+from pyro.gameobject import GameObject
+from pyro.map import make_map
+from pyro.objects import GameObjectFactory
 from pyro.settings import *
+from pyro.ui import Screen, EngineScreen
+
+
+###############################################################################
+# User Interface                                                              #
+###############################################################################
+
+
+class UserInterface:
+    def __init__(self, keyboard, mouse, console, panel):
+        self.keyboard = keyboard
+        self.mouse = mouse
+        self.console = console
+        self.panel = panel
+
+    def render_all(self, game, fov_recompute):
+        render_all(self, game, fov_recompute)
+
+
+def menu(console, header, options, width):
+    if len(options) > 26:
+        raise ValueError('Cannot have a menu with more than 26 options.')
+
+    # Calculate total height for header (after auto-wrap),
+    # and one line per option
+    if header == '':
+        header_height = 0
+    else:
+        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
+                                                        SCREEN_HEIGHT, header)
+    height = len(options) + header_height
+
+    # Create an off-screen console that represents the menu's window
+    window = libtcod.console_new(width, height)
+
+    # Print the header, with auto-wrap
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    libtcod.console_print_rect_ex(window, 0, 0, width, height,
+                                  libtcod.BKGND_NONE, libtcod.LEFT, header)
+
+    # Print all the options
+    y = header_height
+    letter_index = ord('a')
+    for option in options:
+        text = '({0}) {1}'.format(chr(letter_index), option)
+        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE,
+                                 libtcod.LEFT, text)
+        y += 1
+        letter_index += 1
+
+    # Blit the contents of the menu window to the root console
+    x = SCREEN_WIDTH/2 - width/2
+    y = SCREEN_HEIGHT/2 - height/2
+    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
+
+    # Present the root console to the player and wait for a key press
+    libtcod.console_flush()
+    key = libtcod.console_wait_for_keypress(True)
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        # Alt-Enter toggles fullscreen
+        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+
+    # Convert ASCII code to an index; if it corresponds to an option, return it
+    index = key.c - ord('a')
+    if index >= 0 and index < len(options):
+        return index
+    else:
+        return None
+
+
+def messagebox(console, text, width=50):
+    return menu(console, text, [], width)
+
+
+def inventory_menu(console, inventory, header):
+    # Show a menu with each item of the inventory as an option
+    if len(inventory) == 0:
+        options = ['Inventory is empty']
+    else:
+        options = []
+        for item in inventory:
+            text = item.name
+            equipment = item.component(Equipment)
+            if equipment and equipment.is_equipped:
+                text = '{0} (on {1})'.format(text, equipment.slot)
+            options.append(text)
+    selection_index = menu(console, header, options, INVENTORY_WIDTH)
+    if selection_index is None or len(inventory) == 0:
+        return None
+    else:
+        return inventory[selection_index].component(Item)
+
+
+def get_names_under_mouse(mouse, objects, game_map):
+    # Return a string with the names of all objects under the mouse
+    (x, y) = (mouse.cx, mouse.cy)
+
+    # Create a list with the names of all objects at the mouse's coordinates
+    # and in FOV
+    names = [obj.name for obj in objects
+             if obj.pos.equal_to(x, y) and game_map.is_in_fov(obj.pos.x, obj.pos.y)]
+    return ', '.join(names).capitalize()
+
+
+def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
+                  back_color):
+    # Render a bar (HP, experience, etc)
+    bar_width = int(float(value) / maximum * total_width)
+
+    # Render the background first
+    libtcod.console_set_default_background(panel, back_color)
+    libtcod.console_rect(panel, x, y, total_width, 1, False,
+                         libtcod.BKGND_SCREEN)
+
+    # Now render the bar on top
+    libtcod.console_set_default_background(panel, bar_color)
+    if bar_width > 0:
+        libtcod.console_rect(panel, x, y, bar_width, 1, False,
+                             libtcod.BKGND_SCREEN)
+
+    # Finally, some centering text with the values
+    libtcod.console_set_default_foreground(panel, libtcod.white)
+    libtcod.console_print_ex(panel, x + total_width / 2, y,
+                             libtcod.BKGND_NONE, libtcod.CENTER,
+                             '{0}: {1}/{2}'.format(name, value, maximum))
+
+
+def render_all(ui, game, fov_recompute):
+    if fov_recompute:
+        # Recompute FOV if needed (i.e. the player moved)
+        libtcod.map_compute_fov(game.map.fov_map, game.player.pos.x, game.player.pos.y,
+                                TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
+
+        # Set tile background colors according to FOV
+        for y in range(game.map.height):
+            for x in range(game.map.width):
+                visible = game.map.is_in_fov(x, y)
+                wall = game.map.movement_blocked(x, y) and game.map.vision_blocked(x, y)
+                if not visible:
+                    if game.map.is_explored(x, y):
+                        color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
+                        libtcod.console_set_char_background(ui.console,
+                                                            x, y, color,
+                                                            libtcod.BKGND_SET)
+                else:
+                    if wall:
+                        color = COLOR_LIGHT_WALL
+                    elif game.map.vision_blocked(x, y):
+                        color = COLOR_LIGHT_GRASS
+                    else:
+                        color = COLOR_LIGHT_GROUND
+                    libtcod.console_set_char_background(ui.console,
+                                                        x, y, color,
+                                                        libtcod.BKGND_SET)
+                    game.map.mark_explored(x, y)
+
+    render_ordered = sorted(game.objects, key=lambda o: o.component(Graphics).render_order)
+    for game_object in render_ordered:
+        game_object.component(Graphics).draw(ui.console)
+
+    # Blit the contents of the game (non-GUI) console to the root console
+    libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
+
+    # Prepare to render the GUI panel
+    libtcod.console_set_default_background(ui.panel, libtcod.black)
+    libtcod.console_clear(ui.panel)
+
+    # Print game messages, one line at a time
+    y = 1
+    for (line, color) in game.messages:
+        libtcod.console_set_default_foreground(ui.panel, color)
+        libtcod.console_print_ex(ui.panel, MSG_X, y, libtcod.BKGND_NONE,
+                                 libtcod.LEFT, line)
+        y += 1
+
+    # Show player's stats
+    fighter = game.player.component(Fighter)
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
+                  fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
+    experience = game.player.component(Experience)
+    render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
+                  libtcod.green, libtcod.darkest_green)
+
+    # Show the dungeon level
+    libtcod.console_print_ex(ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Dungeon Level {}'.format(game.dungeon_level))
+
+    # Display names of objects under the mouse
+    names = get_names_under_mouse(ui.mouse, game.objects, game.map)
+    libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
+    libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+                             names)
+
+    # Blit the contents of the GUI panel to the root console
+    libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
+                         PANEL_Y)
+
+    libtcod.console_flush()
+    for game_object in game.objects:
+        game_object.component(Graphics).clear(ui.console)
+
+
+###############################################################################
+# Game Logic                                                                  #
+###############################################################################
 
 
 def move_player_or_attack(dx, dy, game):
@@ -267,17 +470,6 @@ def update_projectiles(game):
     return projectiles_found
 
 
-class Screen:
-    def __init__(self):
-        pass
-
-    def update(self):
-        pass
-
-    def render(self):
-        pass
-
-
 class DefaultScreen(Screen):
     def __init__(self, ui, game, factory):
         Screen.__init__(self)
@@ -298,127 +490,6 @@ class DefaultScreen(Screen):
                 ai = game_object.component(AI)
                 if ai:
                     ai.take_turn()
-        return False
-
-
-class OpenDoorAction(Action):
-    def __init__(self, door):
-        Action.__init__(self)
-        self.door = door
-
-    def on_perform(self):
-        self.door.open()
-        return ActionResult.SUCCESS
-
-
-class WalkAction(Action):
-    def __init__(self, direction):
-        Action.__init__(self)
-        self.direction = direction
-
-    def on_perform(self):
-        x = self.game.player.pos.x + self.direction.x
-        y = self.game.player.pos.y + self.direction.y
-        target = None
-        for game_object in self.game.objects:
-            if game_object.component(Fighter):
-                if game_object.pos.equal_to(x, y):
-                    target = game_object
-                    break
-
-        if target and target != self.actor:
-            return self.alternate(AttackAction(target))
-        else:
-            door = None
-            grass = None
-            for game_object in self.game.objects:
-                if game_object.component(Door):
-                    if game_object.pos.equal_to(x, y):
-                        door = game_object.component(Door)
-                elif game_object.component(Grass):
-                    if game_object.pos.equal_to(x, y):
-                        if not game_object.component(Grass).is_crushed:
-                            grass = game_object.component(Grass)
-
-                if door and grass:
-                    break
-
-            movement = self.game.player.component(Movement)
-            moved = movement.move(self.direction.x, self.direction.y) if movement else False
-            if moved:
-                if grass:
-                    grass.crush()
-            else:
-                if door:
-                    return self.alternate(OpenDoorAction(door))
-        return ActionResult.SUCCESS
-
-
-class PickUpAction(Action):
-    def __init__(self):
-        Action.__init__(self)
-
-    # TODO Do this properly; use self.actor not game.player
-    def on_perform(self):
-        # Pick up first item in the player's tile
-        for go in self.game.objects:
-            item = go.component(Item)
-            if item:
-                if go.pos.equals(self.game.player.pos):
-                    item.pick_up(self.game.player)
-        return ActionResult.SUCCESS
-
-
-class EngineScreen(Screen):
-    def __init__(self, ui, game, factory):
-        Screen.__init__(self)
-        self.game = game
-        self.ui = ui
-        self.factory = factory
-        self.fov_recompute = True
-        # TODO This logic can't be here
-        self.hero = Hero(game.player, game)
-        actors = [self.hero]
-        for go in self.game.objects:
-            if go.component(AI):
-                actors.append(Monster(go, self.game))
-        self.engine = GameEngine(actors)
-
-    def handle_input(self, keyboard):
-        action = None
-        key_char = chr(keyboard.c)
-        # TODO Implement all keybindings
-        if libtcod.KEY_ESCAPE == keyboard.vk:
-            return 'exit'
-        elif libtcod.KEY_UP == keyboard.vk:
-            action = WalkAction(Direction.NORTH)
-        elif libtcod.KEY_DOWN == keyboard.vk:
-            action = WalkAction(Direction.SOUTH)
-        elif libtcod.KEY_LEFT == keyboard.vk:
-            action = WalkAction(Direction.WEST)
-        elif libtcod.KEY_RIGHT == keyboard.vk:
-            action = WalkAction(Direction.EAST)
-        elif 'g' == key_char:
-            action = PickUpAction()
-        if action:
-            self.hero.next_action = action
-        return None
-
-    def render(self):
-        # TODO render effects
-        render_all(self.ui, self.game, self.fov_recompute)
-
-    def update(self):
-        if 'exit' == self.handle_input(self.ui.keyboard):
-            return True
-        result = self.engine.update()
-        # TODO Create Effects for Events and update them
-        # for event in result.events:
-        #     if EventType.HIT == event.type:
-        #         pass
-        #     elif EventType.BOLT == event.type:
-        #         pass
-
         return False
 
 

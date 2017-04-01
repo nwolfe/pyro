@@ -1,7 +1,6 @@
 import tcod as libtcod
 from textwrap import wrap
 from pyro.components import Fighter
-from pyro.ui import render_all
 from pyro.utilities import is_blocked
 from pyro.settings import MSG_WIDTH, MSG_HEIGHT
 
@@ -56,7 +55,7 @@ class Game:
             # objects under the mouse.
             libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
                                         ui.keyboard, ui.mouse)
-            render_all(ui, self, False)
+            ui.render_all(self, False)
 
             (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
