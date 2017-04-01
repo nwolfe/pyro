@@ -1,4 +1,4 @@
-from pyro.components import AI
+from pyro.components import AI, Fighter
 from pyro.energy import Energy, NORMAL_SPEED
 
 
@@ -25,6 +25,9 @@ class Actor:
 
     def finish_turn(self, action):
         self.energy.spend()
+
+    def create_melee_hit(self):
+        return None
 
 
 class Hero(Actor):
@@ -76,13 +79,17 @@ class Action:
         return ActionResult(alternate=action)
 
 
-# class LosAction(Action):
-#     def __init__(self, target_x, target_y):
-#         Action.__init__(self)
-#         self.target_x = target_x
-#         self.target_y = target_y
-#
-#     # def on_perform(self):
+class AttackAction(Action):
+    def __init__(self, defender):
+        Action.__init__(self)
+        self.defender = defender
+
+    def on_perform(self):
+        # TODO Use a Hit instead
+        # hit = self.actor.create_melee_hit()
+        # hit.perform(self, self.actor, self.defender)
+        self.actor.game.player.component(Fighter).attack(self.defender)
+        return ActionResult.SUCCESS
 
 
 class AIAdapterAction(Action):

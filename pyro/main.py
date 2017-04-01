@@ -1,6 +1,7 @@
 import shelve
 import tcod as libtcod
-from pyro.engine import Monster, GameEngine, Hero, Action, ActionResult, EventType
+from pyro.direction import Direction
+from pyro.engine import Monster, GameEngine, Hero, Action, ActionResult, AttackAction
 from pyro.objects import GameObjectFactory
 from pyro.map import make_map
 from pyro.game import Game
@@ -300,14 +301,56 @@ class DefaultScreen(Screen):
         return False
 
 
-class WalkAction(Action):
-    def __init__(self, dx, dy):
+class OpenDoorAction(Action):
+    def __init__(self, door):
         Action.__init__(self)
-        self.dx, self.dy = dx, dy
+        self.door = door
 
     def on_perform(self):
-        # TODO Inline move_player_or_attack
-        move_player_or_attack(self.dx, self.dy, self.game)
+        self.door.open()
+        return ActionResult.SUCCESS
+
+
+class WalkAction(Action):
+    def __init__(self, direction):
+        Action.__init__(self)
+        self.direction = direction
+
+    def on_perform(self):
+        x = self.game.player.pos.x + self.direction.x
+        y = self.game.player.pos.y + self.direction.y
+        target = None
+        for game_object in self.game.objects:
+            if game_object.component(Fighter):
+                if game_object.pos.equal_to(x, y):
+                    target = game_object
+                    break
+
+        if target and target != self.actor:
+            return self.alternate(AttackAction(target))
+        else:
+            door = None
+            grass = None
+            for game_object in self.game.objects:
+                if game_object.component(Door):
+                    if game_object.pos.equal_to(x, y):
+                        door = game_object.component(Door)
+                elif game_object.component(Grass):
+                    if game_object.pos.equal_to(x, y):
+                        if not game_object.component(Grass).is_crushed:
+                            grass = game_object.component(Grass)
+
+                if door and grass:
+                    break
+
+            movement = self.game.player.component(Movement)
+            moved = movement.move(self.direction.x, self.direction.y) if movement else False
+            if moved:
+                if grass:
+                    grass.crush()
+            else:
+                if door:
+                    return self.alternate(OpenDoorAction(door))
         return ActionResult.SUCCESS
 
 
@@ -348,13 +391,13 @@ class EngineScreen(Screen):
         if libtcod.KEY_ESCAPE == keyboard.vk:
             return 'exit'
         elif libtcod.KEY_UP == keyboard.vk:
-            action = WalkAction(0, -1)
+            action = WalkAction(Direction.NORTH)
         elif libtcod.KEY_DOWN == keyboard.vk:
-            action = WalkAction(0, 1)
+            action = WalkAction(Direction.SOUTH)
         elif libtcod.KEY_LEFT == keyboard.vk:
-            action = WalkAction(-1, 0)
+            action = WalkAction(Direction.WEST)
         elif libtcod.KEY_RIGHT == keyboard.vk:
-            action = WalkAction(1, 0)
+            action = WalkAction(Direction.EAST)
         elif 'g' == key_char:
             action = PickUpAction()
         if action:
