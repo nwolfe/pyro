@@ -8,17 +8,17 @@ class Movement(Component):
         Component.__init__(self, component_type=Movement)
 
     def move(self, dx, dy):
-        if not self.owner.game.is_blocked(self.owner.x + dx, self.owner.y + dy):
-            self.owner.x += dx
-            self.owner.y += dy
+        if not self.owner.game.is_blocked(self.owner.pos.x + dx, self.owner.pos.y + dy):
+            self.owner.pos.x += dx
+            self.owner.pos.y += dy
             return True
         else:
             return False
 
     def move_towards(self, target_x, target_y):
         # Vector from this object to the target, and distance
-        dx = target_x - self.owner.x
-        dy = target_y - self.owner.y
+        dx = target_x - self.owner.pos.x
+        dy = target_y - self.owner.pos.y
         distance = math.sqrt(dx ** 2 + dy ** 2)
 
         # Normalize it to length 1 (preserving direction), then round it and
@@ -40,9 +40,9 @@ class Movement(Component):
         # than fly around them.
         if not passthrough:
             for obj in self.owner.game.objects:
-                if obj.blocks and obj != self.owner and obj.x != target_x and obj.y != target_y:
+                if obj.blocks and obj != self.owner and obj.pos.x != target_x and obj.pos.y != target_y:
                     # Set the tile as a wall so it must be navigated around
-                    libtcod.map_set_properties(fov, obj.x, obj.y, isTrans=True, isWalk=False)
+                    libtcod.map_set_properties(fov, obj.pos.x, obj.pos.y, isTrans=True, isWalk=False)
 
         # Allocate an A* path
         # The 1.41 is the normal diagonal cost of moving, it can be set as 0.0
@@ -50,7 +50,7 @@ class Movement(Component):
         path = libtcod.path_new_using_map(fov, 1.41)
 
         # Compute the path between self's coordinates and the target's coordinates
-        libtcod.path_compute(path, self.owner.x, self.owner.y, target_x, target_y)
+        libtcod.path_compute(path, self.owner.pos.x, self.owner.pos.y, target_x, target_y)
 
         # Check if the path exists, and in this case, also the path is shorter
         # than 25 tiles. The path size matters if you want the monster to use
@@ -62,8 +62,8 @@ class Movement(Component):
             next_x, next_y = libtcod.path_walk(path, True)
             if next_x or next_y:
                 # Set self's coordinates to the next path tile
-                self.owner.x = next_x
-                self.owner.y = next_y
+                self.owner.pos.x = next_x
+                self.owner.pos.y = next_y
         else:
             # Keep the old move function as a backup so that if there are no
             # paths (for example, another monster blocks a corridor). It will

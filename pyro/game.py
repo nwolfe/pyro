@@ -61,7 +61,7 @@ class Game:
             (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
             if (ui.mouse.lbutton_pressed and self.map.is_in_fov(x, y)
-                    and (max_range is None or self.player.distance(x, y) <= max_range)):
+                    and (max_range is None or self.player.pos.distance(x, y) <= max_range)):
                 return x, y
 
             if ui.mouse.rbutton_pressed or ui.keyboard.vk == libtcod.KEY_ESCAPE:
@@ -79,7 +79,7 @@ class Game:
             for game_object in self.objects:
                 if game_object != self.player:
                     if game_object.component(Fighter):
-                        if game_object.x == x and game_object.y == y:
+                        if game_object.pos.equal_to(x, y):
                             return game_object
 
     def closest_monster(self, max_range):
@@ -89,9 +89,9 @@ class Game:
 
         for game_object in self.objects:
             if game_object != self.player and game_object.component(Fighter):
-                if self.map.is_in_fov(game_object.x, game_object.y):
+                if self.map.is_in_fov(game_object.pos.x, game_object.pos.y):
                     # Calculate distance between this object and the player
-                    dist = self.player.distance_to(game_object)
+                    dist = self.player.pos.distance_to(game_object.pos)
                     if dist < closest_dist:
                         closest_dist = dist
                         closest_enemy = game_object

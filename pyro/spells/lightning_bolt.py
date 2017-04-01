@@ -16,7 +16,7 @@ class LightningBolt(Spell):
         self.strength = settings.get('strength', self.strength)
 
     def in_range(self, caster, target):
-        return caster.distance_to(target) <= self.range
+        return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, caster, target):
         def on_hit(source, t):

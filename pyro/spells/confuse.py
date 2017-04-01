@@ -16,7 +16,7 @@ class Confuse(Spell):
         self.num_turns = settings.get('turns', self.num_turns)
 
     def in_range(self, caster, target):
-        return caster.distance_to(target) <= self.range
+        return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, caster, target):
         old_ai = target.component(AI)

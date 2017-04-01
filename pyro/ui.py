@@ -93,8 +93,7 @@ def get_names_under_mouse(mouse, objects, game_map):
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
     names = [obj.name for obj in objects
-             if obj.x == x and obj.y == y and
-             game_map.is_in_fov(obj.x, obj.y)]
+             if obj.pos.equal_to(x, y) and game_map.is_in_fov(obj.pos.x, obj.pos.y)]
     return ', '.join(names).capitalize()
 
 
@@ -124,7 +123,7 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
 def render_all(ui, game, fov_recompute):
     if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
-        libtcod.map_compute_fov(game.map.fov_map, game.player.x, game.player.y,
+        libtcod.map_compute_fov(game.map.fov_map, game.player.pos.x, game.player.pos.y,
                                 TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
 
         # Set tile background colors according to FOV

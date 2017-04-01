@@ -12,4 +12,4 @@ class Grass(Component):
     def crush(self):
         self.is_crushed = True
         self.owner.component(Graphics).glyph = self.crushed_glyph
-        self.owner.game.map.unblock_vision(self.owner.x, self.owner.y)
+        self.owner.game.map.unblock_vision(self.owner.pos.x, self.owner.pos.y)

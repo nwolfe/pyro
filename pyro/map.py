@@ -154,7 +154,8 @@ class LevelBuilder:
         self.map.block_vision(x, y)
         grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
         graphics = Graphics(glyph=':', color=libtcod.green, render_order=RENDER_ORDER_GRASS)
-        grass = GameObject(x, y, 'tall grass', components=[grass_comp, graphics])
+        grass = GameObject('tall grass', components=[grass_comp, graphics])
+        grass.pos.x, grass.pos.y = x, y
         self.game_objects.append(grass)
 
     def place_grass(self, room):
@@ -213,8 +214,8 @@ class LevelBuilder:
             if not is_blocked(self.map, self.game_objects, point.x, point.y):
                 choice = random_choice(creature_chances)
                 creature = self.game_object_factory.new_monster(choice)
-                creature.x = point.x
-                creature.y = point.y
+                creature.pos.x = point.x
+                creature.pos.y = point.y
                 self.game_objects.append(creature)
 
     def place_boss(self, room_x, room_y):
@@ -226,7 +227,7 @@ class LevelBuilder:
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
         boss = self.game_object_factory.new_monster(boss['name'])
         nearby = random_point_surrounding(Point(room_x, room_y))
-        boss.x, boss.y = nearby.x, nearby.y
+        boss.pos.x, boss.pos.y = nearby.x, nearby.y
         self.game_objects.append(boss)
 
     def place_items(self, room):
@@ -242,8 +243,8 @@ class LevelBuilder:
             if not is_blocked(self.map, self.game_objects, point.x, point.y):
                 choice = random_choice(item_chances)
                 item = self.game_object_factory.new_item(choice)
-                item.x = point.x
-                item.y = point.y
+                item.pos.x = point.x
+                item.pos.y = point.y
                 self.game_objects.append(item)
 
     def place_doors(self):
@@ -269,7 +270,8 @@ class LevelBuilder:
                         self.map.block_vision(x, y)
                         door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
                         graphics = Graphics(glyph='+', color=libtcod.white, render_order=RENDER_ORDER_DOOR)
-                        door = GameObject(x, y, 'door', components=[door_comp, graphics])
+                        door = GameObject('door', components=[door_comp, graphics])
+                        door.pos.x, door.pos.y = x, y
                         self.game_objects.append(door)
 
 
@@ -365,8 +367,8 @@ def make_map(player, dungeon_level, object_factory):
 
         if num_rooms == 0:
             # This is the first room, where the player starts at
-            player.x = new_x
-            player.y = new_y
+            player.pos.x = new_x
+            player.pos.y = new_y
         else:
             # Connect it to the previous room with a tunnel
 
@@ -395,7 +397,8 @@ def make_map(player, dungeon_level, object_factory):
     # Create stairs at the center of the last room
     graphics = Graphics(glyph='>', color=libtcod.white,
                         render_order=RENDER_ORDER_STAIRS, always_visible=True)
-    stairs = GameObject(new_x, new_y, 'stairs', components=[graphics])
+    stairs = GameObject('stairs', components=[graphics])
+    stairs.pos.x, stairs.pos.y = new_x, new_y
     objects.append(stairs)
 
     # Put a boss near the stairs

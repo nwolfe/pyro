@@ -12,12 +12,12 @@ from pyro.settings import *
 
 
 def move_player_or_attack(dx, dy, game):
-    x = game.player.x + dx
-    y = game.player.y + dy
+    x = game.player.pos.x + dx
+    y = game.player.pos.y + dy
     target = None
     for game_object in game.objects:
         if game_object.component(Fighter):
-            if game_object.x == x and game_object.y == y:
+            if game_object.pos.equal_to(x, y):
                 target = game_object
                 break
 
@@ -29,10 +29,10 @@ def move_player_or_attack(dx, dy, game):
         grass = None
         for game_object in game.objects:
             if game_object.component(Door):
-                if game_object.x == x and game_object.y == y:
+                if game_object.pos.equal_to(x, y):
                     door = game_object.component(Door)
             elif game_object.component(Grass):
-                if game_object.x == x and game_object.y == y:
+                if game_object.pos.equal_to(x, y):
                     if not game_object.component(Grass).is_crushed:
                         grass = game_object.component(Grass)
 
@@ -51,13 +51,15 @@ def move_player_or_attack(dx, dy, game):
 
 
 def close_nearest_door(game):
-    x = game.player.x
-    y = game.player.y
+    x = game.player.pos.x
+    y = game.player.pos.y
     for game_object in game.objects:
         if game_object.component(Door):
-            close_x = (game_object.x == x or game_object.x == x-1 or game_object.x == x+1)
-            close_y = (game_object.y == y or game_object.y == y-1 or game_object.y == y+1)
-            player_on_door = (game_object.x == x and game_object.y == y)
+            other_x = game_object.pos.x
+            other_y = game_object.pos.y
+            close_x = (other_x == x or other_x == x-1 or other_x == x+1)
+            close_y = (other_y == y or other_y == y-1 or other_y == y+1)
+            player_on_door = (other_x == x and other_y == y)
             if close_x and close_y and not player_on_door:
                 game_object.component(Door).close()
                 break
@@ -116,7 +118,7 @@ def handle_keys(ui, game, object_factory):
         for game_object in game.objects:
             item = game_object.component(Item)
             if item:
-                if game_object.x == game.player.x and game_object.y == game.player.y:
+                if game_object.pos.equals(game.player.pos):
                     item.pick_up(game.player)
                     break
         return False, None
@@ -138,7 +140,7 @@ def handle_keys(ui, game, object_factory):
         return False, None
     elif libtcod.KEY_ENTER == ui.keyboard.vk:
         # Go down the stairs to the next level
-        if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
+        if game.stairs.pos.equals(game.player.pos):
             next_dungeon_level(game, object_factory)
             libtcod.console_clear(ui.console)
         return True, None
@@ -197,7 +199,7 @@ def new_game(object_factory):
                            power=PLAYER_DEFAULT_POWER)
     player_inventory = Inventory(items=[])
     graphics = Graphics(glyph='@', color=libtcod.white)
-    player = GameObject(0, 0, 'Player', blocks=True,
+    player = GameObject('Player', blocks=True,
                         components=[Movement(), exp_comp, fighter_comp, player_inventory, graphics],
                         listeners=[PlayerDeath()])
 
@@ -319,7 +321,7 @@ class PickUpAction(Action):
         for go in self.game.objects:
             item = go.component(Item)
             if item:
-                if go.x == self.game.player.x and go.y == self.game.player.y:
+                if go.pos.equals(self.game.player.pos):
                     item.pick_up(self.game.player)
         return ActionResult.SUCCESS
 

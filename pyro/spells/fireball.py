@@ -18,14 +18,14 @@ class Fireball(Spell):
         self.radius = settings.get('radius', self.radius)
 
     def in_range(self, caster, target):
-        return caster.distance_to(target) <= self.range
+        return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, caster, target):
         def on_hit(source, t):
             source.game.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
             for game_object in source.game.objects:
-                if game_object.distance(t.x, t.y) <= self.radius:
+                if game_object.pos.distance(t.pos.x, t.pos.y) <= self.radius:
                     fighter = game_object.component(Fighter)
                     if fighter:
                         source.game.message('The {0} gets burned for {1} hit points.'.format(
@@ -50,7 +50,7 @@ class Fireball(Spell):
             source.game.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
             for game_object in game.objects:
-                if game_object.distance(target_x, target_y) <= self.radius:
+                if game_object.pos.distance(target_x, target_y) <= self.radius:
                     fighter = game_object.component(Fighter)
                     if fighter:
                         game.message('The {0} gets burned for {1} hit points.'.format(

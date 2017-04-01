@@ -10,11 +10,11 @@ class Projectile(Component):
 
     def set_owner(self, game_object):
         Component.set_owner(self, game_object)
-        game_object.x = self.source.x
-        game_object.y = self.source.y
+        game_object.pos.x = self.source.pos.x
+        game_object.pos.y = self.source.pos.y
 
     def destroy(self):
-        self.owner.remove_from_game()
+        self.owner.game.remove_object(self.owner)
 
     def tick(self):
         pass
@@ -26,12 +26,12 @@ class TargetProjectile(Projectile):
         self.target = target
 
     def tick(self):
-        if self.owner.x == self.target.x and self.owner.y == self.target.y:
+        if self.owner.pos.equals(self.target.pos):
             self.on_hit_fn(self.source, self.target)
             self.destroy()
         else:
             self.owner.component(Movement).move_astar(
-                self.target.x, self.target.y, passthrough=True)
+                self.target.pos.x, self.target.pos.y, passthrough=True)
 
 
 class PositionProjectile(Projectile):
@@ -41,7 +41,7 @@ class PositionProjectile(Projectile):
         self.target_y = target_y
 
     def tick(self):
-        if self.owner.x == self.target_x and self.owner.y == self.target_y:
+        if self.owner.pos.equal_to(self.target_x, self.target_y):
             self.on_hit_fn(self.source, self.target_x, self.target_y)
             self.destroy()
         else:

@@ -7,12 +7,12 @@ class Aggressive(AI):
     def take_turn(self):
         monster = self.owner
         player = monster.game.player
-        if monster.game.map.is_in_fov(monster.x, monster.y):
+        if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
             # Move towards player if far away
-            if monster.distance_to(player) >= 2:
+            if monster.pos.distance_to(player.pos) >= 2:
                 movement = monster.component(Movement)
                 if movement:
-                    movement.move_astar(player.x, player.y)
+                    movement.move_astar(player.pos.x, player.pos.y)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
