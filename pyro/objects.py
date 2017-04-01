@@ -1,7 +1,7 @@
 import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement
+from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement, Graphics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.events import EventListener
@@ -40,11 +40,11 @@ def monster_death(monster, attacker, game):
     else:
         game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
     attacker.component(Experience).xp += exp.xp
-    monster.glyph = '%'
-    monster.color = libtcod.dark_red
-    monster.blocks = False
-    monster.render_order = RENDER_ORDER_CORPSE
+    monster.component(Graphics).glyph = '%'
+    monster.component(Graphics).color = libtcod.dark_red
+    monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
     monster.name = 'Remains of {0}'.format(monster.name)
+    monster.blocks = False
     monster.remove_component(Fighter)
     monster.remove_component(AI)
 
@@ -66,19 +66,18 @@ def instantiate_spell(template):
 
 def instantiate_monster(template):
     name = template['name']
-    glyph = template['glyph']
-    color = getattr(libtcod, template['color'])
     ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = Experience(template['experience'])
     fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
-    components = [fighter_comp, ai_comp, exp_comp, Movement()]
+    graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
+    components = [fighter_comp, ai_comp, exp_comp, graphics_comp, Movement()]
     if 'spell' in template:
         spell = instantiate_spell(template['spell'])
         components.append(Spellcaster([spell]))
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
         components.append(Spellcaster(spells))
-    return GameObject(glyph=glyph, name=name, color=color, blocks=True,
+    return GameObject(name=name, blocks=True,
                       components=components, listeners=[MonsterDeath()])
 
 
@@ -104,6 +103,7 @@ def instantiate_item(template):
     name = template['name']
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
+    graphics = Graphics(glyph, color, RENDER_ORDER_ITEM)
     if 'slot' in template:
         equipment = Equipment(slot=template['slot'])
         if 'power' in template:
@@ -112,15 +112,11 @@ def instantiate_item(template):
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        return GameObject(glyph=glyph, name=name, color=color,
-                          render_order=RENDER_ORDER_ITEM,
-                          components=[equipment])
+        return GameObject(name=name, components=[graphics, equipment])
     elif 'on_use' in template:
         spell = instantiate_spell(ITEM_USES[template['on_use']])
         item = Item(on_use=SpellItemUse(spell))
-        return GameObject(glyph=glyph, name=name, color=color,
-                          render_order=RENDER_ORDER_ITEM,
-                          components=[item])
+        return GameObject(name=name, components=[graphics, item])
 
 
 def make_item(name, item_templates):

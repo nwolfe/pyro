@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, Item, Equipment, Experience
+from pyro.components import Fighter, Item, Equipment, Experience, Graphics
 from pyro.settings import *
 
 
@@ -150,9 +150,9 @@ def render_all(ui, game, fov_recompute):
                                                         libtcod.BKGND_SET)
                     game.map.mark_explored(x, y)
 
-    render_ordered = sorted(game.objects, key=lambda obj: obj.render_order)
+    render_ordered = sorted(game.objects, key=lambda o: o.component(Graphics).render_order)
     for game_object in render_ordered:
-        game_object.draw(ui.console)
+        game_object.component(Graphics).draw(ui.console)
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
@@ -193,4 +193,4 @@ def render_all(ui, game, fov_recompute):
 
     libtcod.console_flush()
     for game_object in game.objects:
-        game_object.clear(ui.console)
+        game_object.component(Graphics).clear(ui.console)

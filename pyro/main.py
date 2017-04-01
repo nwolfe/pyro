@@ -6,7 +6,7 @@ from pyro.map import make_map
 from pyro.game import Game
 from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
 from pyro.gameobject import GameObject
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Grass, Projectile, Movement
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Graphics, Grass, Projectile, Movement
 from pyro.events import EventListener
 from pyro.settings import *
 
@@ -185,9 +185,8 @@ class PlayerDeath(EventListener):
         if event == 'death':
             player.game.message('You died!')
             player.game.state = 'dead'
-
-            player.glyph = '%'
-            player.color = libtcod.dark_red
+            player.component(Graphics).glyph = '%'
+            player.component(Graphics).color = libtcod.dark_red
 
 
 def new_game(object_factory):
@@ -197,8 +196,9 @@ def new_game(object_factory):
                            defense=PLAYER_DEFAULT_DEFENSE,
                            power=PLAYER_DEFAULT_POWER)
     player_inventory = Inventory(items=[])
-    player = GameObject(0, 0, '@', 'Player', libtcod.white, blocks=True,
-                        components=[Movement(), exp_comp, fighter_comp, player_inventory],
+    graphics = Graphics(glyph='@', color=libtcod.white)
+    player = GameObject(0, 0, 'Player', blocks=True,
+                        components=[Movement(), exp_comp, fighter_comp, player_inventory, graphics],
                         listeners=[PlayerDeath()])
 
     # Generate map (not drawn to the screen yet)

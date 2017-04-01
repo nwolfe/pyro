@@ -1,6 +1,6 @@
 import tcod as libtcod
 from pyro.gameobject import GameObject
-from pyro.components import Door, Grass
+from pyro.components import Door, Grass, Graphics
 from pyro.utilities import is_blocked
 from pyro.settings import *
 
@@ -153,9 +153,8 @@ class LevelBuilder:
     def place_grass_tile(self, x, y):
         self.map.block_vision(x, y)
         grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
-        grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
-                           render_order=RENDER_ORDER_GRASS,
-                           components=[grass_comp])
+        graphics = Graphics(glyph=':', color=libtcod.green, render_order=RENDER_ORDER_GRASS)
+        grass = GameObject(x, y, 'tall grass', components=[grass_comp, graphics])
         self.game_objects.append(grass)
 
     def place_grass(self, room):
@@ -269,9 +268,8 @@ class LevelBuilder:
                         self.map.block_movement(x, y)
                         self.map.block_vision(x, y)
                         door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
-                        door = GameObject(x, y, '+', 'door', libtcod.white,
-                                          render_order=RENDER_ORDER_DOOR,
-                                          components=[door_comp])
+                        graphics = Graphics(glyph='+', color=libtcod.white, render_order=RENDER_ORDER_DOOR)
+                        door = GameObject(x, y, 'door', components=[door_comp, graphics])
                         self.game_objects.append(door)
 
 
@@ -395,8 +393,9 @@ def make_map(player, dungeon_level, object_factory):
     builder.place_doors()
 
     # Create stairs at the center of the last room
-    stairs = GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
+    graphics = Graphics(glyph='>', color=libtcod.white,
                         render_order=RENDER_ORDER_STAIRS, always_visible=True)
+    stairs = GameObject(new_x, new_y, 'stairs', components=[graphics])
     objects.append(stairs)
 
     # Put a boss near the stairs

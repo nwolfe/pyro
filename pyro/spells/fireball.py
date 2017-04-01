@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile, PositionProjectile, Movement
+from pyro.components import Fighter, TargetProjectile, PositionProjectile, Movement, Graphics
 from pyro.gameobject import GameObject
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
@@ -32,9 +32,9 @@ class Fireball(Spell):
                             game_object.name, self.strength), libtcod.orange)
                         fighter.take_damage(self.strength, source)
         fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components=[fireball, Movement()], blocks=False,
-                         game=caster.game)
+        graphics = Graphics(glyph='@', color=libtcod.dark_orange)
+        obj = GameObject(name='Fireball', components=[fireball, graphics, Movement()],
+                         blocks=False, game=caster.game)
         caster.game.add_object(obj)
         return self.strength
 
@@ -57,7 +57,7 @@ class Fireball(Spell):
                             game_object.name, self.strength), libtcod.orange)
                         fighter.take_damage(self.strength, source)
         fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
-        obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components=[fireball, Movement()], blocks=False,
-                         game=game)
+        graphics = Graphics(glyph='@', color=libtcod.dark_orange)
+        obj = GameObject(name='Fireball', components=[fireball, graphics, Movement()],
+                         blocks=False, game=game)
         game.add_object(obj)
