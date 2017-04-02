@@ -16,8 +16,8 @@ class Spell:
     def in_range(self, caster, target):
         pass
 
-    def cast(self, caster, target):
+    def cast(self, action, caster, target):
         pass
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, game, ui):
         pass

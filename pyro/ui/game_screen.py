@@ -48,11 +48,19 @@ class EngineScreen(Screen):
         if 'exit' == self.handle_input(self.ui.keyboard):
             return True
 
+        if self.game.state == 'dead':
+            return False
+
         result = self.engine.update()
 
         for event in result.events:
             if EventType.HIT == event.type:
                 self.effects.append(HitEffect(event.actor))
+            elif EventType.DEATH == event.type:
+                if event.actor == self.game.player:
+                    player_death(self.game)
+                else:
+                    monster_death(event.actor, event.other, self.game)
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)
 
@@ -136,6 +144,32 @@ class EngineScreen(Screen):
         libtcod.console_flush()
         for game_object in self.game.objects:
             game_object.component(Graphics).clear(self.ui.console)
+
+
+def player_death(game):
+    game.message('You died!')
+    game.state = 'dead'
+    game.player.component(Graphics).glyph = '%'
+    game.player.component(Graphics).color = libtcod.dark_red
+
+
+def monster_death(monster, attacker, game):
+    # Transform it into a nasty corpse!
+    # It doesn't block, can't be attacked, and doesn't move
+    exp = monster.component(Experience)
+    if attacker == game.player:
+        game.message('The {0} is dead! You gain {1} experience points.'.
+                     format(monster.name, exp.xp), libtcod.orange)
+    else:
+        game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
+    attacker.component(Experience).xp += exp.xp
+    monster.component(Graphics).glyph = '%'
+    monster.component(Graphics).color = libtcod.dark_red
+    monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
+    monster.name = 'Remains of {0}'.format(monster.name)
+    monster.blocks = False
+    monster.remove_component(Fighter)
+    monster.remove_component(AI)
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,

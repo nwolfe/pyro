@@ -1,6 +1,5 @@
 from pyro.components import AI
-from pyro.engine import Actor
-from pyro.engine.actions import Action, ActionResult
+from pyro.engine import Actor, Action, ActionResult
 
 
 class Monster(Actor):
@@ -20,5 +19,5 @@ class AIAdapterAction(Action):
 
     def on_perform(self):
         if self.monster_ai:
-            self.monster_ai.take_turn()
+            self.monster_ai.take_turn(self)
         return ActionResult.SUCCESS

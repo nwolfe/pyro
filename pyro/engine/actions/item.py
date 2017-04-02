@@ -1,5 +1,5 @@
 from pyro.components import Item
-from pyro.engine.actions import Action, ActionResult
+from pyro.engine import Action, ActionResult
 
 
 class PickUpAction(Action):

@@ -20,7 +20,7 @@ class Fireball(Spell):
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range
 
-    def cast(self, caster, target):
+    def cast(self, action, caster, target):
         def on_hit(source, t):
             source.game.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
@@ -30,7 +30,7 @@ class Fireball(Spell):
                     if fighter:
                         source.game.message('The {0} gets burned for {1} hit points.'.format(
                             game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(self.strength, source)
+                        fighter.take_damage(action, self.strength, source)
         fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         graphics = Graphics(glyph='@', color=libtcod.dark_orange)
         obj = GameObject(name='Fireball', components=[fireball, graphics, Movement()],
@@ -38,7 +38,7 @@ class Fireball(Spell):
         caster.game.add_object(obj)
         return self.strength
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, game, ui):
         # Ask the player for a target tile to throw a fireball at
         msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
         game.message(msg, libtcod.light_cyan)
@@ -55,7 +55,7 @@ class Fireball(Spell):
                     if fighter:
                         game.message('The {0} gets burned for {1} hit points.'.format(
                             game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(self.strength, source)
+                        fighter.take_damage(action, self.strength, source)
         fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
         graphics = Graphics(glyph='@', color=libtcod.dark_orange)
         obj = GameObject(name='Fireball', components=[fireball, graphics, Movement()],

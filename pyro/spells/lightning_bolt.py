@@ -18,9 +18,9 @@ class LightningBolt(Spell):
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range
 
-    def cast(self, caster, target):
+    def cast(self, action, caster, target):
         def on_hit(source, t):
-            t.component(Fighter).take_damage(self.strength, source)
+            t.component(Fighter).take_damage(action, self.strength, source)
         bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
         graphics = Graphics(glyph='*', color=libtcod.blue)
         obj = GameObject(name='Bolt of Lightning', components=[bolt, graphics, Movement()],
@@ -28,7 +28,7 @@ class LightningBolt(Spell):
         caster.game.add_object(obj)
         return self.strength
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, game, ui):
         # Find the closest enemy (inside a maximum range) and damage it
         monster = game.closest_monster(self.range)
         if monster is None:
@@ -40,4 +40,4 @@ class LightningBolt(Spell):
         msg += 'The damage is {1} hit points.'
         msg = msg.format(monster.name, self.strength)
         game.message(msg, libtcod.light_blue)
-        self.cast(player, monster)
+        self.cast(action, player, monster)

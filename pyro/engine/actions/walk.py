@@ -1,5 +1,6 @@
 from pyro.components import Fighter, Door, Grass, Movement
-from pyro.engine.actions import Action, ActionResult, AttackAction
+from pyro.engine import Action, ActionResult
+from pyro.engine.actions import AttackAction
 
 
 class WalkAction(Action):

@@ -5,6 +5,6 @@ class AI(Component):
     def __init__(self):
         Component.__init__(self, component_type=AI)
 
-    def take_turn(self):
+    def take_turn(self, action):
         """Perform a single game turn."""
         pass

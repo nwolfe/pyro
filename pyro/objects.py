@@ -1,11 +1,10 @@
 import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement, Graphics
+from pyro.components import Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement, Graphics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
-from pyro.events import EventListener
-from pyro.settings import RENDER_ORDER_CORPSE, RENDER_ORDER_ITEM
+from pyro.settings import RENDER_ORDER_ITEM
 
 
 MONSTER_AI_CLASSES = dict(
@@ -30,31 +29,6 @@ ITEM_USES = dict(
 )
 
 
-def monster_death(monster, attacker, game):
-    # Transform it into a nasty corpse!
-    # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.component(Experience)
-    if attacker == game.player:
-        game.message('The {0} is dead! You gain {1} experience points.'.
-                     format(monster.name, exp.xp), libtcod.orange)
-    else:
-        game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
-    attacker.component(Experience).xp += exp.xp
-    monster.component(Graphics).glyph = '%'
-    monster.component(Graphics).color = libtcod.dark_red
-    monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
-    monster.name = 'Remains of {0}'.format(monster.name)
-    monster.blocks = False
-    monster.remove_component(Fighter)
-    monster.remove_component(AI)
-
-
-class MonsterDeath(EventListener):
-    def handle_event(self, source, event, context):
-        if event == 'death':
-            monster_death(source, context['attacker'], source.game)
-
-
 def instantiate_spell(template):
     if type(template) is dict:
         spell = SPELLS[template['name']]()
@@ -77,8 +51,7 @@ def instantiate_monster(template):
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
         components.append(Spellcaster(spells))
-    return GameObject(name=name, blocks=True,
-                      components=components, listeners=[MonsterDeath()])
+    return GameObject(name=name, blocks=True, components=components)
 
 
 def make_monster(name, monster_templates):

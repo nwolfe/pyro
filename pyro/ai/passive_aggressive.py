@@ -18,7 +18,7 @@ class PassiveAggressive(AI, EventListener):
         if event == 'take_damage':
             source.set_component(Aggressive())
 
-    def take_turn(self):
+    def take_turn(self, action):
         # 25% chance to move one square in a random direction
         if libtcod.random_get_int(0, 1, 4) == 1:
             movement = self.owner.component(Movement)

@@ -4,7 +4,7 @@ from pyro.components import AI, Fighter, Movement
 class Aggressive(AI):
     """Pursue and attack the player once in sight."""
 
-    def take_turn(self):
+    def take_turn(self, action):
         monster = self.owner
         player = monster.game.player
         if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
@@ -16,4 +16,4 @@ class Aggressive(AI):
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
-                monster.component(Fighter).attack(player)
+                monster.component(Fighter).attack(action, player)

@@ -15,10 +15,10 @@ class Heal(Spell):
     def in_range(self, caster, target):
         return caster == target
 
-    def cast(self, caster, target):
+    def cast(self, action, caster, target):
         target.component(Fighter).heal(self.strength)
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, game, ui):
         # Heal the player
         fighter = player.component(Fighter)
         if fighter.hp == fighter.max_hp():
@@ -26,4 +26,4 @@ class Heal(Spell):
             return 'cancelled'
 
         game.message('Your wounds start to feel better!', libtcod.light_violet)
-        self.cast(player, player)
+        self.cast(action, player, player)

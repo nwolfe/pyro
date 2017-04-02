@@ -1,7 +1,6 @@
 import shelve
 import tcod as libtcod
 from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Projectile, Movement
-from pyro.events import EventListener
 from pyro.game import Game
 from pyro.gameobject import GameObject
 from pyro.map import make_map
@@ -226,7 +225,7 @@ def move_player_or_attack(dx, dy, game):
                 break
 
     if target:
-        game.player.component(Fighter).attack(target)
+        game.player.component(Fighter).attack(None, target)
         return False, 'attack'
     else:
         door = None
@@ -386,15 +385,6 @@ def check_player_level_up(game, console):
             fighter.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
-class PlayerDeath(EventListener):
-    def handle_event(self, player, event, context):
-        if event == 'death':
-            player.game.message('You died!')
-            player.game.state = 'dead'
-            player.component(Graphics).glyph = '%'
-            player.component(Graphics).color = libtcod.dark_red
-
-
 def new_game(object_factory):
     # Create the player
     exp_comp = Experience(xp=0, level=1)
@@ -404,8 +394,7 @@ def new_game(object_factory):
     player_inventory = Inventory(items=[])
     graphics = Graphics(glyph='@', color=libtcod.white)
     player = GameObject('Player', blocks=True,
-                        components=[Movement(), exp_comp, fighter_comp, player_inventory, graphics],
-                        listeners=[PlayerDeath()])
+                        components=[Movement(), exp_comp, fighter_comp, player_inventory, graphics])
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
@@ -489,7 +478,7 @@ class DefaultScreen(Screen):
             for game_object in self.game.objects:
                 ai = game_object.component(AI)
                 if ai:
-                    ai.take_turn()
+                    ai.take_turn(action=None)
         return False
 
 

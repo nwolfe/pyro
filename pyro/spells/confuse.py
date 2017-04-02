@@ -18,12 +18,12 @@ class Confuse(Spell):
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range
 
-    def cast(self, caster, target):
+    def cast(self, action, caster, target):
         old_ai = target.component(AI)
         new_ai = Confused(restore_ai=old_ai, num_turns=self.num_turns)
         target.set_component(new_ai)
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, game, ui):
         # Ask the player for a target to confuse
         game.message('Left-click an enemy to confuse it, or right-click to cancel.',
                      libtcod.light_cyan)
@@ -31,6 +31,6 @@ class Confuse(Spell):
         if monster is None:
             return 'cancelled'
 
-        self.cast(player, monster)
+        self.cast(action, player, monster)
         msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
         game.message(msg.format(monster.name), libtcod.light_green)

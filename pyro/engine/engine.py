@@ -69,10 +69,11 @@ class Event:
 
 class EventType:
     BOLT = None
+    DEATH = None
     HIT = None
     def __init__(self, name):
         self.name = name
 
 EventType.BOLT = EventType('bolt')
+EventType.DEATH = EventType('death')
 EventType.HIT = EventType('hit')
-

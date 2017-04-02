@@ -12,7 +12,7 @@ class Confused(AI):
         self.restore_ai = restore_ai
         self.num_turns = num_turns
 
-    def take_turn(self):
+    def take_turn(self, action):
         if self.restore_ai is None or self.num_turns > 0:
             # Move in a random direction
             movement = self.owner.component(Movement)
