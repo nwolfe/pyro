@@ -4,6 +4,7 @@ from pyro.components import AI, Experience, Fighter, Graphics
 from pyro.direction import Direction
 from pyro.engine import Hero, Monster, GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction
+from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
 
@@ -16,8 +17,13 @@ class EngineScreen(Screen):
         self.factory = factory
         self.fov_recompute = True
         self.effects = []
+        self.hero = None
+        self.engine = None
+        self.initialize_engine()
+
+    def initialize_engine(self):
         # TODO This logic can't be here
-        self.hero = Hero(game.player, game)
+        self.hero = Hero(self.game.player, self.game)
         actors = [self.hero]
         for go in self.game.objects:
             if go.component(AI):
@@ -38,6 +44,10 @@ class EngineScreen(Screen):
             action = WalkAction(Direction.WEST)
         elif libtcod.KEY_RIGHT == keyboard.vk:
             action = WalkAction(Direction.EAST)
+        elif libtcod.KEY_ENTER == keyboard.vk:
+            if self.game.stairs.pos.equals(self.game.player.pos):
+                self.next_dungeon_level()
+                libtcod.console_clear(self.ui.console)
         elif 'g' == key_char:
             action = PickUpAction()
         if action:
@@ -144,6 +154,31 @@ class EngineScreen(Screen):
         libtcod.console_flush()
         for game_object in self.game.objects:
             game_object.component(Graphics).clear(self.ui.console)
+
+    def next_dungeon_level(self):
+        # Advance to the next level
+        # Heal the player by 50%
+        self.game.message('You take a moment to rest, and recover your strength.',
+                          libtcod.light_violet)
+        fighter = self.game.player.component(Fighter)
+        fighter.heal(fighter.max_hp() / 2)
+
+        msg = 'After a rare moment of peace, you descend deeper into the heart '
+        msg += 'of the dungeon...'
+        self.game.message(msg, libtcod.red)
+        self.game.dungeon_level += 1
+
+        (game_map, objects, stairs) = make_map(
+            self.game.player, self.game.dungeon_level, self.factory)
+
+        self.game.map = game_map
+        self.game.objects = objects
+        self.game.stairs = stairs
+
+        for game_object in self.game.objects:
+            game_object.game = self.game
+
+        self.initialize_engine()
 
 
 def player_death(game):
