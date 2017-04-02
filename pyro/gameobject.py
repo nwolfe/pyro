@@ -1,10 +1,8 @@
-from pyro.events import EventSource
 from pyro.position import Position
 
 
-class GameObject(EventSource):
-    def __init__(self, name=None, blocks=False, components=None, game=None, listeners=None):
-        EventSource.__init__(self, listeners)
+class GameObject:
+    def __init__(self, name=None, blocks=False, components=None, game=None):
         self.pos = Position()
         self.name = name
         self.blocks = blocks
@@ -25,4 +23,4 @@ class GameObject(EventSource):
 
     def remove_component(self, component_type):
         if component_type in self.components:
-            self.components.pop(component_type).remove_owner(self)
+            self.components.pop(component_type)

@@ -31,7 +31,6 @@ class Fighter(Component):
     def take_damage(self, action, damage, attacker):
         if damage > 0:
             self.hp -= damage
-            self.owner.fire_event('take_damage', dict(attacker=attacker))
 
         if self.hp <= 0:
             action.add_event(Event(EventType.DEATH, actor=self.owner, other=attacker))
