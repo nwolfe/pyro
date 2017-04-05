@@ -4,7 +4,7 @@ from pyro.engine import Actor, Action, ActionResult
 
 class Monster(Actor):
     def __init__(self, monster_object, game):
-        Actor.__init__(self, game, None)
+        Actor.__init__(self, game)
         self.monster_object = monster_object
 
     def on_get_action(self):

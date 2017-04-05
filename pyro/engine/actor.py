@@ -2,10 +2,9 @@ from pyro.energy import Energy, NORMAL_SPEED
 
 
 class Actor:
-    def __init__(self, game, pos):
+    def __init__(self, game):
         self.energy = Energy()
         self.game = game
-        self.pos = pos
 
     def needs_input(self):
         return False
