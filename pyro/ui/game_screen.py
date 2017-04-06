@@ -23,7 +23,7 @@ class EngineScreen(Screen):
 
     def initialize_engine(self):
         # TODO This logic can't be here
-        self.hero = Hero(self.game.player, self.game)
+        self.hero = Hero(self.game)
         actors = [self.hero]
         for go in self.game.objects:
             if go.component(AI):
