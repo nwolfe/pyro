@@ -1,6 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile, PositionProjectile, Movement, Graphics
-from pyro.gameobject import GameObject
+from pyro.components import Fighter
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
@@ -21,21 +20,15 @@ class Fireball(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
-        def on_hit(source, t):
-            source.game.message('The fireball explodes, burning everything within {0} tiles!'.
-                                format(self.radius), libtcod.orange)
-            for game_object in source.game.objects:
-                if game_object.pos.distance(t.pos.x, t.pos.y) <= self.radius:
-                    fighter = game_object.component(Fighter)
-                    if fighter:
-                        source.game.message('The {0} gets burned for {1} hit points.'.format(
-                            game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(action, self.strength, source)
-        fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        graphics = Graphics(glyph='@', color=libtcod.dark_orange)
-        obj = GameObject(name='Fireball', components=[fireball, graphics, Movement()],
-                         blocks=False, game=caster.game)
-        caster.game.add_object(obj)
+        caster.game.message('The fireball explodes, burning everything within {0} tiles!'.
+                            format(self.radius), libtcod.orange)
+        for game_object in caster.game.objects:
+            if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
+                fighter = game_object.component(Fighter)
+                if fighter:
+                    caster.game.message('The {0} gets burned for {1} hit points.'.format(
+                        game_object.name, self.strength), libtcod.orange)
+                    fighter.take_damage(action, self.strength, caster)
         return self.strength
 
     def player_cast(self, action, player, game, ui):
@@ -46,18 +39,12 @@ class Fireball(Spell):
         if x is None:
             return 'cancelled'
 
-        def on_hit(source, target_x, target_y):
-            source.game.message('The fireball explodes, burning everything within {0} tiles!'.
-                                format(self.radius), libtcod.orange)
-            for game_object in game.objects:
-                if game_object.pos.distance(target_x, target_y) <= self.radius:
-                    fighter = game_object.component(Fighter)
-                    if fighter:
-                        game.message('The {0} gets burned for {1} hit points.'.format(
-                            game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(action, self.strength, source)
-        fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
-        graphics = Graphics(glyph='@', color=libtcod.dark_orange)
-        obj = GameObject(name='Fireball', components=[fireball, graphics, Movement()],
-                         blocks=False, game=game)
-        game.add_object(obj)
+        player.game.message('The fireball explodes, burning everything within {0} tiles!'.
+                            format(self.radius), libtcod.orange)
+        for game_object in game.objects:
+            if game_object.pos.distance(x, y) <= self.radius:
+                fighter = game_object.component(Fighter)
+                if fighter:
+                    game.message('The {0} gets burned for {1} hit points.'.format(
+                        game_object.name, self.strength), libtcod.orange)
+                    fighter.take_damage(action, self.strength, player)

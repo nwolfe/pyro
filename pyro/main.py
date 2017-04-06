@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Projectile, Movement
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Movement
 from pyro.game import Game
 from pyro.gameobject import GameObject
 from pyro.map import make_map
@@ -449,16 +449,6 @@ def next_dungeon_level(game, object_factory):
         game_object.game = game
 
 
-def update_projectiles(game):
-    projectiles_found = False
-    for game_object in game.objects:
-        projectile = game_object.component(Projectile)
-        if projectile:
-            projectile.tick()
-            projectiles_found = True
-    return projectiles_found
-
-
 class DefaultScreen(Screen):
     def __init__(self, ui, game, factory):
         Screen.__init__(self)
@@ -491,9 +481,6 @@ def play_game(game, ui, object_factory):
     screen = EngineScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
         screen.render()
-
-        while update_projectiles(game):
-            render_all(ui, game, False)
 
         check_player_level_up(game, ui.console)
 

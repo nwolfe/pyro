@@ -1,6 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile, Movement, Graphics
-from pyro.gameobject import GameObject
+from pyro.components import Fighter
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 
@@ -19,13 +18,7 @@ class LightningBolt(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
-        def on_hit(source, t):
-            t.component(Fighter).take_damage(action, self.strength, source)
-        bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        graphics = Graphics(glyph='*', color=libtcod.blue)
-        obj = GameObject(name='Bolt of Lightning', components=[bolt, graphics, Movement()],
-                         blocks=False, game=caster.game)
-        caster.game.add_object(obj)
+        target.component(Fighter).take_damage(action, self.strength, caster)
         return self.strength
 
     def player_cast(self, action, player, game, ui):
