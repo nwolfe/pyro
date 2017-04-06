@@ -56,3 +56,19 @@ class OpenDoorAction(Action):
         return ActionResult.SUCCESS
 
 
+class CloseDoorAction(Action):
+    def on_perform(self):
+        x = self.game.player.pos.x
+        y = self.game.player.pos.y
+        for game_object in self.game.objects:
+            if game_object.component(Door):
+                other_x = game_object.pos.x
+                other_y = game_object.pos.y
+                close_x = (other_x == x or other_x == x-1 or other_x == x+1)
+                close_y = (other_y == y or other_y == y-1 or other_y == y+1)
+                player_on_door = (other_x == x and other_y == y)
+                if close_x and close_y and not player_on_door:
+                    game_object.component(Door).close()
+                    break
+        return ActionResult.SUCCESS
+

@@ -3,7 +3,7 @@ from pyro.ui import Screen
 from pyro.components import AI, Experience, Fighter, Graphics, Physics
 from pyro.direction import Direction
 from pyro.engine import Hero, Monster, GameEngine, EventType
-from pyro.engine.actions import PickUpAction, WalkAction
+from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
@@ -50,6 +50,8 @@ class EngineScreen(Screen):
                 libtcod.console_clear(self.ui.console)
         elif 'g' == key_char:
             action = PickUpAction()
+        elif 'r' == key_char:
+            action = CloseDoorAction()
         if action:
             self.hero.next_action = action
         return None
