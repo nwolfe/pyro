@@ -1,6 +1,6 @@
 import tcod as libtcod
 from pyro.ui import Screen
-from pyro.components import AI, Experience, Fighter, Graphics
+from pyro.components import AI, Experience, Fighter, Graphics, Physics
 from pyro.direction import Direction
 from pyro.engine import Hero, Monster, GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction
@@ -198,11 +198,11 @@ def monster_death(monster, attacker, game):
     else:
         game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
     attacker.component(Experience).xp += exp.xp
+    monster.name = 'Remains of {0}'.format(monster.name)
     monster.component(Graphics).glyph = '%'
     monster.component(Graphics).color = libtcod.dark_red
     monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
-    monster.name = 'Remains of {0}'.format(monster.name)
-    monster.blocks = False
+    monster.component(Physics).blocks = False
     monster.remove_component(Fighter)
     monster.remove_component(AI)
 

@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Movement
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Movement, Physics
 from pyro.game import Game
 from pyro.gameobject import GameObject
 from pyro.map import make_map
@@ -387,14 +387,15 @@ def check_player_level_up(game, console):
 
 def new_game(object_factory):
     # Create the player
-    exp_comp = Experience(xp=0, level=1)
-    fighter_comp = Fighter(hp=PLAYER_DEFAULT_HP,
-                           defense=PLAYER_DEFAULT_DEFENSE,
-                           power=PLAYER_DEFAULT_POWER)
-    player_inventory = Inventory(items=[])
-    graphics = Graphics(glyph='@', color=libtcod.white)
-    player = GameObject('Player', blocks=True,
-                        components=[Movement(), exp_comp, fighter_comp, player_inventory, graphics])
+    components = [
+        Experience(xp=0, level=1),
+        Fighter(hp=PLAYER_DEFAULT_HP, defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER),
+        Graphics(glyph='@', color=libtcod.white),
+        Inventory(items=[]),
+        Movement(),
+        Physics(blocks=True)
+    ]
+    player = GameObject('Player', components)
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1

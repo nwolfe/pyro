@@ -1,6 +1,6 @@
 import tcod as libtcod
 from pyro.gameobject import GameObject
-from pyro.components import Door, Grass, Graphics
+from pyro.components import Door, Grass, Graphics, Physics
 from pyro.utilities import is_blocked
 from pyro.settings import *
 
@@ -154,7 +154,7 @@ class LevelBuilder:
         self.map.block_vision(x, y)
         grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
         graphics = Graphics(glyph=':', color=libtcod.green, render_order=RENDER_ORDER_GRASS)
-        grass = GameObject('tall grass', components=[grass_comp, graphics])
+        grass = GameObject('tall grass', components=[Physics(), grass_comp, graphics])
         grass.pos.x, grass.pos.y = x, y
         self.game_objects.append(grass)
 
@@ -270,7 +270,7 @@ class LevelBuilder:
                         self.map.block_vision(x, y)
                         door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
                         graphics = Graphics(glyph='+', color=libtcod.white, render_order=RENDER_ORDER_DOOR)
-                        door = GameObject('door', components=[door_comp, graphics])
+                        door = GameObject('door', components=[Physics(), door_comp, graphics])
                         door.pos.x, door.pos.y = x, y
                         self.game_objects.append(door)
 
@@ -397,7 +397,7 @@ def make_map(player, dungeon_level, object_factory):
     # Create stairs at the center of the last room
     graphics = Graphics(glyph='>', color=libtcod.white,
                         render_order=RENDER_ORDER_STAIRS, always_visible=True)
-    stairs = GameObject('stairs', components=[graphics])
+    stairs = GameObject('stairs', components=[Physics(), graphics])
     stairs.pos.x, stairs.pos.y = new_x, new_y
     objects.append(stairs)
 

@@ -1,7 +1,7 @@
 import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement, Graphics
+from pyro.components import Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import RENDER_ORDER_ITEM
@@ -44,14 +44,14 @@ def instantiate_monster(template):
     exp_comp = Experience(template['experience'])
     fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
     graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
-    components = [fighter_comp, ai_comp, exp_comp, graphics_comp, Movement()]
+    components = [fighter_comp, ai_comp, exp_comp, graphics_comp, Movement(), Physics(blocks=True)]
     if 'spell' in template:
         spell = instantiate_spell(template['spell'])
         components.append(Spellcaster([spell]))
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
         components.append(Spellcaster(spells))
-    return GameObject(name=name, blocks=True, components=components)
+    return GameObject(name=name, components=components)
 
 
 def make_monster(name, monster_templates):
@@ -77,6 +77,7 @@ def instantiate_item(template):
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
     graphics = Graphics(glyph, color, RENDER_ORDER_ITEM)
+    components = [Physics(), graphics]
     if 'slot' in template:
         equipment = Equipment(slot=template['slot'])
         if 'power' in template:
@@ -85,11 +86,12 @@ def instantiate_item(template):
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        return GameObject(name=name, components=[graphics, equipment])
+        components.append(equipment)
     elif 'on_use' in template:
         spell = instantiate_spell(ITEM_USES[template['on_use']])
         item = Item(on_use=SpellItemUse(spell))
-        return GameObject(name=name, components=[graphics, item])
+        components.append(item)
+    return GameObject(name=name, components=components)
 
 
 def make_item(name, item_templates):

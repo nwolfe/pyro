@@ -1,6 +1,7 @@
 import math
 import tcod as libtcod
 from pyro.component import Component
+from pyro.components import Physics
 
 
 class Movement(Component):
@@ -40,7 +41,8 @@ class Movement(Component):
         # than fly around them.
         if not passthrough:
             for obj in self.owner.game.objects:
-                if obj.blocks and obj != self.owner and obj.pos.x != target_x and obj.pos.y != target_y:
+                blocks = obj.component(Physics).blocks
+                if blocks and obj != self.owner and obj.pos.x != target_x and obj.pos.y != target_y:
                     # Set the tile as a wall so it must be navigated around
                     libtcod.map_set_properties(fov, obj.pos.x, obj.pos.y, isTrans=True, isWalk=False)
 

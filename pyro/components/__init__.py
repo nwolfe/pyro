@@ -1,5 +1,6 @@
 from ai import AI
 from graphics import Graphics
+from physics import Physics
 from door import Door
 from experience import Experience
 from fighter import Fighter

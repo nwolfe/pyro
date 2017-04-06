@@ -1,3 +1,4 @@
+from pyro.components import Physics
 
 
 def is_blocked(game_map, objects, x, y):
@@ -7,7 +8,8 @@ def is_blocked(game_map, objects, x, y):
 
     # Now check for any blocking objects
     for game_object in objects:
-        if game_object.blocks and game_object.pos.equal_to(x, y):
+        blocks = game_object.component(Physics).blocks
+        if blocks and game_object.pos.equal_to(x, y):
             return True
 
     return False
