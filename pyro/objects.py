@@ -1,11 +1,12 @@
 import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement, Graphics, Physics
+from pyro.components import Experience, Fighter, Item, Equipment, Inventory, Grass, Door
+from pyro.components import SpellItemUse, Spellcaster, Movement, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
-from pyro.settings import RENDER_ORDER_ITEM
-
+from pyro.settings import RENDER_ORDER_ITEM, RENDER_ORDER_GRASS, RENDER_ORDER_DOOR, RENDER_ORDER_STAIRS
+from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
 
 MONSTER_AI_CLASSES = dict(
     aggressive=Aggressive,
@@ -98,6 +99,53 @@ def make_item(name, item_templates):
     for template in item_templates:
         if template['name'] == name:
             return instantiate_item(template)
+
+
+def make_player():
+    components = [
+        Experience(xp=0, level=1),
+        Fighter(hp=PLAYER_DEFAULT_HP,
+                defense=PLAYER_DEFAULT_DEFENSE,
+                power=PLAYER_DEFAULT_POWER),
+        Graphics(glyph='@', color=libtcod.white),
+        Inventory(items=[]),
+        Movement(),
+        Physics(blocks=True)
+    ]
+    return GameObject('Player', components)
+
+
+def make_grass(x, y):
+    components = [
+        Physics(),
+        Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.'),
+        Graphics(glyph=':', color=libtcod.green, render_order=RENDER_ORDER_GRASS)
+    ]
+    grass = GameObject('tall grass', components=components)
+    grass.pos.x, grass.pos.y = x, y
+    return grass
+
+
+def make_door(x, y):
+    components = [
+        Physics(),
+        Door(is_open=False, opened_glyph='-', closed_glyph='+'),
+        Graphics(glyph='+', color=libtcod.white, render_order=RENDER_ORDER_DOOR)
+    ]
+    door = GameObject('door', components=components)
+    door.pos.x, door.pos.y = x, y
+    return door
+
+
+def make_stairs(x, y):
+    components = [
+        Physics(),
+        Graphics(glyph='>', color=libtcod.white,
+                 render_order=RENDER_ORDER_STAIRS, always_visible=True)
+    ]
+    stairs = GameObject('stairs', components=components)
+    stairs.pos.x, stairs.pos.y = x, y
+    return stairs
 
 
 class GameObjectFactory:

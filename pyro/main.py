@@ -1,11 +1,13 @@
 import shelve
 import tcod as libtcod
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Movement, Physics
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Movement
 from pyro.game import Game
-from pyro.gameobject import GameObject
 from pyro.map import make_map
-from pyro.objects import GameObjectFactory
-from pyro.settings import *
+from pyro.objects import GameObjectFactory, make_player
+from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, INVENTORY_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
+from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
+from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, CHARACTER_SCREEN_WIDTH, MAP_WIDTH, MAP_HEIGHT
+from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui import Screen, EngineScreen
 
 
@@ -387,15 +389,7 @@ def check_player_level_up(game, console):
 
 def new_game(object_factory):
     # Create the player
-    components = [
-        Experience(xp=0, level=1),
-        Fighter(hp=PLAYER_DEFAULT_HP, defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER),
-        Graphics(glyph='@', color=libtcod.white),
-        Inventory(items=[]),
-        Movement(),
-        Physics(blocks=True)
-    ]
-    player = GameObject('Player', components)
+    player = make_player()
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1

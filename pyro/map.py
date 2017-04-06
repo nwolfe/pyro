@@ -1,8 +1,7 @@
 import tcod as libtcod
-from pyro.gameobject import GameObject
-from pyro.components import Door, Grass, Graphics, Physics
+from pyro.objects import make_grass, make_door, make_stairs
 from pyro.utilities import is_blocked
-from pyro.settings import *
+from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
 
 
 class Point:
@@ -152,10 +151,7 @@ class LevelBuilder:
 
     def place_grass_tile(self, x, y):
         self.map.block_vision(x, y)
-        grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
-        graphics = Graphics(glyph=':', color=libtcod.green, render_order=RENDER_ORDER_GRASS)
-        grass = GameObject('tall grass', components=[Physics(), grass_comp, graphics])
-        grass.pos.x, grass.pos.y = x, y
+        grass = make_grass(x, y)
         self.game_objects.append(grass)
 
     def place_grass(self, room):
@@ -268,10 +264,7 @@ class LevelBuilder:
                     if (wall_above and wall_below) or (wall_left and wall_right):
                         self.map.block_movement(x, y)
                         self.map.block_vision(x, y)
-                        door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
-                        graphics = Graphics(glyph='+', color=libtcod.white, render_order=RENDER_ORDER_DOOR)
-                        door = GameObject('door', components=[Physics(), door_comp, graphics])
-                        door.pos.x, door.pos.y = x, y
+                        door = make_door(x, y)
                         self.game_objects.append(door)
 
 
@@ -395,10 +388,7 @@ def make_map(player, dungeon_level, object_factory):
     builder.place_doors()
 
     # Create stairs at the center of the last room
-    graphics = Graphics(glyph='>', color=libtcod.white,
-                        render_order=RENDER_ORDER_STAIRS, always_visible=True)
-    stairs = GameObject('stairs', components=[Physics(), graphics])
-    stairs.pos.x, stairs.pos.y = new_x, new_y
+    stairs = make_stairs(new_x, new_y)
     objects.append(stairs)
 
     # Put a boss near the stairs
