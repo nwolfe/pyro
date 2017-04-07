@@ -1,4 +1,4 @@
-from pyro.components import Fighter, Door, Grass, Movement
+from pyro.components import Fighter, Door, Grass, Movement, Graphics
 from pyro.engine import Action, ActionResult
 from pyro.engine.actions import AttackAction
 
@@ -52,7 +52,9 @@ class OpenDoorAction(Action):
         self.door = door
 
     def on_perform(self):
-        self.door.open()
+        self.door.owner.component(Graphics).glyph = '-'
+        self.game.map.unblock_movement(self.door.owner.pos.x, self.door.owner.pos.y)
+        self.game.map.unblock_vision(self.door.owner.pos.x, self.door.owner.pos.y)
         return ActionResult.SUCCESS
 
 
@@ -68,7 +70,9 @@ class CloseDoorAction(Action):
                 close_y = (other_y == y or other_y == y-1 or other_y == y+1)
                 player_on_door = (other_x == x and other_y == y)
                 if close_x and close_y and not player_on_door:
-                    game_object.component(Door).close()
+                    game_object.component(Graphics).glyph = '+'
+                    self.game.map.block_movement(other_x, other_y)
+                    self.game.map.block_vision(other_x, other_y)
                     break
         return ActionResult.SUCCESS
 

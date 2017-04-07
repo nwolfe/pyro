@@ -129,7 +129,7 @@ def make_grass(x, y):
 def make_door(x, y):
     components = [
         Physics(),
-        Door(is_open=False, opened_glyph='-', closed_glyph='+'),
+        Door(opened_glyph='-', closed_glyph='+'),
         Graphics(glyph='+', color=libtcod.white, render_order=RENDER_ORDER_DOOR)
     ]
     door = GameObject('door', components=components)
