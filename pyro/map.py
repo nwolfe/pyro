@@ -51,9 +51,9 @@ class Map:
     def __init__(self, height, width):
         self.height = height
         self.width = width
-        self.game_map = [[Tile(blocked=True)
-                          for _ in range(height)]
-                         for _ in range(width)]
+        self.tiles = [[Tile(blocked=True)
+                       for _ in range(height)]
+                      for _ in range(width)]
         self.fov_map = self.make_fov_map()
 
     def make_fov_map(self):
@@ -62,8 +62,8 @@ class Map:
         for y in range(self.height):
             for x in range(self.width):
                 libtcod.map_set_properties(fov_map, x, y,
-                                           not self.game_map[x][y].block_sight,
-                                           not self.game_map[x][y].blocked)
+                                           not self.tiles[x][y].block_sight,
+                                           not self.tiles[x][y].blocked)
         return fov_map
 
     def is_in_fov(self, x, y):
@@ -75,30 +75,30 @@ class Map:
         return x_in_bounds and y_in_bounds
 
     def block_movement(self, x, y):
-        self.game_map[x][y].blocked = True
+        self.tiles[x][y].blocked = True
 
     def unblock_movement(self, x, y):
-        self.game_map[x][y].blocked = False
+        self.tiles[x][y].blocked = False
 
     def movement_blocked(self, x, y):
-        return self.game_map[x][y].blocked
+        return self.tiles[x][y].blocked
 
     def block_vision(self, x, y):
-        self.game_map[x][y].block_sight = True
+        self.tiles[x][y].block_sight = True
         libtcod.map_set_properties(self.fov_map, x, y, isTrans=False, isWalk=False)
 
     def unblock_vision(self, x, y):
-        self.game_map[x][y].block_sight = False
+        self.tiles[x][y].block_sight = False
         libtcod.map_set_properties(self.fov_map, x, y, isTrans=True, isWalk=True)
 
     def vision_blocked(self, x, y):
-        return self.game_map[x][y].block_sight
+        return self.tiles[x][y].block_sight
 
     def is_explored(self, x, y):
-        return self.game_map[x][y].explored
+        return self.tiles[x][y].explored
 
     def mark_explored(self, x, y):
-        self.game_map[x][y].explored = True
+        self.tiles[x][y].explored = True
 
 
 class LevelBuilder:
