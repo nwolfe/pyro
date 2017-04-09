@@ -1,4 +1,5 @@
-from pyro.components import Fighter, Door, Grass, Movement, Graphics
+from pyro.components import Fighter, Movement
+from pyro.direction import Direction
 from pyro.engine import Action, ActionResult
 from pyro.engine.actions import AttackAction
 
@@ -9,6 +10,7 @@ class WalkAction(Action):
         self.direction = direction
 
     def on_perform(self):
+        # See if there is an actor there
         x = self.game.player.pos.x + self.direction.x
         y = self.game.player.pos.y + self.direction.y
         target = None
@@ -20,59 +22,43 @@ class WalkAction(Action):
 
         if target and target != self.actor:
             return self.alternate(AttackAction(target))
-        else:
-            door = None
-            grass = None
-            for game_object in self.game.objects:
-                if game_object.component(Door):
-                    if game_object.pos.equal_to(x, y):
-                        door = game_object.component(Door)
-                elif game_object.component(Grass):
-                    if game_object.pos.equal_to(x, y):
-                        if not game_object.component(Grass).is_crushed:
-                            grass = game_object.component(Grass)
 
-                if door and grass:
-                    break
+        # See if it's a door
+        if self.game.map.tiles[x][y].type.opens_to:
+            return self.alternate(OpenDoorAction(x, y))
 
-            movement = self.game.player.component(Movement)
-            moved = movement.move(self.direction.x, self.direction.y) if movement else False
-            if moved:
-                if grass:
-                    grass.crush()
-            else:
-                if door:
-                    return self.alternate(OpenDoorAction(door))
+        # Try moving there
+        movement = self.game.player.component(Movement)
+        if movement.move(self.direction.x, self.direction.y):
+            # Step on the tile (i.e. tall grass becomes crushed grass)
+            tile = self.game.map.tiles[x][y]
+            if tile.type.steps_to:
+                tile.type = tile.type.steps_to
+                self.game.map.unblock_vision(x, y)
+
         return ActionResult.SUCCESS
 
 
 class OpenDoorAction(Action):
-    def __init__(self, door):
+    def __init__(self, x, y):
         Action.__init__(self)
-        self.door = door
+        self.x, self.y = x, y
 
     def on_perform(self):
-        self.door.owner.component(Graphics).glyph = '-'
-        self.game.map.unblock_movement(self.door.owner.pos.x, self.door.owner.pos.y)
-        self.game.map.unblock_vision(self.door.owner.pos.x, self.door.owner.pos.y)
+        tile = self.game.map.tiles[self.x][self.y]
+        tile.type = tile.type.opens_to
+        self.game.map.unblock_vision(self.x, self.y)
         return ActionResult.SUCCESS
 
 
 class CloseDoorAction(Action):
     def on_perform(self):
-        x = self.game.player.pos.x
-        y = self.game.player.pos.y
-        for game_object in self.game.objects:
-            if game_object.component(Door):
-                other_x = game_object.pos.x
-                other_y = game_object.pos.y
-                close_x = (other_x == x or other_x == x-1 or other_x == x+1)
-                close_y = (other_y == y or other_y == y-1 or other_y == y+1)
-                player_on_door = (other_x == x and other_y == y)
-                if close_x and close_y and not player_on_door:
-                    game_object.component(Graphics).glyph = '+'
-                    self.game.map.block_movement(other_x, other_y)
-                    self.game.map.block_vision(other_x, other_y)
-                    break
+        for direction in Direction.ALL:
+            x = self.game.player.pos.x + direction.x
+            y = self.game.player.pos.y + direction.y
+            tile = self.game.map.tiles[x][y]
+            if tile.type.closes_to:
+                tile.type = tile.type.closes_to
+                self.game.map.block_vision(x, y)
+                break
         return ActionResult.SUCCESS
-

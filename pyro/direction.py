@@ -10,6 +10,7 @@ class Direction:
     SOUTHWEST = None
     WEST = None
     NORTHWEST = None
+    ALL = None
 
     def __init__(self, x, y):
         self.x, self.y = x, y
@@ -24,3 +25,7 @@ Direction.SOUTH = Direction(0, 1)
 Direction.SOUTHWEST = Direction(-1, 1)
 Direction.WEST = Direction(-1, 0)
 Direction.NORTHWEST = Direction(-1, -1)
+Direction.ALL = [Direction.NORTH, Direction.NORTHEAST,
+                 Direction.EAST, Direction.SOUTHEAST,
+                 Direction.SOUTH, Direction.SOUTHWEST,
+                 Direction.WEST, Direction.NORTHWEST]

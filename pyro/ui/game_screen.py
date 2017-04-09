@@ -79,33 +79,29 @@ class EngineScreen(Screen):
         return False
 
     def render(self):
+        # TODO this isn't right
         if self.fov_recompute:
             # Recompute FOV if needed (i.e. the player moved)
             libtcod.map_compute_fov(self.game.map.fov_map, self.game.player.pos.x, self.game.player.pos.y,
                                     TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
 
-            # Set tile background colors according to FOV
-            for y in range(self.game.map.height):
-                for x in range(self.game.map.width):
-                    visible = self.game.map.is_in_fov(x, y)
-                    wall = self.game.map.movement_blocked(x, y) and self.game.map.vision_blocked(x, y)
-                    if not visible:
-                        if self.game.map.is_explored(x, y):
-                            color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
-                            libtcod.console_set_char_background(self.ui.console,
-                                                                x, y, color,
-                                                                libtcod.BKGND_SET)
-                    else:
-                        if wall:
-                            color = COLOR_LIGHT_WALL
-                        elif self.game.map.vision_blocked(x, y):
-                            color = COLOR_LIGHT_GRASS
-                        else:
-                            color = COLOR_LIGHT_GROUND
-                        libtcod.console_set_char_background(self.ui.console,
-                                                            x, y, color,
+        # TODO is the more to this?
+        # Draw tiles
+        for y in range(self.game.map.height):
+            for x in range(self.game.map.width):
+                tile = self.game.map.tiles[x][y]
+                visible = self.game.map.is_in_fov(x, y)
+                if not visible:
+                    if tile.explored:
+                        libtcod.console_set_char_background(self.ui.console, x, y, tile.type.appearance.unlit.bg_color,
                                                             libtcod.BKGND_SET)
-                        self.game.map.mark_explored(x, y)
+                else:
+                    tile.explored = True
+                    glyph = tile.type.appearance.lit
+                    libtcod.console_set_char_background(self.ui.console, x, y, glyph.bg_color, libtcod.BKGND_SET)
+                    if glyph.char:
+                        libtcod.console_set_default_foreground(self.ui.console, glyph.fg_color)
+                        libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
 
         # Draw game objects
         render_ordered = sorted(self.game.objects, key=lambda o: o.component(Graphics).render_order)
@@ -154,8 +150,9 @@ class EngineScreen(Screen):
                              PANEL_Y)
 
         libtcod.console_flush()
-        for game_object in self.game.objects:
-            game_object.component(Graphics).clear(self.ui.console)
+        for y in range(self.game.map.height):
+            for x in range(self.game.map.width):
+                libtcod.console_put_char(self.ui.console, x, y, ' ', libtcod.BKGND_NONE)
 
     def next_dungeon_level(self):
         # Advance to the next level

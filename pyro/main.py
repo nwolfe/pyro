@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Door, Graphics, Grass, Movement
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Graphics, Movement
 from pyro.game import Game
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
@@ -232,17 +232,17 @@ def move_player_or_attack(dx, dy, game):
     else:
         door = None
         grass = None
-        for game_object in game.objects:
-            if game_object.component(Door):
-                if game_object.pos.equal_to(x, y):
-                    door = game_object.component(Door)
-            elif game_object.component(Grass):
-                if game_object.pos.equal_to(x, y):
-                    if not game_object.component(Grass).is_crushed:
-                        grass = game_object.component(Grass)
-
-            if door and grass:
-                break
+        # for game_object in game.objects:
+        #     if game_object.component(Door):
+        #         if game_object.pos.equal_to(x, y):
+        #             door = game_object.component(Door)
+        #     elif game_object.component(Grass):
+        #         if game_object.pos.equal_to(x, y):
+        #             if not game_object.component(Grass).is_crushed:
+        #                 grass = game_object.component(Grass)
+        #
+        #     if door and grass:
+        #         break
 
         movement = game.player.component(Movement)
         moved = movement.move(dx, dy) if movement else False
@@ -258,16 +258,16 @@ def move_player_or_attack(dx, dy, game):
 def close_nearest_door(game):
     x = game.player.pos.x
     y = game.player.pos.y
-    for game_object in game.objects:
-        if game_object.component(Door):
-            other_x = game_object.pos.x
-            other_y = game_object.pos.y
-            close_x = (other_x == x or other_x == x-1 or other_x == x+1)
-            close_y = (other_y == y or other_y == y-1 or other_y == y+1)
-            player_on_door = (other_x == x and other_y == y)
-            if close_x and close_y and not player_on_door:
-                game_object.component(Door).close()
-                break
+    # for game_object in game.objects:
+    #     if game_object.component(Door):
+    #         other_x = game_object.pos.x
+    #         other_y = game_object.pos.y
+    #         close_x = (other_x == x or other_x == x-1 or other_x == x+1)
+    #         close_y = (other_y == y or other_y == y-1 or other_y == y+1)
+    #         player_on_door = (other_x == x and other_y == y)
+    #         if close_x and close_y and not player_on_door:
+    #             game_object.component(Door).close()
+    #             break
 
 
 def show_character_info(console, game):
