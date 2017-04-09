@@ -30,11 +30,11 @@ class WalkAction(Action):
         # Try moving there
         movement = self.game.player.component(Movement)
         if movement.move(self.direction.x, self.direction.y):
+            self.game.map.dirty_visibility()
             # Step on the tile (i.e. tall grass becomes crushed grass)
             tile = self.game.map.tiles[x][y]
             if tile.type.steps_to:
                 tile.type = tile.type.steps_to
-                self.game.map.unblock_vision(x, y)
 
         return ActionResult.SUCCESS
 
@@ -47,7 +47,7 @@ class OpenDoorAction(Action):
     def on_perform(self):
         tile = self.game.map.tiles[self.x][self.y]
         tile.type = tile.type.opens_to
-        self.game.map.unblock_vision(self.x, self.y)
+        self.game.map.dirty_visibility()
         return ActionResult.SUCCESS
 
 
@@ -59,6 +59,6 @@ class CloseDoorAction(Action):
             tile = self.game.map.tiles[x][y]
             if tile.type.closes_to:
                 tile.type = tile.type.closes_to
-                self.game.map.block_vision(x, y)
+                self.game.map.dirty_visibility()
                 break
         return ActionResult.SUCCESS

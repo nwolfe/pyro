@@ -3,6 +3,7 @@ from pyro.objects import make_stairs
 from pyro.utilities import is_blocked
 from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
 from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
+from pyro.settings import TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 
 
 class Point:
@@ -130,19 +131,33 @@ class Map:
                        for _ in range(height)]
                       for _ in range(width)]
         self.fov_map = None
+        self.visibility_dirty = False
 
-    def make_fov_map(self):
-        # Create the FOV map according to the generated map
-        fov_map = libtcod.map_new(self.width, self.height)
+    def __refresh_fov(self, fov_map):
         for y in range(self.height):
             for x in range(self.width):
                 libtcod.map_set_properties(fov_map, x, y,
                                            self.tiles[x][y].transparent,
                                            self.tiles[x][y].passable)
+
+    def make_fov_map(self):
+        # Create the FOV map according to the generated map
+        fov_map = libtcod.map_new(self.width, self.height)
+        self.__refresh_fov(fov_map)
         return fov_map
 
     def is_in_fov(self, x, y):
         return libtcod.map_is_in_fov(self.fov_map, x, y)
+
+    def dirty_visibility(self):
+        self.visibility_dirty = True
+
+    def refresh_visibility(self, pos):
+        if self.visibility_dirty:
+            self.__refresh_fov(self.fov_map)
+            libtcod.map_compute_fov(self.fov_map, pos.x, pos.y,
+                                    TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
+            self.visibility_dirty = False
 
     def is_on_map(self, x, y):
         x_in_bounds = 0 <= x < self.width
@@ -151,12 +166,6 @@ class Map:
 
     def movement_blocked(self, x, y):
         return not self.tiles[x][y].passable
-
-    def block_vision(self, x, y):
-        libtcod.map_set_properties(self.fov_map, x, y, isTrans=False, isWalk=False)
-
-    def unblock_vision(self, x, y):
-        libtcod.map_set_properties(self.fov_map, x, y, isTrans=True, isWalk=True)
 
     def vision_blocked(self, x, y):
         return not self.tiles[x][y].transparent
@@ -180,6 +189,7 @@ class LevelBuilder:
 
     def finalize(self):
         self.map.fov_map = self.map.make_fov_map()
+        self.map.dirty_visibility()
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True

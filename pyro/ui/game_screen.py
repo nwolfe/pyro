@@ -15,7 +15,6 @@ class EngineScreen(Screen):
         self.game = game
         self.ui = ui
         self.factory = factory
-        self.fov_recompute = True
         self.effects = []
         self.hero = None
         self.engine = None
@@ -63,7 +62,7 @@ class EngineScreen(Screen):
         if self.game.state == 'dead':
             return False
 
-        result = self.engine.update()
+        result = self.engine.update(self.game)
 
         for event in result.events:
             if EventType.HIT == event.type:
@@ -79,13 +78,7 @@ class EngineScreen(Screen):
         return False
 
     def render(self):
-        # TODO this isn't right
-        if self.fov_recompute:
-            # Recompute FOV if needed (i.e. the player moved)
-            libtcod.map_compute_fov(self.game.map.fov_map, self.game.player.pos.x, self.game.player.pos.y,
-                                    TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
-
-        # TODO is the more to this?
+        # TODO is there more to this?
         # Draw tiles
         for y in range(self.game.map.height):
             for x in range(self.game.map.width):

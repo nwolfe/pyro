@@ -7,13 +7,14 @@ class GameEngine:
         self.spend_energy_on_failure = True
         self.stop_after_every_process = False
 
-    def update(self):
+    def update(self, game):
         game_result = GameResult()
         while True:
             actor = self.__current_actor__()
             # If we are still waiting for input for the actor, just return
             if actor.energy.can_take_turn() and actor.needs_input():
                 return game_result
+            game.map.refresh_visibility(game.player.pos)
             game_result.made_progress = True
             # All pending actions are done, so advance to the next tick
             # until an actor moves
