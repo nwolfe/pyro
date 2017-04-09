@@ -345,9 +345,9 @@ def handle_keys(ui, game, object_factory):
         return False, None
     elif libtcod.KEY_ENTER == ui.keyboard.vk:
         # Go down the stairs to the next level
-        if game.stairs.pos.equals(game.player.pos):
-            next_dungeon_level(game, object_factory)
-            libtcod.console_clear(ui.console)
+        # if game.stairs.pos.equals(game.player.pos):
+        #     next_dungeon_level(game, object_factory)
+        #     libtcod.console_clear(ui.console)
         return True, None
     elif key_char == 'c':
         show_character_info(ui.console, game)
@@ -393,11 +393,11 @@ def new_game(object_factory):
 
     # Generate map (not drawn to the screen yet)
     dungeon_level = 1
-    (game_map, objects, stairs) = make_map(player, dungeon_level, object_factory)
+    (game_map, objects) = make_map(player, dungeon_level, object_factory)
 
     messages = []
 
-    game = Game('playing', game_map, objects, stairs, player, messages, dungeon_level)
+    game = Game('playing', game_map, objects, player, messages, dungeon_level)
 
     object_factory.game = game
 
@@ -434,11 +434,10 @@ def next_dungeon_level(game, object_factory):
     game.message(msg, libtcod.red)
     game.dungeon_level += 1
 
-    (game_map, objects, stairs) = make_map(game.player, game.dungeon_level, object_factory)
+    (game_map, objects) = make_map(game.player, game.dungeon_level, object_factory)
 
     game.map = game_map
     game.objects = objects
-    game.stairs = stairs
 
     for game_object in game.objects:
         game_object.game = game
@@ -495,7 +494,7 @@ def save_game(game):
     save_file['player_index'] = game.objects.index(game.player)
     save_file['messages'] = game.messages
     save_file['state'] = game.state
-    save_file['stairs_index'] = game.objects.index(game.stairs)
+    # save_file['stairs_index'] = game.objects.index(game.stairs)
     save_file['dungeon_level'] = game.dungeon_level
     save_file.close()
 
@@ -508,11 +507,11 @@ def load_game():
     player = objects[save_file['player_index']]
     messages = save_file['messages']
     state = save_file['state']
-    stairs = objects[save_file['stairs_index']]
+    # stairs = objects[save_file['stairs_index']]
     dungeon_level = save_file['dungeon_level']
     save_file.close()
 
-    return Game(state, game_map, objects, stairs, player, messages, dungeon_level)
+    return Game(state, game_map, objects, player, messages, dungeon_level)
 
 
 def main_menu(ui):

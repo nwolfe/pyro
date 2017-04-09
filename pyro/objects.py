@@ -5,7 +5,7 @@ from pyro.components import Experience, Fighter, Item, Equipment, Inventory
 from pyro.components import SpellItemUse, Spellcaster, Movement, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
-from pyro.settings import RENDER_ORDER_ITEM, RENDER_ORDER_STAIRS
+from pyro.settings import RENDER_ORDER_ITEM
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
 
 MONSTER_AI_CLASSES = dict(
@@ -113,17 +113,6 @@ def make_player():
         Physics(blocks=True)
     ]
     return GameObject('Player', components)
-
-
-def make_stairs(x, y):
-    components = [
-        Physics(),
-        Graphics(glyph='>', color=libtcod.white,
-                 render_order=RENDER_ORDER_STAIRS, always_visible=True)
-    ]
-    stairs = GameObject('stairs', components=components)
-    stairs.pos.x, stairs.pos.y = x, y
-    return stairs
 
 
 class GameObjectFactory:

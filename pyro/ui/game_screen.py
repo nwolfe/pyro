@@ -44,7 +44,8 @@ class EngineScreen(Screen):
         elif libtcod.KEY_RIGHT == keyboard.vk:
             action = WalkAction(Direction.EAST)
         elif libtcod.KEY_ENTER == keyboard.vk:
-            if self.game.stairs.pos.equals(self.game.player.pos):
+            pos = self.game.player.pos
+            if self.game.map.tiles[pos.x][pos.y].type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
         elif 'g' == key_char:
@@ -86,8 +87,11 @@ class EngineScreen(Screen):
                 visible = self.game.map.is_in_fov(x, y)
                 if not visible:
                     if tile.explored:
-                        libtcod.console_set_char_background(self.ui.console, x, y, tile.type.appearance.unlit.bg_color,
-                                                            libtcod.BKGND_SET)
+                        glyph = tile.type.appearance.unlit
+                        libtcod.console_set_char_background(self.ui.console, x, y, glyph.bg_color, libtcod.BKGND_SET)
+                        if tile.type.always_visible and glyph.char:
+                            libtcod.console_set_default_foreground(self.ui.console, glyph.fg_color)
+                            libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
                 else:
                     tile.explored = True
                     glyph = tile.type.appearance.lit
@@ -160,12 +164,10 @@ class EngineScreen(Screen):
         self.game.message(msg, libtcod.red)
         self.game.dungeon_level += 1
 
-        (game_map, objects, stairs) = make_map(
-            self.game.player, self.game.dungeon_level, self.factory)
+        (game_map, objects) = make_map(self.game.player, self.game.dungeon_level, self.factory)
 
         self.game.map = game_map
         self.game.objects = objects
-        self.game.stairs = stairs
 
         for game_object in self.game.objects:
             game_object.game = self.game

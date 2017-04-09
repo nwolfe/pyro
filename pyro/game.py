@@ -10,13 +10,11 @@ class Game:
                  state=None,
                  map=None,
                  objects=None,
-                 stairs=None,
                  player=None,
                  messages=None,
                  dungeon_level=1):
         self.state = state
         self.map = map
-        self.stairs = stairs
         self.objects = objects
         self.player = player
         self.messages = messages
