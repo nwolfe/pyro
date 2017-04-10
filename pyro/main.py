@@ -216,60 +216,6 @@ def render_all(ui, game, fov_recompute):
 ###############################################################################
 
 
-def move_player_or_attack(dx, dy, game):
-    x = game.player.pos.x + dx
-    y = game.player.pos.y + dy
-    target = None
-    for game_object in game.objects:
-        if game_object.component(Fighter):
-            if game_object.pos.equal_to(x, y):
-                target = game_object
-                break
-
-    if target:
-        game.player.component(Fighter).attack(None, target)
-        return False, 'attack'
-    else:
-        door = None
-        grass = None
-        # for game_object in game.objects:
-        #     if game_object.component(Door):
-        #         if game_object.pos.equal_to(x, y):
-        #             door = game_object.component(Door)
-        #     elif game_object.component(Grass):
-        #         if game_object.pos.equal_to(x, y):
-        #             if not game_object.component(Grass).is_crushed:
-        #                 grass = game_object.component(Grass)
-        #
-        #     if door and grass:
-        #         break
-
-        movement = game.player.component(Movement)
-        moved = movement.move(dx, dy) if movement else False
-        if moved:
-            if grass:
-                grass.crush()
-        else:
-            if door:
-                door.open()
-        return True, 'move'
-
-
-def close_nearest_door(game):
-    x = game.player.pos.x
-    y = game.player.pos.y
-    # for game_object in game.objects:
-    #     if game_object.component(Door):
-    #         other_x = game_object.pos.x
-    #         other_y = game_object.pos.y
-    #         close_x = (other_x == x or other_x == x-1 or other_x == x+1)
-    #         close_y = (other_y == y or other_y == y-1 or other_y == y+1)
-    #         player_on_door = (other_x == x and other_y == y)
-    #         if close_x and close_y and not player_on_door:
-    #             game_object.component(Door).close()
-    #             break
-
-
 def show_character_info(console, game):
     msg = """Character Information
 
@@ -308,24 +254,22 @@ def handle_keys(ui, game, object_factory):
     key_char = chr(ui.keyboard.c)
 
     if libtcod.KEY_UP == ui.keyboard.vk or key_char == 'k':
-        return move_player_or_attack(0, -1, game)
+        # return move_player_or_attack(0, -1, game)
+        pass
     elif libtcod.KEY_DOWN == ui.keyboard.vk or key_char == 'j':
-        return move_player_or_attack(0, 1, game)
+        # return move_player_or_attack(0, 1, game)
+        pass
     elif libtcod.KEY_LEFT == ui.keyboard.vk or key_char == 'h':
-        return move_player_or_attack(-1, 0, game)
+        # return move_player_or_attack(-1, 0, game)
+        pass
     elif libtcod.KEY_RIGHT == ui.keyboard.vk or key_char == 'l':
-        return move_player_or_attack(1, 0, game)
+        # return move_player_or_attack(1, 0, game)
+        pass
     elif key_char == 'f':
         # Don't move, let the monsters come to you
         return False, None
     elif key_char == 'g':
         # Pick up an item; look for one in the player's tile
-        for game_object in game.objects:
-            item = game_object.component(Item)
-            if item:
-                if game_object.pos.equals(game.player.pos):
-                    item.pick_up(game.player)
-                    break
         return False, None
     elif key_char == 'i':
         # Show the inventory
@@ -345,15 +289,12 @@ def handle_keys(ui, game, object_factory):
         return False, None
     elif libtcod.KEY_ENTER == ui.keyboard.vk:
         # Go down the stairs to the next level
-        # if game.stairs.pos.equals(game.player.pos):
-        #     next_dungeon_level(game, object_factory)
-        #     libtcod.console_clear(ui.console)
         return True, None
     elif key_char == 'c':
         show_character_info(ui.console, game)
         return False, None
     elif key_char == 'r':
-        close_nearest_door(game)
+        # close_nearest_door(game)
         return True, None
     else:
         return False, 'idle'
@@ -443,35 +384,11 @@ def next_dungeon_level(game, object_factory):
         game_object.game = game
 
 
-class DefaultScreen(Screen):
-    def __init__(self, ui, game, factory):
-        Screen.__init__(self)
-        self.ui = ui
-        self.game = game
-        self.factory = factory
-        self.fov_recompute = True
-
-    def render(self):
-        render_all(self.ui, self.game, self.fov_recompute)
-
-    def update(self):
-        self.fov_recompute, player_action = handle_keys(self.ui, self.game, self.factory)
-        if player_action == 'exit':
-            return True
-        if self.game.state == 'playing' and player_action != 'idle':
-            for game_object in self.game.objects:
-                ai = game_object.component(AI)
-                if ai:
-                    ai.take_turn(action=None)
-        return False
-
-
 def play_game(game, ui, object_factory):
     for game_object in game.objects:
         game_object.game = game
 
     libtcod.console_clear(ui.console)
-    # screen = DefaultScreen(ui, game, object_factory)
     screen = EngineScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
         screen.render()
