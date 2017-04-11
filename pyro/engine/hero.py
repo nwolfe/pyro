@@ -2,8 +2,8 @@ from pyro.engine import Actor
 
 
 class Hero(Actor):
-    def __init__(self, game):
-        Actor.__init__(self, game)
+    def __init__(self, game, player):
+        Actor.__init__(self, game, player)
         self.next_action = None
 
     def needs_input(self):

@@ -22,12 +22,13 @@ class EngineScreen(Screen):
 
     def initialize_engine(self):
         # TODO This logic can't be here
-        self.hero = Hero(self.game)
+        self.hero = Hero(self.game, self.game.player)
         actors = [self.hero]
         for go in self.game.objects:
             if go.component(AI):
-                actors.append(Monster(go, self.game))
+                actors.append(Monster(self.game, go))
         self.engine = GameEngine(actors)
+        self.game.actors = actors
 
     def handle_input(self, keyboard):
         action = None

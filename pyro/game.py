@@ -19,6 +19,7 @@ class Game:
         self.player = player
         self.messages = messages
         self.dungeon_level = dungeon_level
+        self.actors = None
 
         if self.messages is None:
             self.messages = []

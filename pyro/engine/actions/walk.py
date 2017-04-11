@@ -11,13 +11,13 @@ class WalkAction(Action):
 
     def on_perform(self):
         # See if there is an actor there
-        x = self.game.player.pos.x + self.direction.x
-        y = self.game.player.pos.y + self.direction.y
+        x = self.actor.pos.x + self.direction.x
+        y = self.actor.pos.y + self.direction.y
         target = None
-        for game_object in self.game.objects:
-            if game_object.component(Fighter):
-                if game_object.pos.equal_to(x, y):
-                    target = game_object
+        for actor in self.game.actors:
+            if actor.game_object.component(Fighter):
+                if actor.pos.equal_to(x, y):
+                    target = actor
                     break
 
         if target and target != self.actor:
@@ -28,7 +28,7 @@ class WalkAction(Action):
             return self.alternate(OpenDoorAction(x, y))
 
         # Try moving there
-        movement = self.game.player.component(Movement)
+        movement = self.actor.game_object.component(Movement)
         if movement.move(self.direction.x, self.direction.y):
             self.game.map.dirty_visibility()
             # Step on the tile (i.e. tall grass becomes crushed grass)
