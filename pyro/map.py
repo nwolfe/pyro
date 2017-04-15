@@ -141,6 +141,9 @@ class Map:
                                            self.tiles[x][y].transparent,
                                            self.tiles[x][y].passable)
 
+    def tile(self, position):
+        return self.tiles[position.x][position.y]
+
     def make_fov_map(self):
         # Create the FOV map according to the generated map
         fov_map = libtcod.map_new(self.width, self.height)

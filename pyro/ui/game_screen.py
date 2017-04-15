@@ -46,7 +46,7 @@ class EngineScreen(Screen):
             action = WalkAction(Direction.EAST)
         elif libtcod.KEY_ENTER == keyboard.vk:
             pos = self.game.player.pos
-            if self.game.map.tiles[pos.x][pos.y].type.is_exit:
+            if self.game.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
         elif 'g' == key_char:
