@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Graphics, Movement
+from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Graphics
 from pyro.game import Game
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player

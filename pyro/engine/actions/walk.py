@@ -1,4 +1,4 @@
-from pyro.components import Fighter, Movement
+from pyro.components import Fighter
 from pyro.direction import Direction
 from pyro.engine import Action, ActionResult
 from pyro.engine.actions import AttackAction
@@ -11,12 +11,11 @@ class WalkAction(Action):
 
     def on_perform(self):
         # See if there is an actor there
-        x = self.actor.pos.x + self.direction.x
-        y = self.actor.pos.y + self.direction.y
+        new_pos = self.actor.pos.plus(self.direction)
         target = None
         for actor in self.game.actors:
             if actor.game_object.component(Fighter):
-                if actor.pos.equal_to(x, y):
+                if actor.pos.equals(new_pos):
                     target = actor
                     break
 
@@ -24,15 +23,15 @@ class WalkAction(Action):
             return self.alternate(AttackAction(target))
 
         # See if it's a door
-        if self.game.map.tiles[x][y].type.opens_to:
-            return self.alternate(OpenDoorAction(x, y))
+        if self.game.map.tiles[new_pos.x][new_pos.y].type.opens_to:
+            return self.alternate(OpenDoorAction(new_pos))
 
         # Try moving there
-        movement = self.actor.game_object.component(Movement)
-        if movement.move(self.direction.x, self.direction.y):
+        if not self.game.is_blocked(new_pos):
+            self.actor.game_object.pos = new_pos
             self.game.map.dirty_visibility()
             # Step on the tile (i.e. tall grass becomes crushed grass)
-            tile = self.game.map.tiles[x][y]
+            tile = self.game.map.tiles[new_pos.x][new_pos.y]
             if tile.type.steps_to:
                 tile.type = tile.type.steps_to
 
@@ -40,23 +39,26 @@ class WalkAction(Action):
 
 
 class OpenDoorAction(Action):
-    def __init__(self, x, y):
+    def __init__(self, position):
         Action.__init__(self)
-        self.x, self.y = x, y
+        self.position = position
 
     def on_perform(self):
-        tile = self.game.map.tiles[self.x][self.y]
+        tile = self.game.map.tiles[self.position.x][self.position.y]
         tile.type = tile.type.opens_to
         self.game.map.dirty_visibility()
         return ActionResult.SUCCESS
 
 
 class CloseDoorAction(Action):
+    def __init__(self, position):
+        Action.__init__(self)
+        self.position = position
+
     def on_perform(self):
         for direction in Direction.ALL:
-            x = self.game.player.pos.x + direction.x
-            y = self.game.player.pos.y + direction.y
-            tile = self.game.map.tiles[x][y]
+            pos = self.position.plus(direction)
+            tile = self.game.map.tiles[pos.x][pos.y]
             if tile.type.closes_to:
                 tile.type = tile.type.closes_to
                 self.game.map.dirty_visibility()

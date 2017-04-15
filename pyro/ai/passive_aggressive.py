@@ -1,5 +1,6 @@
 import tcod as libtcod
-from pyro.components import AI, Movement, Fighter
+import pyro.direction
+from pyro.components import AI, Fighter
 from pyro.ai import Aggressive
 
 
@@ -13,7 +14,4 @@ class PassiveAggressive(AI):
 
         # 25% chance to move one square in a random direction
         elif libtcod.random_get_int(0, 1, 4) == 1:
-            movement = self.owner.component(Movement)
-            if movement:
-                movement.move(libtcod.random_get_int(0, -1, 1),
-                              libtcod.random_get_int(0, -1, 1))
+            self.move(pyro.direction.random())

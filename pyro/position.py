@@ -19,3 +19,6 @@ class Position:
 
     def distance(self, x, y):
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+
+    def plus(self, direction):
+        return Position(self.x + direction.x, self.y + direction.y)

@@ -1,4 +1,4 @@
-from pyro.components import AI, Fighter, Movement
+from pyro.components import AI, Fighter
 
 
 class Aggressive(AI):
@@ -10,9 +10,7 @@ class Aggressive(AI):
         if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
             # Move towards player if far away
             if monster.pos.distance_to(player.pos) >= 2:
-                movement = monster.component(Movement)
-                if movement:
-                    movement.move_astar(player.pos.x, player.pos.y)
+                self.move_astar(player)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:

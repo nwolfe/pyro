@@ -2,7 +2,7 @@ import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
 from pyro.components import Experience, Fighter, Item, Equipment, Inventory
-from pyro.components import SpellItemUse, Spellcaster, Movement, Graphics, Physics
+from pyro.components import SpellItemUse, Spellcaster, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import RENDER_ORDER_ITEM
@@ -45,7 +45,7 @@ def instantiate_monster(template):
     exp_comp = Experience(template['experience'])
     fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
     graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
-    components = [fighter_comp, ai_comp, exp_comp, graphics_comp, Movement(), Physics(blocks=True)]
+    components = [fighter_comp, ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
     if 'spell' in template:
         spell = instantiate_spell(template['spell'])
         components.append(Spellcaster([spell]))
@@ -109,7 +109,6 @@ def make_player():
                 power=PLAYER_DEFAULT_POWER),
         Graphics(glyph='@', color=libtcod.white),
         Inventory(items=[]),
-        Movement(),
         Physics(blocks=True)
     ]
     return GameObject('Player', components)

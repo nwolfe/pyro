@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.components import AI, Spellcaster, Fighter, Movement
+from pyro.components import AI, Spellcaster, Fighter
 from pyro.spell import SpellType
 
 
@@ -17,9 +17,7 @@ class AggressiveSpellcaster(AI):
 
             # Move towards player if far away
             if not monster.component(Spellcaster).in_range(player, SpellType.ATTACK):
-                movement = monster.component(Movement)
-                if movement:
-                    movement.move_astar(player.pos.x, player.pos.y)
+                self.move_astar(player)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:

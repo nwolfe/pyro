@@ -1,5 +1,6 @@
 import tcod as libtcod
-from pyro.components import AI, Movement
+import pyro.direction
+from pyro.components import AI
 from pyro.settings import SPELL_CONFUSE_TURNS
 
 
@@ -15,10 +16,7 @@ class Confused(AI):
     def take_turn(self, action):
         if self.restore_ai is None or self.num_turns > 0:
             # Move in a random direction
-            movement = self.owner.component(Movement)
-            if movement:
-                movement.move(libtcod.random_get_int(0, -1, 1),
-                              libtcod.random_get_int(0, -1, 1))
+            self.move(pyro.direction.random())
             self.num_turns -= 1
         else:
             # Restore normal AI

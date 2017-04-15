@@ -1,3 +1,4 @@
+import random as librand
 
 
 class Direction:
@@ -29,3 +30,15 @@ Direction.ALL = [Direction.NORTH, Direction.NORTHEAST,
                  Direction.EAST, Direction.SOUTHEAST,
                  Direction.SOUTH, Direction.SOUTHWEST,
                  Direction.WEST, Direction.NORTHWEST]
+
+
+def from_vector(x, y):
+    # Assume x, y is normalized to length 1
+    for direction in Direction.ALL:
+        if direction.x == x and direction.y == y:
+            return direction
+    return Direction.NONE
+
+
+def random():
+    return librand.choice(Direction.ALL)

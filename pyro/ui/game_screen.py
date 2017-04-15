@@ -52,7 +52,7 @@ class EngineScreen(Screen):
         elif 'g' == key_char:
             action = PickUpAction()
         elif 'r' == key_char:
-            action = CloseDoorAction()
+            action = CloseDoorAction(self.game.player.pos)
         if action:
             self.hero.next_action = action
         return None

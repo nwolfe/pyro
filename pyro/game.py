@@ -31,8 +31,8 @@ class Game:
         if game_object in self.objects:
             self.objects.remove(game_object)
 
-    def is_blocked(self, x, y):
-        return is_blocked(self.map, self.objects, x, y)
+    def is_blocked(self, position):
+        return is_blocked(self.map, self.objects, position.x, position.y)
 
     def message(self, text, color=libtcod.white):
         # Split the message if necessary, among multiple lines
