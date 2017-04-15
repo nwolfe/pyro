@@ -2,6 +2,7 @@ import tcod as libtcod
 import pyro.direction
 from pyro.components import AI
 from pyro.settings import SPELL_CONFUSE_TURNS
+from pyro.engine.actions import WalkAction
 
 
 class Confused(AI):
@@ -15,9 +16,11 @@ class Confused(AI):
 
     def take_turn(self, action):
         if self.restore_ai is None or self.num_turns > 0:
-            # Move in a random direction
-            self.move(pyro.direction.random())
             self.num_turns -= 1
+            # Move in a random direction
+            direction = pyro.direction.random()
+            if not self.game.is_blocked(self.owner.pos.plus(direction)):
+                return WalkAction(direction)
         else:
             # Restore normal AI
             self.owner.set_component(self.restore_ai)

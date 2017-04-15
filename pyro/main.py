@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Equipment, Graphics
+from pyro.components import Fighter, Experience, Item, Inventory, Equipment, Graphics
 from pyro.game import Game
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
@@ -8,7 +8,7 @@ from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, INVENTORY_WIDTH, TORCH_RA
 from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, CHARACTER_SCREEN_WIDTH, MAP_WIDTH, MAP_HEIGHT
 from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
-from pyro.ui import Screen, EngineScreen
+from pyro.ui import EngineScreen
 
 
 ###############################################################################

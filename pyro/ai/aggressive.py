@@ -1,4 +1,6 @@
+import pyro.astar
 from pyro.components import AI, Fighter
+from pyro.engine.actions import WalkAction
 
 
 class Aggressive(AI):
@@ -10,7 +12,8 @@ class Aggressive(AI):
         if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
             # Move towards player if far away
             if monster.pos.distance_to(player.pos) >= 2:
-                self.move_astar(player)
+                direction = pyro.astar.astar(self.owner.game, monster.pos, player.pos)
+                return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
