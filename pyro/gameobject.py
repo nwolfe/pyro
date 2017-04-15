@@ -8,3 +8,4 @@ class GameObject(Entity):
         self.game = game
         self.pos = Position()
         self.name = name
+        self.actor = None

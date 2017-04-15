@@ -23,10 +23,13 @@ class EngineScreen(Screen):
     def initialize_engine(self):
         # TODO This logic can't be here
         self.hero = Hero(self.game, self.game.player)
+        self.game.player.actor = self.hero
         actors = [self.hero]
         for go in self.game.objects:
             if go.component(AI):
-                actors.append(Monster(self.game, go))
+                monster = Monster(self.game, go)
+                go.actor = monster
+                actors.append(monster)
         self.engine = GameEngine(actors)
         self.game.actors = actors
 

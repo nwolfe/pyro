@@ -1,6 +1,6 @@
 import pyro.astar
 from pyro.components import AI, Fighter
-from pyro.engine.actions import WalkAction
+from pyro.engine.actions import AttackAction, WalkAction
 
 
 class Aggressive(AI):
@@ -17,4 +17,4 @@ class Aggressive(AI):
 
             # Close enough, attack! (If the player is still alive)
             elif player.component(Fighter).hp > 0:
-                monster.component(Fighter).attack(action, player)
+                return AttackAction(player.actor)
