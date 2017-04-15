@@ -60,7 +60,8 @@ class CloseDoorAction(Action):
             pos = self.position.plus(direction)
             tile = self.game.map.tile(pos)
             if tile.type.closes_to:
-                tile.type = tile.type.closes_to
-                self.game.map.dirty_visibility()
-                break
+                if not self.game.is_blocked(pos):
+                    tile.type = tile.type.closes_to
+                    self.game.map.dirty_visibility()
+                    break
         return ActionResult.SUCCESS
