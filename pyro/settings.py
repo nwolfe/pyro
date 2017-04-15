@@ -1,3 +1,4 @@
+import os
 import tcod as libtcod
 
 # Tile colors
@@ -44,7 +45,10 @@ LEVEL_UP_STAT_POWER = 1
 LEVEL_UP_STAT_DEFENSE = 1
 
 # Player, monster, spell statistics
-PLAYER_DEFAULT_HP = 100
+if 'HEALTH' in os.environ:
+    PLAYER_DEFAULT_HP = int(os.environ['HEALTH'])
+else:
+    PLAYER_DEFAULT_HP = 100
 PLAYER_DEFAULT_DEFENSE = 1
 PLAYER_DEFAULT_POWER = 2
 SPELL_CONFUSE_RANGE = 5
