@@ -271,11 +271,11 @@ def handle_keys(ui, game, object_factory):
         return False, None
     elif key_char == 'i':
         # Show the inventory
-        msg = 'Select an item to use it, or any other key to cancel.\n'
-        inventory = game.player.component(Inventory).items
-        selected_item = inventory_menu(ui.console, inventory, msg)
-        if selected_item:
-            selected_item.use(ui)
+        # msg = 'Select an item to use it, or any other key to cancel.\n'
+        # inventory = game.player.component(Inventory).items
+        # selected_item = inventory_menu(ui.console, inventory, msg)
+        # if selected_item:
+        #     selected_item.use(None, ui)
         return False, None
     elif key_char == 'd':
         # Show the inventory; if an item is selected, drop it

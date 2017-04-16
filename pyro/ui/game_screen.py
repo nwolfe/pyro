@@ -1,9 +1,9 @@
 import tcod as libtcod
 from pyro.ui import Screen
-from pyro.components import AI, Experience, Graphics, Physics
+from pyro.components import AI, Experience, Graphics, Physics, Inventory, Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import Hero, Monster, GameEngine, EventType
-from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction
+from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
@@ -54,6 +54,13 @@ class EngineScreen(Screen):
                 libtcod.console_clear(self.ui.console)
         elif 'g' == key_char:
             action = PickUpAction()
+        elif 'i' == key_char:
+            # Show the inventory; if an item is selected, use it
+            msg = 'Select an item to use it, or any other key to cancel.\n'
+            inventory = self.game.player.component(Inventory).items
+            selected_item = inventory_menu(self.ui.console, inventory, msg)
+            if selected_item:
+                action = UseAction(selected_item, self.ui)
         elif 'r' == key_char:
             action = CloseDoorAction(self.game.player.pos)
         if action:
@@ -237,3 +244,74 @@ def get_names_under_mouse(mouse, objects, game_map):
     names = [obj.name for obj in objects
              if obj.pos.equal_to(x, y) and game_map.is_in_fov(obj.pos.x, obj.pos.y)]
     return ', '.join(names).capitalize()
+
+
+def inventory_menu(console, inventory, header):
+    # Show a menu with each item of the inventory as an option
+    if len(inventory) == 0:
+        options = ['Inventory is empty']
+    else:
+        options = []
+        for item in inventory:
+            text = item.name
+            equipment = item.component(Equipment)
+            if equipment and equipment.is_equipped:
+                text = '{0} (on {1})'.format(text, equipment.slot)
+            options.append(text)
+    selection_index = menu(console, header, options, INVENTORY_WIDTH)
+    if selection_index is None or len(inventory) == 0:
+        return None
+    else:
+        return inventory[selection_index].component(Item)
+
+
+def menu(console, header, options, width):
+    if len(options) > 26:
+        raise ValueError('Cannot have a menu with more than 26 options.')
+
+    # Calculate total height for header (after auto-wrap),
+    # and one line per option
+    if header == '':
+        header_height = 0
+    else:
+        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
+                                                        SCREEN_HEIGHT, header)
+    height = len(options) + header_height
+
+    # Create an off-screen console that represents the menu's window
+    window = libtcod.console_new(width, height)
+
+    # Print the header, with auto-wrap
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    libtcod.console_print_rect_ex(window, 0, 0, width, height,
+                                  libtcod.BKGND_NONE, libtcod.LEFT, header)
+
+    # Print all the options
+    y = header_height
+    letter_index = ord('a')
+    for option in options:
+        text = '({0}) {1}'.format(chr(letter_index), option)
+        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE,
+                                 libtcod.LEFT, text)
+        y += 1
+        letter_index += 1
+
+    # Blit the contents of the menu window to the root console
+    x = SCREEN_WIDTH/2 - width/2
+    y = SCREEN_HEIGHT/2 - height/2
+    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
+
+    # Present the root console to the player and wait for a key press
+    libtcod.console_flush()
+    key = libtcod.console_wait_for_keypress(True)
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        # Alt-Enter toggles fullscreen
+        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+
+    # Convert ASCII code to an index; if it corresponds to an option, return it
+    index = key.c - ord('a')
+    if index >= 0 and index < len(options):
+        return index
+    else:
+        return None

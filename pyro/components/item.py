@@ -1,22 +1,22 @@
+import abc
 import tcod as libtcod
 from pyro.component import Component
 
 
 class ItemUse:
-    def __init__(self):
-        pass
+    __metaclass__ = abc.ABCMeta
 
-    def use(self, item_owner, game, ui):
+    @abc.abstractmethod
+    def use(self, action, item_owner, game, ui):
         pass
 
 
 class SpellItemUse(ItemUse):
     def __init__(self, spell):
-        ItemUse.__init__(self)
         self.spell = spell
 
-    def use(self, item_owner, game, ui):
-        return self.spell.player_cast(item_owner, game, ui)
+    def use(self, action, item_owner, game, ui):
+        return self.spell.player_cast(action, item_owner, game, ui)
 
 
 class Item(Component):
@@ -56,13 +56,13 @@ class Item(Component):
             self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
                                     libtcod.yellow)
 
-    def use(self, ui):
+    def use(self, action, ui):
         # Call the use_fn if we have one
         if self.on_use is None:
             self.owner.game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            result = self.on_use.use(self.item_owner, self.owner.game, ui)
+            result = self.on_use.use(action, self.item_owner, self.owner.game, ui)
             if result != 'cancelled':
                 self.item_owner.component(Inventory).remove_item(self.owner)
 

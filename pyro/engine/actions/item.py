@@ -15,3 +15,15 @@ class PickUpAction(Action):
                 if go.pos.equals(self.game.player.pos):
                     item.pick_up(self.game.player)
         return ActionResult.SUCCESS
+
+
+class UseAction(Action):
+    def __init__(self, item, ui):
+        Action.__init__(self)
+        self.item = item
+        self.ui = ui
+
+    def on_perform(self):
+        self.item.use(self, self.ui)
+        return ActionResult.SUCCESS
+
