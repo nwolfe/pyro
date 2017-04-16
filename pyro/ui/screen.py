@@ -1,11 +1,13 @@
+import abc
 
 
 class Screen:
-    def __init__(self):
-        pass
+    __metaclass__ = abc.ABCMeta
 
+    @abc.abstractmethod
     def update(self):
         pass
 
+    @abc.abstractmethod
     def render(self):
         pass

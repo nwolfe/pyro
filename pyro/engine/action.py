@@ -1,6 +1,9 @@
+import abc
 
 
 class Action:
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self):
         self.actor = None
         self.game = None
@@ -14,6 +17,7 @@ class Action:
         self.game_result = game_result
         return self.on_perform()
 
+    @abc.abstractmethod
     def on_perform(self):
         pass
 
