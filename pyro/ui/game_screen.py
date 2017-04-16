@@ -129,8 +129,8 @@ class EngineScreen(Screen):
             y += 1
 
         # Show player's stats
-        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', self.game.player.hp,
-                      self.game.player.max_hp, libtcod.light_red, libtcod.darker_red)
+        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', self.game.player.actor.hp,
+                      self.game.player.actor.max_hp, libtcod.light_red, libtcod.darker_red)
         experience = self.game.player.component(Experience)
         render_ui_bar(self.ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
                       libtcod.green, libtcod.darkest_green)
@@ -159,7 +159,7 @@ class EngineScreen(Screen):
         # Heal the player by 50%
         self.game.message('You take a moment to rest, and recover your strength.',
                           libtcod.light_violet)
-        self.game.player.heal(self.game.player.max_hp / 2)
+        self.game.player.actor.heal(self.game.player.actor.max_hp / 2)
 
         msg = 'After a rare moment of peace, you descend deeper into the heart '
         msg += 'of the dungeon...'

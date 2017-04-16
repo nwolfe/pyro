@@ -185,7 +185,7 @@ def render_all(ui, game, fov_recompute):
         y += 1
 
     # Show player's stats
-    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.hp,
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.actor.hp,
                   game.player.max_hp, libtcod.light_red, libtcod.darker_red)
     experience = game.player.component(Experience)
     render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
@@ -231,10 +231,10 @@ Defense: {6}
     msg = msg.format(exp.level,
                      exp.xp,
                      exp.required_for_level_up(),
-                     game.player.hp,
-                     game.player.max_hp,
-                     game.player.power,
-                     game.player.defense)
+                     game.player.actor.hp,
+                     game.player.actor.max_hp,
+                     game.player.actor.power,
+                     game.player.actor.defense)
     messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
 
@@ -365,7 +365,7 @@ def next_dungeon_level(game, object_factory):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    game.player.heal(game.player.max_hp / 2)
+    game.player.actor.heal(game.player.actor.max_hp / 2)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
     msg += 'of the dungeon...'

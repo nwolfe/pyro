@@ -1,5 +1,7 @@
 import abc
 from pyro.energy import Energy, NORMAL_SPEED
+from pyro.engine import Event, EventType
+from pyro.components.item import get_all_equipped
 
 
 class Actor:
@@ -54,12 +56,36 @@ class Actor:
 
     @property
     def power(self):
-        return self.game_object.power
+        equipped = get_all_equipped(self.game_object)
+        bonus = sum(equipment.power_bonus for equipment in equipped)
+        return self.game_object.__base_power__ + bonus
 
     @property
     def defense(self):
-        return self.game_object.defense
+        equipped = get_all_equipped(self.game_object)
+        bonus = sum(equipment.defense_bonus for equipment in equipped)
+        return self.game_object.__base_defense__ + bonus
+
+    @property
+    def hp(self):
+        return self.game_object.__hp__
+
+    @property
+    def max_hp(self):
+        equipped = get_all_equipped(self.game_object)
+        bonus = sum(equipment.max_hp_bonus for equipment in equipped)
+        return self.game_object.__base_max_hp__ + bonus
 
     def take_damage(self, action, damage, attacker):
-        self.game_object.take_damage(action, damage, attacker)
+        if damage > 0:
+            self.game_object.__hp__ -= damage
+
+        if self.game_object.__hp__ <= 0:
+            action.add_event(Event(EventType.DEATH, actor=self, other=attacker))
+
+    def heal(self, amount):
+        # Heal by the given amount, without going over the maximum
+        self.game_object.__hp__ += amount
+        if self.game_object.__hp__ > self.max_hp:
+            self.game_object.__hp__ = self.max_hp
 

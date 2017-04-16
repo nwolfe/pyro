@@ -16,5 +16,5 @@ class Aggressive(AI):
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
-            elif player.hp > 0:
+            elif player.actor.hp > 0:
                 return AttackAction(player.actor)

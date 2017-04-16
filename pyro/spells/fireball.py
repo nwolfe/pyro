@@ -26,7 +26,7 @@ class Fireball(Spell):
                 if game_object.is_fighter:
                     caster.game.message('The {0} gets burned for {1} hit points.'.format(
                         game_object.name, self.strength), libtcod.orange)
-                    game_object.take_damage(action, self.strength, caster.game_object)
+                    game_object.actor.take_damage(action, self.strength, caster.actor)
         return self.strength
 
     def player_cast(self, action, player, game, ui):
@@ -44,4 +44,4 @@ class Fireball(Spell):
                 if game_object.is_fighter:
                     game.message('The {0} gets burned for {1} hit points.'.format(
                         game_object.name, self.strength), libtcod.orange)
-                    game_object.take_damage(action, self.strength, player.game_object)
+                    game_object.actor.take_damage(action, self.strength, player.actor)
