@@ -1,4 +1,5 @@
 import tcod as libtcod
+import pyro.utilities
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
@@ -33,7 +34,7 @@ class Fireball(Spell):
         # Ask the player for a target tile to throw a fireball at
         msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
         game.message(msg, libtcod.light_cyan)
-        (x, y) = game.target_tile(ui)
+        (x, y) = pyro.utilities.target_tile(game, ui)
         if x is None:
             return 'cancelled'
 

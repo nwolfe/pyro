@@ -1,4 +1,5 @@
 import tcod as libtcod
+import pyro.utilities
 from pyro.ai import Confused
 from pyro.components import AI
 from pyro.spell import Spell, SpellType
@@ -27,7 +28,7 @@ class Confuse(Spell):
         # Ask the player for a target to confuse
         game.message('Left-click an enemy to confuse it, or right-click to cancel.',
                      libtcod.light_cyan)
-        monster = game.target_monster(ui, self.range)
+        monster = pyro.utilities.target_monster(game, ui, self.range)
         if monster is None:
             return 'cancelled'
 

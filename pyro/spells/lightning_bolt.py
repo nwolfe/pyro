@@ -1,4 +1,5 @@
 import tcod as libtcod
+import pyro.utilities
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 
@@ -22,7 +23,7 @@ class LightningBolt(Spell):
 
     def player_cast(self, action, player, game, ui):
         # Find the closest enemy (inside a maximum range) and damage it
-        monster = game.closest_monster(self.range)
+        monster = pyro.utilities.closest_monster(game, self.range)
         if monster is None:
             game.message('No enemy is close enough to strike.', libtcod.red)
             return 'cancelled'
