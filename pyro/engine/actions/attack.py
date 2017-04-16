@@ -1,4 +1,4 @@
-from pyro.engine import Action, ActionResult, Event, EventType
+from pyro.engine import Action, ActionResult
 
 
 class AttackAction(Action):
@@ -7,9 +7,6 @@ class AttackAction(Action):
         self.defender = defender
 
     def on_perform(self):
-        # TODO Use a Hit instead
-        # hit = self.actor.create_melee_hit()
-        # hit.perform(self, self.actor, self.defender)
-        self.actor.game_object.attack(self, self.defender.game_object)
-        self.add_event(Event(EventType.HIT, actor=self.defender))
+        hit = self.actor.create_melee_hit()
+        hit.perform(self, self.actor, self.defender)
         return ActionResult.SUCCESS

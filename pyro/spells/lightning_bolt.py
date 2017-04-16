@@ -17,7 +17,7 @@ class LightningBolt(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
-        target.take_damage(action, self.strength, caster)
+        target.take_damage(action, self.strength, caster.actor)
         return self.strength
 
     def player_cast(self, action, player, game, ui):
@@ -32,4 +32,4 @@ class LightningBolt(Spell):
         msg += 'The damage is {1} hit points.'
         msg = msg.format(monster.name, self.strength)
         game.message(msg, libtcod.light_blue)
-        self.cast(action, player, monster)
+        self.cast(action, player, monster.actor)

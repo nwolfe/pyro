@@ -73,7 +73,7 @@ class EngineScreen(Screen):
             if EventType.HIT == event.type:
                 self.effects.append(HitEffect(event.actor))
             elif EventType.DEATH == event.type:
-                if event.actor == self.game.player:
+                if event.actor.game_object == self.game.player:
                     player_death(self.game)
                 else:
                     monster_death(event.actor, event.other, self.game)
@@ -185,6 +185,8 @@ def player_death(game):
 
 
 def monster_death(monster, attacker, game):
+    monster = monster.game_object
+    attacker = attacker.game_object
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
     exp = monster.component(Experience)

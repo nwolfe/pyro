@@ -1,4 +1,5 @@
 from pyro.engine import Actor
+from pyro.engine.attack import Hit
 
 
 class Hero(Actor):
@@ -13,3 +14,6 @@ class Hero(Actor):
         action = self.next_action
         self.next_action = None
         return action
+
+    def on_create_melee_hit(self):
+        return Hit()
