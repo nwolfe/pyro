@@ -1,6 +1,6 @@
 import tcod as libtcod
 from pyro.ui import Screen
-from pyro.components import AI, Experience, Fighter, Graphics, Physics
+from pyro.components import AI, Experience, Graphics, Physics
 from pyro.direction import Direction
 from pyro.engine import Hero, Monster, GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction
@@ -129,9 +129,8 @@ class EngineScreen(Screen):
             y += 1
 
         # Show player's stats
-        fighter = self.game.player.component(Fighter)
-        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
-                      fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
+        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', self.game.player.hp,
+                      self.game.player.max_hp, libtcod.light_red, libtcod.darker_red)
         experience = self.game.player.component(Experience)
         render_ui_bar(self.ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
                       libtcod.green, libtcod.darkest_green)
@@ -160,8 +159,7 @@ class EngineScreen(Screen):
         # Heal the player by 50%
         self.game.message('You take a moment to rest, and recover your strength.',
                           libtcod.light_violet)
-        fighter = self.game.player.component(Fighter)
-        fighter.heal(fighter.max_hp() / 2)
+        self.game.player.heal(self.game.player.max_hp / 2)
 
         msg = 'After a rare moment of peace, you descend deeper into the heart '
         msg += 'of the dungeon...'
@@ -201,8 +199,8 @@ def monster_death(monster, attacker, game):
     monster.component(Graphics).color = libtcod.dark_red
     monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
     monster.component(Physics).blocks = False
-    monster.remove_component(Fighter)
     monster.remove_component(AI)
+    monster.is_fighter = False
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,

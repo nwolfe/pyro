@@ -1,6 +1,5 @@
 import tcod as libtcod
 from textwrap import wrap
-from pyro.components import Fighter
 from pyro.utilities import is_blocked
 from pyro.settings import MSG_WIDTH, MSG_HEIGHT
 
@@ -75,10 +74,9 @@ class Game:
 
             # Return the first clicked monster, otherwise continue looking
             for game_object in self.objects:
-                if game_object != self.player:
-                    if game_object.component(Fighter):
-                        if game_object.pos.equal_to(x, y):
-                            return game_object
+                if game_object != self.player and game_object.is_fighter:
+                    if game_object.pos.equal_to(x, y):
+                        return game_object
 
     def closest_monster(self, max_range):
         # Find closest enemy, up to a maximum range, and in the player's FOV
@@ -86,7 +84,7 @@ class Game:
         closest_dist = max_range + 1
 
         for game_object in self.objects:
-            if game_object != self.player and game_object.component(Fighter):
+            if game_object != self.player and game_object.is_fighter:
                 if self.map.is_in_fov(game_object.pos.x, game_object.pos.y):
                     # Calculate distance between this object and the player
                     dist = self.player.pos.distance_to(game_object.pos)

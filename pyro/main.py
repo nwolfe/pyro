@@ -1,6 +1,6 @@
 import shelve
 import tcod as libtcod
-from pyro.components import Fighter, Experience, Item, Inventory, Equipment, Graphics
+from pyro.components import Experience, Item, Inventory, Equipment, Graphics
 from pyro.game import Game
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
@@ -185,9 +185,8 @@ def render_all(ui, game, fov_recompute):
         y += 1
 
     # Show player's stats
-    fighter = game.player.component(Fighter)
-    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', fighter.hp,
-                  fighter.max_hp(), libtcod.light_red, libtcod.darker_red)
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.hp,
+                  game.player.max_hp, libtcod.light_red, libtcod.darker_red)
     experience = game.player.component(Experience)
     render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
                   libtcod.green, libtcod.darkest_green)
@@ -229,14 +228,13 @@ Attack: {5}
 Defense: {6}
 """
     exp = game.player.component(Experience)
-    fighter = game.player.component(Fighter)
     msg = msg.format(exp.level,
                      exp.xp,
                      exp.required_for_level_up(),
-                     fighter.hp,
-                     fighter.max_hp(),
-                     fighter.power(),
-                     fighter.defense())
+                     game.player.hp,
+                     game.player.max_hp,
+                     game.player.power,
+                     game.player.defense)
     messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
 
 
@@ -301,7 +299,8 @@ def handle_keys(ui, game, object_factory):
 
 
 def check_player_level_up(game, console):
-    exp = game.player.component(Experience)
+    player = game.player
+    exp = player.component(Experience)
 
     # See if the player's XP is enough to level up
     if not exp.can_level_up():
@@ -314,18 +313,17 @@ def check_player_level_up(game, console):
 
     choice = None
     while choice is None:
-        fighter = game.player.component(Fighter)
-        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, fighter.base_max_hp),
-                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, fighter.base_power),
-                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, fighter.base_defense)]
+        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, player.base_max_hp),
+                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, player.base_power),
+                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, player.base_defense)]
         choice = menu(console, 'Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
-            fighter.base_max_hp += LEVEL_UP_STAT_HP
-            fighter.hp += LEVEL_UP_STAT_HP
+            player.base_max_hp += LEVEL_UP_STAT_HP
+            player.hp += LEVEL_UP_STAT_HP
         elif choice == 1:
-            fighter.base_power += LEVEL_UP_STAT_POWER
+            player.base_power += LEVEL_UP_STAT_POWER
         elif choice == 2:
-            fighter.base_defense += LEVEL_UP_STAT_DEFENSE
+            player.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
 def new_game(object_factory):
@@ -367,8 +365,7 @@ def next_dungeon_level(game, object_factory):
     # Heal the player by 50%
     game.message('You take a moment to rest, and recover your strength.',
                  libtcod.light_violet)
-    fighter = game.player.component(Fighter)
-    fighter.heal(fighter.max_hp() / 2)
+    game.player.heal(game.player.max_hp / 2)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
     msg += 'of the dungeon...'

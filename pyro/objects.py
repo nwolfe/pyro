@@ -1,7 +1,7 @@
 import json
 import tcod as libtcod
 from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import Experience, Fighter, Item, Equipment, Inventory
+from pyro.components import Experience, Item, Equipment, Inventory
 from pyro.components import SpellItemUse, Spellcaster, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
@@ -43,16 +43,17 @@ def instantiate_monster(template):
     name = template['name']
     ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = Experience(template['experience'])
-    fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
     graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
-    components = [fighter_comp, ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
+    components = [ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
     if 'spell' in template:
         spell = instantiate_spell(template['spell'])
         components.append(Spellcaster([spell]))
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
         components.append(Spellcaster(spells))
-    return GameObject(name=name, components=components)
+    return GameObject(name=name, components=components, hp=template['hp'],
+                      defense=template['defense'], power=template['power'],
+                      is_fighter=True)
 
 
 def make_monster(name, monster_templates):
@@ -104,14 +105,13 @@ def make_item(name, item_templates):
 def make_player():
     components = [
         Experience(xp=0, level=1),
-        Fighter(hp=PLAYER_DEFAULT_HP,
-                defense=PLAYER_DEFAULT_DEFENSE,
-                power=PLAYER_DEFAULT_POWER),
         Graphics(glyph='@', color=libtcod.white),
         Inventory(items=[]),
         Physics(blocks=True)
     ]
-    return GameObject('Player', components)
+    return GameObject('Player', components, hp=PLAYER_DEFAULT_HP,
+                      defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
+                      is_fighter=True)
 
 
 class GameObjectFactory:

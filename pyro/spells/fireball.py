@@ -1,5 +1,4 @@
 import tcod as libtcod
-from pyro.components import Fighter
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
@@ -24,11 +23,10 @@ class Fireball(Spell):
                             format(self.radius), libtcod.orange)
         for game_object in caster.game.objects:
             if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
-                fighter = game_object.component(Fighter)
-                if fighter:
+                if game_object.is_fighter:
                     caster.game.message('The {0} gets burned for {1} hit points.'.format(
                         game_object.name, self.strength), libtcod.orange)
-                    fighter.take_damage(action, self.strength, caster)
+                    game_object.take_damage(action, self.strength, caster)
         return self.strength
 
     def player_cast(self, action, player, game, ui):
@@ -43,8 +41,7 @@ class Fireball(Spell):
                             format(self.radius), libtcod.orange)
         for game_object in game.objects:
             if game_object.pos.distance(x, y) <= self.radius:
-                fighter = game_object.component(Fighter)
-                if fighter:
+                if game_object.is_fighter:
                     game.message('The {0} gets burned for {1} hit points.'.format(
                         game_object.name, self.strength), libtcod.orange)
-                    fighter.take_damage(action, self.strength, player)
+                    game_object.take_damage(action, self.strength, player)

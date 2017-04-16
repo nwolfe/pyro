@@ -1,4 +1,3 @@
-from pyro.components import Fighter
 from pyro.direction import Direction
 from pyro.engine import Action, ActionResult
 from pyro.engine.actions import AttackAction
@@ -14,7 +13,7 @@ class WalkAction(Action):
         new_pos = self.actor.pos.plus(self.direction)
         target = None
         for actor in self.game.actors:
-            if actor.game_object.component(Fighter):
+            if actor.game_object.is_fighter:
                 if actor.pos.equals(new_pos):
                     target = actor
                     break
