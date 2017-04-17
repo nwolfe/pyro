@@ -1,6 +1,5 @@
 import tcod as libtcod
 from textwrap import wrap
-from pyro.utilities import is_blocked
 from pyro.settings import MSG_WIDTH, MSG_HEIGHT
 
 
@@ -22,16 +21,6 @@ class Game:
 
         if self.messages is None:
             self.messages = []
-
-    def add_object(self, game_object):
-        self.objects.append(game_object)
-
-    def remove_object(self, game_object):
-        if game_object in self.objects:
-            self.objects.remove(game_object)
-
-    def is_blocked(self, position):
-        return is_blocked(self.map, self.objects, position.x, position.y)
 
     def message(self, text, color=libtcod.white):
         # Split the message if necessary, among multiple lines

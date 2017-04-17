@@ -3,6 +3,7 @@ import pyro.direction
 from pyro.components import AI
 from pyro.ai import Aggressive
 from pyro.engine.actions import WalkAction
+from pyro.utilities import blocked
 
 
 class PassiveAggressive(AI):
@@ -15,5 +16,5 @@ class PassiveAggressive(AI):
         # 25% chance to move one square in a random direction
         elif libtcod.random_get_int(0, 1, 4) == 1:
             direction = pyro.direction.random()
-            if not self.owner.game.is_blocked(self.owner.pos.plus(direction)):
+            if not blocked(self.owner.game, self.owner.pos.plus(direction)):
                 return WalkAction(direction)

@@ -3,6 +3,7 @@ import pyro.direction
 from pyro.components import AI
 from pyro.settings import SPELL_CONFUSE_TURNS
 from pyro.engine.actions import WalkAction
+from pyro.utilities import blocked
 
 
 class Confused(AI):
@@ -19,7 +20,7 @@ class Confused(AI):
             self.num_turns -= 1
             # Move in a random direction
             direction = pyro.direction.random()
-            if not self.game.is_blocked(self.owner.pos.plus(direction)):
+            if not blocked(self.owner.game, self.owner.pos.plus(direction)):
                 return WalkAction(direction)
         else:
             # Restore normal AI

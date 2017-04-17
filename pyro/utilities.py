@@ -2,6 +2,10 @@ import tcod as libtcod
 from pyro.components import Physics
 
 
+def blocked(game, position):
+    return is_blocked(game.map, game.objects, position.x, position.y)
+
+
 def is_blocked(game_map, objects, x, y):
     # First test the map tile
     if game_map.movement_blocked(x, y):

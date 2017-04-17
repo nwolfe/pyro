@@ -1,6 +1,7 @@
 from pyro.direction import Direction
 from pyro.engine import Action, ActionResult
 from pyro.engine.actions import AttackAction
+from pyro.utilities import blocked
 
 
 class WalkAction(Action):
@@ -26,7 +27,7 @@ class WalkAction(Action):
             return self.alternate(OpenDoorAction(new_pos))
 
         # Try moving there
-        if not self.game.is_blocked(new_pos):
+        if not blocked(self.game, new_pos):
             self.actor.game_object.pos = new_pos
             self.game.map.dirty_visibility()
             # Step on the tile (i.e. tall grass becomes crushed grass)
@@ -59,7 +60,7 @@ class CloseDoorAction(Action):
             pos = self.position.plus(direction)
             tile = self.game.map.tile(pos)
             if tile.type.closes_to:
-                if not self.game.is_blocked(pos):
+                if not blocked(self.game, pos):
                     tile.type = tile.type.closes_to
                     self.game.map.dirty_visibility()
                     break
