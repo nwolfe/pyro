@@ -7,7 +7,7 @@ class ItemUse:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def use(self, action, item_owner, ui):
+    def use(self, action, actor, ui):
         pass
 
 
@@ -15,8 +15,8 @@ class SpellItemUse(ItemUse):
     def __init__(self, spell):
         self.spell = spell
 
-    def use(self, action, item_owner, ui):
-        return self.spell.player_cast(action, item_owner, ui)
+    def use(self, action, actor, ui):
+        return self.spell.player_cast(action, actor, ui)
 
 
 class Item(Component):
@@ -62,7 +62,7 @@ class Item(Component):
             self.owner.game.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            result = self.on_use.use(action, self.item_owner, ui)
+            result = self.on_use.use(action, self.item_owner.actor, ui)
             if result != 'cancelled':
                 self.item_owner.component(Inventory).remove_item(self.owner)
 
@@ -97,7 +97,7 @@ class Equipment(Item):
         self.unequip()
         Item.drop(self)
 
-    def use(self, ui):
+    def use(self, action, ui):
         self.toggle_equip(self.item_owner)
 
     def toggle_equip(self, item_owner):

@@ -23,7 +23,7 @@ class Spellcaster(Component):
         if SpellType.ATTACK == spell.type:
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
-                damage = spell.cast(action, self.owner, target)
+                damage = spell.cast(action, self.owner.actor, target.actor)
                 msg = 'The {0} strikes you with a {1}! You take {2} damage.'
                 msg = msg.format(self.owner.name, spell.name, damage)
                 self.owner.game.message('- ' + msg, libtcod.red)
@@ -32,6 +32,6 @@ class Spellcaster(Component):
                 msg = msg.format(self.owner.name, spell.name)
                 self.owner.game.message(msg)
         elif SpellType.HEAL == spell.type:
-            spell.cast(action, self.owner, target)
+            spell.cast(action, self.owner.actor, target.actor)
             msg = 'The {0} heals itself!'.format(self.owner.name)
             self.owner.game.message(msg)

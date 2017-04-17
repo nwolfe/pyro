@@ -18,7 +18,7 @@ class LightningBolt(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
-        target.actor.take_damage(action, self.strength, caster.actor)
+        target.take_damage(action, self.strength, caster)
         return self.strength
 
     def player_cast(self, action, player, ui):
