@@ -30,19 +30,19 @@ class Fireball(Spell):
                     game_object.actor.take_damage(action, self.strength, caster.actor)
         return self.strength
 
-    def player_cast(self, action, player, game, ui):
+    def player_cast(self, action, player, ui):
         # Ask the player for a target tile to throw a fireball at
         msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
-        game.message(msg, libtcod.light_cyan)
-        (x, y) = pyro.utilities.target_tile(game, ui)
+        action.game.message(msg, libtcod.light_cyan)
+        (x, y) = pyro.utilities.target_tile(action.game, ui)
         if x is None:
             return 'cancelled'
 
         player.game.message('The fireball explodes, burning everything within {0} tiles!'.
                             format(self.radius), libtcod.orange)
-        for game_object in game.objects:
+        for game_object in action.game.objects:
             if game_object.pos.distance(x, y) <= self.radius:
                 if game_object.is_fighter:
-                    game.message('The {0} gets burned for {1} hit points.'.format(
+                    action.game.message('The {0} gets burned for {1} hit points.'.format(
                         game_object.name, self.strength), libtcod.orange)
                     game_object.actor.take_damage(action, self.strength, player.actor)

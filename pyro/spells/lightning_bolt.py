@@ -21,16 +21,16 @@ class LightningBolt(Spell):
         target.actor.take_damage(action, self.strength, caster.actor)
         return self.strength
 
-    def player_cast(self, action, player, game, ui):
+    def player_cast(self, action, player, ui):
         # Find the closest enemy (inside a maximum range) and damage it
-        monster = pyro.utilities.closest_monster(game, self.range)
+        monster = pyro.utilities.closest_monster(action.game, self.range)
         if monster is None:
-            game.message('No enemy is close enough to strike.', libtcod.red)
+            action.game.message('No enemy is close enough to strike.', libtcod.red)
             return 'cancelled'
 
         # Zap it!
         msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
         msg += 'The damage is {1} hit points.'
         msg = msg.format(monster.name, self.strength)
-        game.message(msg, libtcod.light_blue)
+        action.game.message(msg, libtcod.light_blue)
         self.cast(action, player, monster.actor)

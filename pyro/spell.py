@@ -25,5 +25,5 @@ class Spell:
         pass
 
     @abc.abstractmethod
-    def player_cast(self, action, player, game, ui):
+    def player_cast(self, action, player, ui):
         pass

@@ -24,14 +24,14 @@ class Confuse(Spell):
         new_ai = Confused(restore_ai=old_ai, num_turns=self.num_turns)
         target.set_component(new_ai)
 
-    def player_cast(self, action, player, game, ui):
+    def player_cast(self, action, player, ui):
         # Ask the player for a target to confuse
-        game.message('Left-click an enemy to confuse it, or right-click to cancel.',
-                     libtcod.light_cyan)
-        monster = pyro.utilities.target_monster(game, ui, self.range)
+        action.game.message('Left-click an enemy to confuse it, or right-click to cancel.',
+                            libtcod.light_cyan)
+        monster = pyro.utilities.target_monster(action.game, ui, self.range)
         if monster is None:
             return 'cancelled'
 
         self.cast(action, player, monster)
         msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
-        game.message(msg.format(monster.name), libtcod.light_green)
+        action.game.message(msg.format(monster.name), libtcod.light_green)
