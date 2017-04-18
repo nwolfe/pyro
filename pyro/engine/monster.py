@@ -1,4 +1,3 @@
-from pyro.components import AI
 from pyro.engine import Actor, Action, ActionResult
 from pyro.engine.attack import Hit
 
@@ -9,6 +8,7 @@ class Monster(Actor):
 
     def on_get_action(self):
         # TODO Implement
+        from pyro.components import AI
         return AIAdapterAction(self.game_object.component(AI))
 
     def on_create_melee_hit(self):

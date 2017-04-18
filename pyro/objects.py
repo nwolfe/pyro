@@ -1,19 +1,12 @@
 import json
 import tcod as libtcod
-from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
+import pyro.components.ai
 from pyro.components import Experience, Item, Equipment, Inventory
 from pyro.components import SpellItemUse, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import RENDER_ORDER_ITEM
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
-
-MONSTER_AI_CLASSES = dict(
-    aggressive=Aggressive,
-    aggressive_spellcaster=AggressiveSpellcaster,
-    passive_aggressive=PassiveAggressive,
-    confused=Confused
-)
 
 SPELLS = dict(
     confuse=Confuse,
@@ -41,16 +34,15 @@ def instantiate_spell(template):
 
 def instantiate_monster(template):
     name = template['name']
-    ai_comp = MONSTER_AI_CLASSES[template['ai']]()
     exp_comp = Experience(template['experience'])
     graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
-    components = [ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
+    spells = None
     if 'spell' in template:
-        spell = instantiate_spell(template['spell'])
-        ai_comp.set_spells([spell])
+        spells = [instantiate_spell(template['spell'])]
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
-        ai_comp.set_spells(spells)
+    ai_comp = pyro.components.ai.new(template['ai'], spells)
+    components = [ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
     return GameObject(name=name, components=components, hp=template['hp'],
                       defense=template['defense'], power=template['power'],
                       is_fighter=True)
