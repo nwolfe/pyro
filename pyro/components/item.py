@@ -34,7 +34,7 @@ class Item(Component):
         if inventory.is_full():
             if item_owner == self.owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
-                self.owner.game.message(msg.format(self.owner.name), libtcod.red)
+                self.owner.game.log.message(msg.format(self.owner.name), libtcod.red)
             return False
         else:
             self.item_owner = item_owner
@@ -42,8 +42,8 @@ class Item(Component):
             if self.owner in self.owner.game.objects:
                 self.owner.game.objects.remove(self.owner)
             if self.player_owned():
-                self.owner.game.message('You picked up a {0}!'.format(
-                    self.owner.name), libtcod.green)
+                self.owner.game.log.message('You picked up a {0}!'.format(self.owner.name),
+                                            libtcod.green)
             return True
 
     def drop(self):
@@ -54,13 +54,13 @@ class Item(Component):
         self.owner.pos.x = self.item_owner.pos.x
         self.owner.pos.y = self.item_owner.pos.y
         if self.player_owned():
-            self.owner.game.message('You dropped a {0}.'.format(self.owner.name),
-                                    libtcod.yellow)
+            self.owner.game.log.message('You dropped a {0}.'.format(self.owner.name),
+                                        libtcod.yellow)
 
     def use(self, action, ui):
         # Call the use_fn if we have one
         if self.on_use is None:
-            self.owner.game.message('The {0} cannot be used.'.format(self.owner.name))
+            self.owner.game.log.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
             result = self.on_use.use(action, self.item_owner.actor, ui)
@@ -116,7 +116,7 @@ class Equipment(Item):
         self.is_equipped = True
         if self.player_owned():
             msg = 'Equipped {0} on {1}.'.format(self.owner.name, self.slot)
-            self.owner.game.message(msg, libtcod.light_green)
+            self.owner.game.log.message(msg, libtcod.light_green)
 
     def unequip(self):
         """Unequip object and show a message about it."""
@@ -124,7 +124,7 @@ class Equipment(Item):
             return
         self.is_equipped = False
         if self.player_owned():
-            self.owner.game.message('Unequipped {0} from {1}.'.format(
+            self.owner.game.log.message('Unequipped {0} from {1}.'.format(
                 self.owner.name, self.slot), libtcod.light_yellow)
 
 

@@ -20,8 +20,8 @@ class Heal(Spell):
     def player_cast(self, action, player, ui):
         # Heal the player
         if player.hp == player.max_hp:
-            action.game.message('You are already at full health.', libtcod.red)
+            action.game.log.message('You are already at full health.', libtcod.red)
             return 'cancelled'
 
-        action.game.message('Your wounds start to feel better!', libtcod.light_violet)
+        action.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
         self.cast(action, player, player)

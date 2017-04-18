@@ -129,7 +129,7 @@ class EngineScreen(Screen):
 
         # Print game messages, one line at a time
         y = 1
-        for (line, color) in self.game.messages:
+        for (line, color) in self.game.log.messages:
             libtcod.console_set_default_foreground(self.ui.panel, color)
             libtcod.console_print_ex(self.ui.panel, MSG_X, y, libtcod.BKGND_NONE,
                                      libtcod.LEFT, line)
@@ -164,13 +164,13 @@ class EngineScreen(Screen):
     def next_dungeon_level(self):
         # Advance to the next level
         # Heal the player by 50%
-        self.game.message('You take a moment to rest, and recover your strength.',
-                          libtcod.light_violet)
+        self.game.log.message('You take a moment to rest, and recover your strength.',
+                              libtcod.light_violet)
         self.game.player.actor.heal(self.game.player.actor.max_hp / 2)
 
         msg = 'After a rare moment of peace, you descend deeper into the heart '
         msg += 'of the dungeon...'
-        self.game.message(msg, libtcod.red)
+        self.game.log.message(msg, libtcod.red)
         self.game.dungeon_level += 1
 
         (game_map, objects) = make_map(self.game.player, self.game.dungeon_level, self.factory)
@@ -185,7 +185,7 @@ class EngineScreen(Screen):
 
 
 def player_death(game):
-    game.message('You died!')
+    game.log.message('You died!')
     game.state = 'dead'
     game.player.component(Graphics).glyph = '%'
     game.player.component(Graphics).color = libtcod.dark_red
@@ -198,10 +198,10 @@ def monster_death(monster, attacker, game):
     # It doesn't block, can't be attacked, and doesn't move
     exp = monster.component(Experience)
     if attacker == game.player:
-        game.message('The {0} is dead! You gain {1} experience points.'.
-                     format(monster.name, exp.xp), libtcod.orange)
+        game.log.message('The {0} is dead! You gain {1} experience points.'.
+                         format(monster.name, exp.xp), libtcod.orange)
     else:
-        game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
+        game.log.message('The {0} is dead!'.format(monster.name), libtcod.orange)
     attacker.component(Experience).xp += exp.xp
     monster.name = 'Remains of {0}'.format(monster.name)
     monster.component(Graphics).glyph = '%'

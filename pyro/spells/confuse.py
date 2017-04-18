@@ -26,12 +26,12 @@ class Confuse(Spell):
 
     def player_cast(self, action, player, ui):
         # Ask the player for a target to confuse
-        action.game.message('Left-click an enemy to confuse it, or right-click to cancel.',
-                            libtcod.light_cyan)
+        action.game.log.message('Left-click an enemy to confuse it, or right-click to cancel.',
+                                libtcod.light_cyan)
         monster = pyro.utilities.target_monster(action.game, ui, self.range)
         if monster is None:
             return 'cancelled'
 
         self.cast(action, player, monster.actor)
         msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
-        action.game.message(msg.format(monster.name), libtcod.light_green)
+        action.game.log.message(msg.format(monster.name), libtcod.light_green)

@@ -26,4 +26,4 @@ class Confused(AI):
             # Restore normal AI
             self.owner.set_component(self.restore_ai)
             msg = 'The {0} is no longer confused!'.format(self.owner.name)
-            self.owner.game.message(msg, libtcod.red)
+            self.owner.game.log.message(msg, libtcod.red)

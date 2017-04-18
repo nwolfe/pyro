@@ -26,12 +26,12 @@ class Spellcaster(Component):
                 damage = spell.cast(action, self.owner.actor, target.actor)
                 msg = 'The {0} strikes you with a {1}! You take {2} damage.'
                 msg = msg.format(self.owner.name, spell.name, damage)
-                self.owner.game.message('- ' + msg, libtcod.red)
+                self.owner.game.log.message('- ' + msg, libtcod.red)
             else:
                 msg = 'The {0} casts a {1} but it fizzles!'
                 msg = msg.format(self.owner.name, spell.name)
-                self.owner.game.message(msg)
+                self.owner.game.log.message(msg)
         elif SpellType.HEAL == spell.type:
             spell.cast(action, self.owner.actor, target.actor)
             msg = 'The {0} heals itself!'.format(self.owner.name)
-            self.owner.game.message(msg)
+            self.owner.game.log.message(msg)

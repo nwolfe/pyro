@@ -9,6 +9,7 @@ from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, 
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, CHARACTER_SCREEN_WIDTH, MAP_WIDTH, MAP_HEIGHT
 from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui import EngineScreen
+from pyro.engine.log import Log
 
 
 ###############################################################################
@@ -178,7 +179,7 @@ def render_all(ui, game, fov_recompute):
 
     # Print game messages, one line at a time
     y = 1
-    for (line, color) in game.messages:
+    for (line, color) in game.log.messages:
         libtcod.console_set_default_foreground(ui.panel, color)
         libtcod.console_print_ex(ui.panel, MSG_X, y, libtcod.BKGND_NONE,
                                  libtcod.LEFT, line)
@@ -309,7 +310,7 @@ def check_player_level_up(game, console):
     # Ding! Level up!
     exp.level_up()
     msg = 'Your battle skills grow stronger! You reached level {}!'
-    game.message(msg.format(exp.level), libtcod.yellow)
+    game.log.message(msg.format(exp.level), libtcod.yellow)
 
     choice = None
     while choice is None:
@@ -334,9 +335,7 @@ def new_game(object_factory):
     dungeon_level = 1
     (game_map, objects) = make_map(player, dungeon_level, object_factory)
 
-    messages = []
-
-    game = Game('playing', game_map, objects, player, messages, dungeon_level)
+    game = Game('playing', game_map, objects, player, Log(), dungeon_level)
 
     object_factory.game = game
 
@@ -353,9 +352,9 @@ def new_game(object_factory):
     spell = object_factory.new_item('Scroll Of Confusion')
     spell.component(Item).pick_up(player)
 
-    game.messages = []
+    game.log.messages = []
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
-    game.message(m, libtcod.red)
+    game.log.message(m, libtcod.red)
 
     return game
 
@@ -363,13 +362,13 @@ def new_game(object_factory):
 def next_dungeon_level(game, object_factory):
     # Advance to the next level
     # Heal the player by 50%
-    game.message('You take a moment to rest, and recover your strength.',
-                 libtcod.light_violet)
+    game.log.message('You take a moment to rest, and recover your strength.',
+                     libtcod.light_violet)
     game.player.actor.heal(game.player.actor.max_hp / 2)
 
     msg = 'After a rare moment of peace, you descend deeper into the heart '
     msg += 'of the dungeon...'
-    game.message(msg, libtcod.red)
+    game.log.message(msg, libtcod.red)
     game.dungeon_level += 1
 
     (game_map, objects) = make_map(game.player, game.dungeon_level, object_factory)
@@ -406,7 +405,7 @@ def save_game(game):
     save_file['map'] = game.map
     save_file['objects'] = game.objects
     save_file['player_index'] = game.objects.index(game.player)
-    save_file['messages'] = game.messages
+    save_file['messages'] = game.log.messages
     save_file['state'] = game.state
     # save_file['stairs_index'] = game.objects.index(game.stairs)
     save_file['dungeon_level'] = game.dungeon_level
@@ -425,7 +424,7 @@ def load_game():
     dungeon_level = save_file['dungeon_level']
     save_file.close()
 
-    return Game(state, game_map, objects, player, messages, dungeon_level)
+    return Game(state, game_map, objects, player, Log(messages), dungeon_level)
 
 
 def main_menu(ui):

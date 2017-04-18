@@ -20,29 +20,29 @@ class Fireball(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
-        caster.game.message('The fireball explodes, burning everything within {0} tiles!'.
-                            format(self.radius), libtcod.orange)
+        caster.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
+                                format(self.radius), libtcod.orange)
         for game_object in caster.game.objects:
             if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
                 if game_object.is_fighter:
-                    caster.game.message('The {0} gets burned for {1} hit points.'.format(
-                        game_object.name, self.strength), libtcod.orange)
+                    caster.game.log.message('The {0} gets burned for {1} hit points.'.
+                                            format(game_object.name, self.strength), libtcod.orange)
                     game_object.actor.take_damage(action, self.strength, caster)
         return self.strength
 
     def player_cast(self, action, player, ui):
         # Ask the player for a target tile to throw a fireball at
         msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
-        action.game.message(msg, libtcod.light_cyan)
+        action.game.log.message(msg, libtcod.light_cyan)
         (x, y) = pyro.utilities.target_tile(action.game, ui)
         if x is None:
             return 'cancelled'
 
-        player.game.message('The fireball explodes, burning everything within {0} tiles!'.
-                            format(self.radius), libtcod.orange)
+        player.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
+                                format(self.radius), libtcod.orange)
         for game_object in action.game.objects:
             if game_object.pos.distance(x, y) <= self.radius:
                 if game_object.is_fighter:
-                    action.game.message('The {0} gets burned for {1} hit points.'.format(
-                        game_object.name, self.strength), libtcod.orange)
+                    action.game.log.message('The {0} gets burned for {1} hit points.'.
+                                            format(game_object.name, self.strength), libtcod.orange)
                     game_object.actor.take_damage(action, self.strength, player)
