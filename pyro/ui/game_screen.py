@@ -54,6 +54,9 @@ class EngineScreen(Screen):
                 libtcod.console_clear(self.ui.console)
         elif 'c' == key_char:
             show_character_info(self.ui.console, self.game)
+        elif 'f' == key_char:
+            # Wait; do nothing and let the world continue
+            action = WalkAction(Direction.NONE)
         elif 'g' == key_char:
             action = PickUpAction()
         elif 'i' == key_char:
