@@ -52,6 +52,8 @@ class EngineScreen(Screen):
             if self.game.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
+        elif 'c' == key_char:
+            show_character_info(self.ui.console, self.game)
         elif 'g' == key_char:
             action = PickUpAction()
         elif 'i' == key_char:
@@ -309,3 +311,26 @@ def menu(console, header, options, width):
         return index
     else:
         return None
+
+
+def show_character_info(console, game):
+    msg = """Character Information
+
+Level: {0}
+Experience: {1}
+Next Level: {2}
+
+Current HP: {3}
+Maximum HP: {4}
+Attack: {5}
+Defense: {6}
+"""
+    exp = game.player.component(Experience)
+    msg = msg.format(exp.level,
+                     exp.xp,
+                     exp.required_for_level_up(),
+                     game.player.actor.hp,
+                     game.player.actor.max_hp,
+                     game.player.actor.power,
+                     game.player.actor.defense)
+    menu(console, msg, [], CHARACTER_SCREEN_WIDTH)
