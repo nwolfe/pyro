@@ -1,7 +1,6 @@
 import shelve
 import tcod as libtcod
 from pyro.components import Experience, Item, Inventory, Equipment, Graphics
-from pyro.game import Game
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, INVENTORY_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
@@ -325,6 +324,17 @@ def check_player_level_up(game, console):
             player.__base_power__ += LEVEL_UP_STAT_POWER
         elif choice == 2:
             player.__base_defense__ += LEVEL_UP_STAT_DEFENSE
+
+
+class Game:
+    def __init__(self, state, map, objects, player, log, dungeon_level):
+        self.state = state
+        self.map = map
+        self.objects = objects
+        self.player = player
+        self.log = log
+        self.dungeon_level = dungeon_level
+        self.actors = None
 
 
 def new_game(object_factory):
