@@ -3,7 +3,7 @@ from pyro.ui import Screen
 from pyro.components import AI, Experience, Graphics, Physics, Inventory, Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import Hero, Monster, GameEngine, EventType
-from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction
+from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
@@ -54,6 +54,13 @@ class EngineScreen(Screen):
                 libtcod.console_clear(self.ui.console)
         elif 'c' == key_char:
             show_character_info(self.ui.console, self.game)
+        elif 'd' == key_char:
+            # Show the inventory; if an item is selected, drop it
+            msg = 'Select an item to drop it, or any other key to cancel.\n'
+            inventory = self.game.player.component(Inventory).items
+            selected_item = inventory_menu(self.ui.console, inventory, msg)
+            if selected_item:
+                action = DropAction(selected_item)
         elif 'f' == key_char:
             # Wait; do nothing and let the world continue
             action = WalkAction(Direction.NONE)

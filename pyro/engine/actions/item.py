@@ -17,6 +17,16 @@ class PickUpAction(Action):
         return ActionResult.SUCCESS
 
 
+class DropAction(Action):
+    def __init__(self, item):
+        Action.__init__(self)
+        self.item = item
+
+    def on_perform(self):
+        self.item.drop()
+        return ActionResult.SUCCESS
+
+
 class UseAction(Action):
     def __init__(self, item, ui):
         Action.__init__(self)
