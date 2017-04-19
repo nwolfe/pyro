@@ -191,9 +191,11 @@ class LevelBuilder:
         self.game_object_factory = game_object_factory
         self.dungeon_level = dungeon_level
 
-    def finalize(self):
+    def finalize(self, game):
         self.map.fov_map = self.map.make_fov_map()
         self.map.dirty_visibility()
+        game.map = self.map
+        game.objects = self.game_objects
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True
@@ -397,10 +399,10 @@ def randomly_placed_rect(game_map):
     return Rect(x, y, w, h)
 
 
-def make_map(player, dungeon_level, object_factory):
-    objects = [player]
+def make_map(game, object_factory):
+    objects = [game.player]
     game_map = Map(MAP_HEIGHT, MAP_WIDTH)
-    builder = LevelBuilder(game_map, objects, object_factory, dungeon_level)
+    builder = LevelBuilder(game_map, objects, object_factory, game.dungeon_level)
     rooms = []
     num_rooms = 0
     new_x = 0
@@ -420,8 +422,8 @@ def make_map(player, dungeon_level, object_factory):
 
         if num_rooms == 0:
             # This is the first room, where the player starts at
-            player.pos.x = new_x
-            player.pos.y = new_y
+            game.player.pos.x = new_x
+            game.player.pos.y = new_y
         else:
             # Connect it to the previous room with a tunnel
 
@@ -453,5 +455,4 @@ def make_map(player, dungeon_level, object_factory):
     # Put a boss near the stairs
     builder.place_boss(new_x, new_y)
 
-    builder.finalize()
-    return game_map, objects
+    builder.finalize(game)

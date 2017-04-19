@@ -94,16 +94,18 @@ def make_item(name, item_templates):
             return instantiate_item(template)
 
 
-def make_player():
+def make_player(game):
     components = [
         Experience(xp=0, level=1),
         Graphics(glyph='@', color=libtcod.white),
         Inventory(items=[]),
         Physics(blocks=True)
     ]
-    return GameObject('Player', components, hp=PLAYER_DEFAULT_HP,
-                      defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
-                      is_fighter=True)
+    player = GameObject('Player', components, hp=PLAYER_DEFAULT_HP,
+                        defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
+                        is_fighter=True, game=game)
+    game.player = player
+    return player
 
 
 class GameObjectFactory:

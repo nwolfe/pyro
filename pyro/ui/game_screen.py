@@ -173,13 +173,7 @@ class EngineScreen(Screen):
         self.game.log.message(msg, libtcod.red)
         self.game.dungeon_level += 1
 
-        (game_map, objects) = make_map(self.game.player, self.game.dungeon_level, self.factory)
-
-        self.game.map = game_map
-        self.game.objects = objects
-
-        for game_object in self.game.objects:
-            game_object.game = self.game
+        make_map(self.game, self.factory)
 
         self.initialize_engine()
 

@@ -327,7 +327,7 @@ def check_player_level_up(game, console):
 
 
 class Game:
-    def __init__(self, state, map, objects, player, log, dungeon_level):
+    def __init__(self, state=None, map=None, objects=None, player=None, log=None, dungeon_level=None):
         self.state = state
         self.map = map
         self.objects = objects
@@ -338,16 +338,10 @@ class Game:
 
 
 def new_game(object_factory):
-    # Create the player
-    player = make_player()
-
-    # Generate map (not drawn to the screen yet)
-    dungeon_level = 1
-    (game_map, objects) = make_map(player, dungeon_level, object_factory)
-
-    game = Game('playing', game_map, objects, player, Log(), dungeon_level)
-
+    game = Game(state='playing', log=Log(), dungeon_level=1)
+    player = make_player(game)
     object_factory.game = game
+    make_map(game, object_factory)
 
     # Initial equipment: a dagger and scroll of lightning bolt
     dagger = object_factory.new_item('Dagger')
@@ -381,19 +375,10 @@ def next_dungeon_level(game, object_factory):
     game.log.message(msg, libtcod.red)
     game.dungeon_level += 1
 
-    (game_map, objects) = make_map(game.player, game.dungeon_level, object_factory)
-
-    game.map = game_map
-    game.objects = objects
-
-    for game_object in game.objects:
-        game_object.game = game
+    make_map(game, object_factory)
 
 
 def play_game(game, ui, object_factory):
-    for game_object in game.objects:
-        game_object.game = game
-
     libtcod.console_clear(ui.console)
     screen = EngineScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
