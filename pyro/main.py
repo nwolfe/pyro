@@ -1,11 +1,11 @@
 import shelve
 import tcod as libtcod
-from pyro.components import Experience, Item, Inventory, Equipment, Graphics
+from pyro.components import Experience, Item, Graphics
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
-from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, INVENTORY_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
+from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
-from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, CHARACTER_SCREEN_WIDTH, MAP_WIDTH, MAP_HEIGHT
+from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
 from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui import EngineScreen
 from pyro.engine.log import Log
@@ -81,25 +81,6 @@ def menu(console, header, options, width):
 
 def messagebox(console, text, width=50):
     return menu(console, text, [], width)
-
-
-def inventory_menu(console, inventory, header):
-    # Show a menu with each item of the inventory as an option
-    if len(inventory) == 0:
-        options = ['Inventory is empty']
-    else:
-        options = []
-        for item in inventory:
-            text = item.name
-            equipment = item.component(Equipment)
-            if equipment and equipment.is_equipped:
-                text = '{0} (on {1})'.format(text, equipment.slot)
-            options.append(text)
-    selection_index = menu(console, header, options, INVENTORY_WIDTH)
-    if selection_index is None or len(inventory) == 0:
-        return None
-    else:
-        return inventory[selection_index].component(Item)
 
 
 def get_names_under_mouse(mouse, objects, game_map):
@@ -215,89 +196,6 @@ def render_all(ui, game, fov_recompute):
 ###############################################################################
 
 
-def show_character_info(console, game):
-    msg = """Character Information
-
-Level: {0}
-Experience: {1}
-Next Level: {2}
-
-Current HP: {3}
-Maximum HP: {4}
-Attack: {5}
-Defense: {6}
-"""
-    exp = game.player.component(Experience)
-    msg = msg.format(exp.level,
-                     exp.xp,
-                     exp.required_for_level_up(),
-                     game.player.actor.hp,
-                     game.player.actor.max_hp,
-                     game.player.actor.power,
-                     game.player.actor.defense)
-    messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
-
-
-def handle_keys(ui, game, object_factory):
-    if ui.keyboard.vk == libtcod.KEY_ENTER and ui.keyboard.lalt:
-        # Alt-Enter toggles fullscreen
-        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-    elif ui.keyboard.vk == libtcod.KEY_ESCAPE:
-        # Exit game
-        return False, 'exit'
-
-    if game.state != 'playing':
-        return False, None
-
-    key_char = chr(ui.keyboard.c)
-
-    if libtcod.KEY_UP == ui.keyboard.vk or key_char == 'k':
-        # return move_player_or_attack(0, -1, game)
-        pass
-    elif libtcod.KEY_DOWN == ui.keyboard.vk or key_char == 'j':
-        # return move_player_or_attack(0, 1, game)
-        pass
-    elif libtcod.KEY_LEFT == ui.keyboard.vk or key_char == 'h':
-        # return move_player_or_attack(-1, 0, game)
-        pass
-    elif libtcod.KEY_RIGHT == ui.keyboard.vk or key_char == 'l':
-        # return move_player_or_attack(1, 0, game)
-        pass
-    elif key_char == 'f':
-        # Don't move, let the monsters come to you
-        return False, None
-    elif key_char == 'g':
-        # Pick up an item; look for one in the player's tile
-        return False, None
-    elif key_char == 'i':
-        # Show the inventory
-        # msg = 'Select an item to use it, or any other key to cancel.\n'
-        # inventory = game.player.component(Inventory).items
-        # selected_item = inventory_menu(ui.console, inventory, msg)
-        # if selected_item:
-        #     selected_item.use(None, ui)
-        return False, None
-    elif key_char == 'd':
-        # Show the inventory; if an item is selected, drop it
-        msg = 'Select an item to drop it, or any other key to cancel.\n'
-        inventory = game.player.component(Inventory).items
-        selected_item = inventory_menu(ui.console, inventory, msg)
-        if selected_item:
-            selected_item.drop()
-        return False, None
-    elif libtcod.KEY_ENTER == ui.keyboard.vk:
-        # Go down the stairs to the next level
-        return True, None
-    elif key_char == 'c':
-        show_character_info(ui.console, game)
-        return False, None
-    elif key_char == 'r':
-        # close_nearest_door(game)
-        return True, None
-    else:
-        return False, 'idle'
-
-
 def check_player_level_up(game, console):
     player = game.player
     exp = player.component(Experience)
@@ -361,21 +259,6 @@ def new_game(object_factory):
     game.log.message(m, libtcod.red)
 
     return game
-
-
-def next_dungeon_level(game, object_factory):
-    # Advance to the next level
-    # Heal the player by 50%
-    game.log.message('You take a moment to rest, and recover your strength.',
-                     libtcod.light_violet)
-    game.player.actor.heal(game.player.actor.max_hp / 2)
-
-    msg = 'After a rare moment of peace, you descend deeper into the heart '
-    msg += 'of the dungeon...'
-    game.log.message(msg, libtcod.red)
-    game.dungeon_level += 1
-
-    make_map(game, object_factory)
 
 
 def play_game(game, ui, object_factory):

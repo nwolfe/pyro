@@ -36,7 +36,6 @@ class EngineScreen(Screen):
     def handle_input(self, keyboard):
         action = None
         key_char = chr(keyboard.c)
-        # TODO Implement all keybindings
         if libtcod.KEY_ESCAPE == keyboard.vk:
             return 'exit'
         elif libtcod.KEY_UP == keyboard.vk:
