@@ -56,13 +56,13 @@ class Actor:
 
     @property
     def power(self):
-        equipped = get_all_equipped(self.game_object)
+        equipped = get_all_equipped(self)
         bonus = sum(equipment.power_bonus for equipment in equipped)
         return self.game_object.__base_power__ + bonus
 
     @property
     def defense(self):
-        equipped = get_all_equipped(self.game_object)
+        equipped = get_all_equipped(self)
         bonus = sum(equipment.defense_bonus for equipment in equipped)
         return self.game_object.__base_defense__ + bonus
 
@@ -72,7 +72,7 @@ class Actor:
 
     @property
     def max_hp(self):
-        equipped = get_all_equipped(self.game_object)
+        equipped = get_all_equipped(self)
         bonus = sum(equipment.max_hp_bonus for equipment in equipped)
         return self.game_object.__base_max_hp__ + bonus
 

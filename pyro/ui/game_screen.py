@@ -2,7 +2,7 @@ import tcod as libtcod
 from pyro.ui import Screen
 from pyro.components import AI, Experience, Graphics, Physics, Inventory, Equipment, Item
 from pyro.direction import Direction
-from pyro.engine import Hero, Monster, GameEngine, EventType
+from pyro.engine import Monster, GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.map import make_map
 from pyro.ui import HitEffect
@@ -22,8 +22,7 @@ class EngineScreen(Screen):
 
     def initialize_engine(self):
         # TODO This logic can't be here
-        self.hero = Hero(self.game, self.game.player)
-        self.game.player.actor = self.hero
+        self.hero = self.game.player.actor
         actors = [self.hero]
         for go in self.game.objects:
             if go.component(AI):

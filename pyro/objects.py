@@ -7,6 +7,7 @@ from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import RENDER_ORDER_ITEM
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
+from pyro.engine import Hero
 
 SPELLS = dict(
     confuse=Confuse,
@@ -105,7 +106,9 @@ def make_player(game):
                         defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
                         is_fighter=True, game=game)
     game.player = player
-    return player
+    hero = Hero(game, player)
+    player.actor = hero
+    return hero
 
 
 class GameObjectFactory:

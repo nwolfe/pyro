@@ -26,13 +26,13 @@ class Item(Component):
         self.item_owner = None
 
     def pick_up(self, item_owner):
-        inventory = item_owner.component(Inventory)
+        inventory = item_owner.game_object.component(Inventory)
         if inventory is None:
             return False
 
         # Add to owner's inventory and remove from the map
         if inventory.is_full():
-            if item_owner == self.owner.game.player:
+            if item_owner == self.owner.game.player.actor:
                 msg = 'Your inventory is full, cannot pick up {0}.'
                 self.owner.game.log.message(msg.format(self.owner.name), libtcod.red)
             return False
@@ -49,7 +49,7 @@ class Item(Component):
     def drop(self):
         # Remove from the inventory and add to the map.
         # Place at owner's coordinates.
-        self.item_owner.component(Inventory).remove_item(self.owner)
+        self.item_owner.game_object.component(Inventory).remove_item(self.owner)
         self.owner.game.objects.append(self.owner)
         self.owner.pos.x = self.item_owner.pos.x
         self.owner.pos.y = self.item_owner.pos.y
@@ -63,12 +63,12 @@ class Item(Component):
             self.owner.game.log.message('The {0} cannot be used.'.format(self.owner.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            result = self.on_use.use(action, self.item_owner.actor, ui)
+            result = self.on_use.use(action, self.item_owner, ui)
             if result != 'cancelled':
-                self.item_owner.component(Inventory).remove_item(self.owner)
+                self.item_owner.game_object.component(Inventory).remove_item(self.owner)
 
     def player_owned(self):
-        return self.item_owner == self.owner.game.player
+        return self.item_owner == self.owner.game.player.actor
 
 
 class Equipment(Item):
@@ -146,7 +146,7 @@ class Inventory(Component):
 
 
 def get_equipped_in_slot(item_owner, slot):
-    inventory = item_owner.component(Inventory)
+    inventory = item_owner.game_object.component(Inventory)
     if inventory:
         for obj in inventory.items:
             equipment = obj.component(Equipment)
@@ -156,7 +156,7 @@ def get_equipped_in_slot(item_owner, slot):
 
 
 def get_all_equipped(item_owner):
-    inventory = item_owner.component(Inventory)
+    inventory = item_owner.game_object.component(Inventory)
     equipped = []
     if inventory:
         for item in inventory.items:

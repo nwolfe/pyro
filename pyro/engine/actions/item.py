@@ -13,7 +13,7 @@ class PickUpAction(Action):
             item = go.component(Item)
             if item:
                 if go.pos.equals(self.game.player.pos):
-                    item.pick_up(self.game.player)
+                    item.pick_up(self.game.player.actor)
         return ActionResult.SUCCESS
 
 
