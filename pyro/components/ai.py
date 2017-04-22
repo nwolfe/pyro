@@ -54,7 +54,7 @@ class AI(Component):
         if SpellType.ATTACK == spell.type:
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
-                damage = spell.cast(action, self.owner.actor, target.actor)
+                damage = spell.cast(action, self.owner.actor, target)
                 msg = 'The {0} strikes you with a {1}! You take {2} damage.'
                 msg = msg.format(self.owner.name, spell.name, damage)
                 self.owner.game.log.message('- ' + msg, libtcod.red)
@@ -63,7 +63,7 @@ class AI(Component):
                 msg = msg.format(self.owner.name, spell.name)
                 self.owner.game.log.message(msg)
         elif SpellType.HEAL == spell.type:
-            spell.cast(action, self.owner.actor, target.actor)
+            spell.cast(action, self.owner.actor, target)
             msg = 'The {0} heals itself!'.format(self.owner.name)
             self.owner.game.log.message(msg)
 
@@ -84,8 +84,8 @@ class Aggressive(BehaviorStrategy):
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
-            elif player.actor.hp > 0:
-                return AttackAction(player.actor)
+            elif player.hp > 0:
+                return AttackAction(player)
 
 
 class AggressiveSpellcaster(BehaviorStrategy):
@@ -106,7 +106,7 @@ class AggressiveSpellcaster(BehaviorStrategy):
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
-            elif player.actor.hp > 0:
+            elif player.hp > 0:
                 attacks = ai.get_spells(SpellType.ATTACK)
                 if len(attacks) > 0:
                     random_attack = attacks[libtcod.random_get_int(0, 0, len(attacks)-1)]

@@ -32,7 +32,7 @@ class GameEngine:
                         self.__advance_actor__()
 
                     # Refresh every time the hero takes a turn
-                    if action.actor == game.player.actor:
+                    if action.actor == game.player:
                         return game_result
 
                 if len(game_result.events) > 0:

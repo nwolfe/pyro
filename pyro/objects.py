@@ -105,9 +105,9 @@ def make_player(game):
     player = GameObject('Player', components, hp=PLAYER_DEFAULT_HP,
                         defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
                         is_fighter=True, game=game)
-    game.player = player
+    # game.player = player
     hero = Hero(game, player)
-    player.actor = hero
+    game.player = hero
     return hero
 
 

@@ -166,7 +166,7 @@ def render_all(ui, game, fov_recompute):
         y += 1
 
     # Show player's stats
-    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.actor.hp,
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.hp,
                   game.player.max_hp, libtcod.light_red, libtcod.darker_red)
     experience = game.player.component(Experience)
     render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
@@ -197,7 +197,7 @@ def render_all(ui, game, fov_recompute):
 
 
 def check_player_level_up(game, console):
-    player = game.player
+    player = game.player.game_object
     exp = player.component(Experience)
 
     # See if the player's XP is enough to level up

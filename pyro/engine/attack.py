@@ -15,7 +15,7 @@ class Hit:
         if damage > 0:
             msg = '{0} attacks {1} for {2} hit points.'.format(
                 attacker.name, defender.name, damage)
-            if attacker.game_object == action.game.player:
+            if attacker == action.game.player:
                 action.game.log.message(msg, libtcod.light_green)
             else:
                 action.game.log.message('- ' + msg, libtcod.light_red)

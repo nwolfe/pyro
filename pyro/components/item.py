@@ -32,7 +32,7 @@ class Item(Component):
 
         # Add to owner's inventory and remove from the map
         if inventory.is_full():
-            if item_owner == self.owner.game.player.actor:
+            if item_owner == self.owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
                 self.owner.game.log.message(msg.format(self.owner.name), libtcod.red)
             return False
@@ -68,7 +68,7 @@ class Item(Component):
                 self.item_owner.game_object.component(Inventory).remove_item(self.owner)
 
     def player_owned(self):
-        return self.item_owner == self.owner.game.player.actor
+        return self.item_owner == self.owner.game.player
 
 
 class Equipment(Item):

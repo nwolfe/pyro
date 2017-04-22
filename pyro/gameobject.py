@@ -14,4 +14,6 @@ class GameObject(Entity):
         self.__base_max_hp__ = hp
         self.__base_defense__ = defense
         self.__base_power__ = power
+        # Used to identify player & monsters apart from items.
+        # Not necessary if items are not game_objects.
         self.is_fighter = is_fighter

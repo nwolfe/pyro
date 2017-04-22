@@ -22,7 +22,7 @@ class EngineScreen(Screen):
 
     def initialize_engine(self):
         # TODO This logic can't be here
-        self.hero = self.game.player.actor
+        self.hero = self.game.player
         actors = [self.hero]
         for go in self.game.objects:
             if go.component(AI):
@@ -87,7 +87,7 @@ class EngineScreen(Screen):
             if EventType.HIT == event.type:
                 self.effects.append(HitEffect(event.actor))
             elif EventType.DEATH == event.type:
-                if event.actor.game_object == self.game.player:
+                if event.actor == self.game.player:
                     player_death(self.game)
                 else:
                     monster_death(event.actor, event.other, self.game)
@@ -143,8 +143,8 @@ class EngineScreen(Screen):
             y += 1
 
         # Show player's stats
-        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', self.game.player.actor.hp,
-                      self.game.player.actor.max_hp, libtcod.light_red, libtcod.darker_red)
+        render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', self.game.player.hp,
+                      self.game.player.max_hp, libtcod.light_red, libtcod.darker_red)
         experience = self.game.player.component(Experience)
         render_ui_bar(self.ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
                       libtcod.green, libtcod.darkest_green)
@@ -173,7 +173,7 @@ class EngineScreen(Screen):
         # Heal the player by 50%
         self.game.log.message('You take a moment to rest, and recover your strength.',
                               libtcod.light_violet)
-        self.game.player.actor.heal(self.game.player.actor.max_hp / 2)
+        self.game.player.heal(self.game.player.max_hp / 2)
 
         msg = 'After a rare moment of peace, you descend deeper into the heart '
         msg += 'of the dungeon...'
@@ -334,8 +334,8 @@ Defense: {6}
     msg = msg.format(exp.level,
                      exp.xp,
                      exp.required_for_level_up(),
-                     game.player.actor.hp,
-                     game.player.actor.max_hp,
-                     game.player.actor.power,
-                     game.player.actor.defense)
+                     game.player.hp,
+                     game.player.max_hp,
+                     game.player.power,
+                     game.player.defense)
     menu(console, msg, [], CHARACTER_SCREEN_WIDTH)
