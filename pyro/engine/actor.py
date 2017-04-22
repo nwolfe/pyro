@@ -89,3 +89,5 @@ class Actor:
         if self.game_object.__hp__ > self.max_hp:
             self.game_object.__hp__ = self.max_hp
 
+    def is_alive(self):
+        return self.hp > 0

@@ -78,23 +78,26 @@ class EngineScreen(Screen):
         return False
 
     def update(self):
-        # if len(self.effects) > 0:
-        #     dirty() ???
+        if self.game.state == 'dead':
+            return
 
         result = self.engine.update(self.game)
 
+        if not self.game.player.is_alive():
+            self.game.state = 'dead'
+            self.game.log.message('You died!')
+            self.game.player.component(Graphics).glyph = '%'
+            self.game.player.component(Graphics).color = libtcod.dark_red
+            return
+
         for event in result.events:
-            if EventType.HIT == event.type:
-                self.effects.append(HitEffect(event.actor))
-            elif EventType.DEATH == event.type:
-                if event.actor == self.game.player:
-                    player_death(self.game)
-                else:
-                    monster_death(event.actor, event.other, self.game)
+                if EventType.HIT == event.type:
+                    self.effects.append(HitEffect(event.actor))
+                elif EventType.DEATH == event.type:
+                    if event.actor != self.game.player:
+                        monster_death(event.actor, event.other, self.game)
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)
-
-        return False
 
     def render(self):
         # TODO is there more to this?
@@ -183,13 +186,6 @@ class EngineScreen(Screen):
         make_map(self.game, self.factory)
 
         self.initialize_engine()
-
-
-def player_death(game):
-    game.log.message('You died!')
-    game.state = 'dead'
-    game.player.component(Graphics).glyph = '%'
-    game.player.component(Graphics).color = libtcod.dark_red
 
 
 def monster_death(monster, attacker, game):
