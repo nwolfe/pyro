@@ -33,20 +33,20 @@ class EngineScreen(Screen):
         self.engine = GameEngine(actors)
         self.game.actors = actors
 
-    def handle_input(self, keyboard):
+    def handle_input(self):
         action = None
-        key_char = chr(keyboard.c)
-        if libtcod.KEY_ESCAPE == keyboard.vk:
-            return 'exit'
-        elif libtcod.KEY_UP == keyboard.vk:
+        key_char = chr(self.ui.keyboard.c)
+        if libtcod.KEY_ESCAPE == self.ui.keyboard.vk:
+            return True
+        elif libtcod.KEY_UP == self.ui.keyboard.vk:
             action = WalkAction(Direction.NORTH)
-        elif libtcod.KEY_DOWN == keyboard.vk:
+        elif libtcod.KEY_DOWN == self.ui.keyboard.vk:
             action = WalkAction(Direction.SOUTH)
-        elif libtcod.KEY_LEFT == keyboard.vk:
+        elif libtcod.KEY_LEFT == self.ui.keyboard.vk:
             action = WalkAction(Direction.WEST)
-        elif libtcod.KEY_RIGHT == keyboard.vk:
+        elif libtcod.KEY_RIGHT == self.ui.keyboard.vk:
             action = WalkAction(Direction.EAST)
-        elif libtcod.KEY_ENTER == keyboard.vk:
+        elif libtcod.KEY_ENTER == self.ui.keyboard.vk:
             pos = self.game.player.pos
             if self.game.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
@@ -76,14 +76,11 @@ class EngineScreen(Screen):
             action = CloseDoorAction(self.game.player.pos)
         if action:
             self.hero.next_action = action
-        return None
+        return False
 
     def update(self):
-        if 'exit' == self.handle_input(self.ui.keyboard):
-            return True
-
-        if self.game.state == 'dead':
-            return False
+        # if len(self.effects) > 0:
+        #     dirty() ???
 
         result = self.engine.update(self.game)
 

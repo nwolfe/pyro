@@ -8,10 +8,12 @@ class Action:
         self.actor = None
         self.game = None
         self.game_result = None
+        self.consumes_energy = None
 
-    def bind(self, actor):
+    def bind(self, actor, consumes_energy):
         self.actor = actor
         self.game = actor.game
+        self.consumes_energy = consumes_energy
 
     def perform(self, game_result):
         self.game_result = game_result
@@ -25,16 +27,17 @@ class Action:
         self.game_result.events.append(event)
 
     def alternate(self, action):
-        action.bind(self.actor)
+        action.bind(self.actor, self.consumes_energy)
         return ActionResult(alternate=action)
 
 
 class ActionResult:
     SUCCESS = None
     FAILURE = None
-    def __init__(self, succeeded=False, alternate=None):
+    def __init__(self, succeeded=False, alternate=None, done=True):
         self.succeeded = succeeded
         self.alternate = alternate
+        self.done = done
 
 ActionResult.SUCCESS = ActionResult(succeeded=True)
 ActionResult.FAILURE = ActionResult(succeeded=False)

@@ -21,7 +21,7 @@ class Actor:
     def get_action(self):
         action = self.on_get_action()
         if action:
-            action.bind(self)
+            action.bind(self, True)
         return action
 
     @abc.abstractmethod

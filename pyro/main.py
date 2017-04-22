@@ -272,9 +272,9 @@ def play_game(game, ui, object_factory):
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
 
-        escape = screen.update()
-        if escape:
+        if screen.handle_input():
             break
+        screen.update()
 
 
 def save_game(game):

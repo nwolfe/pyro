@@ -11,3 +11,7 @@ class Screen:
     @abc.abstractmethod
     def render(self):
         pass
+
+    @abc.abstractmethod
+    def handle_input(self):
+        pass

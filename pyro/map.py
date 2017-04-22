@@ -194,6 +194,7 @@ class LevelBuilder:
     def finalize(self, game):
         self.map.fov_map = self.map.make_fov_map()
         self.map.dirty_visibility()
+        self.map.refresh_visibility(game.player.pos)
         game.map = self.map
         game.objects = self.game_objects
 

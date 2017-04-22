@@ -1,47 +1,62 @@
+from collections import deque
 
 
 class GameEngine:
     def __init__(self, actors):
         self.actors = actors if actors else []
         self.current_actor_index = 0
-        self.spend_energy_on_failure = True
-        self.stop_after_every_process = False
+        self.actions = deque()
 
     def update(self, game):
         game_result = GameResult()
         while True:
-            actor = self.__current_actor__()
-            # If we are still waiting for input for the actor, just return
-            if actor.energy.can_take_turn() and actor.needs_input():
-                return game_result
-            game.map.refresh_visibility(game.player.pos)
-            game_result.made_progress = True
-            # All pending actions are done, so advance to the next tick
-            # until an actor moves
-            action = None
-            while action is None:
+            # Process any ongoing or pending actions
+            while len(self.actions) > 0:
+                action = self.actions[0]
+                result = action.perform(game_result)
+
+                # Cascade through alternates until we hit bottom
+                while result.alternate:
+                    self.actions.popleft()
+                    action = result.alternate
+                    self.actions.appendleft(action)
+                    result = action.perform(game_result)
+
+                game.map.refresh_visibility(game.player.pos)
+                game_result.made_progress = True
+
+                if result.done:
+                    self.actions.popleft()
+                    if result.succeeded and action.consumes_energy:
+                        action.actor.finish_turn(action)
+                        self.__advance_actor__()
+
+                    # Refresh every time the hero takes a turn
+                    if action.actor == game.player.actor:
+                        return game_result
+
+                if len(game_result.events) > 0:
+                    return game_result
+
+            # If we get here, all pending actions are done, so advance
+            # to the next tick until an actor moves
+            while len(self.actions) == 0:
                 actor = self.__current_actor__()
+
+                # If we are still waiting for input for the actor, just return (again)
+                if actor.energy.can_take_turn() and actor.needs_input():
+                    return game_result
+
                 if actor.energy.can_take_turn() or actor.energy.gain(actor.speed()):
                     # If the actor can move now, but needs input from the user, just
                     # return so we can wait for it
                     if actor.needs_input():
                         return game_result
-                    action = actor.get_action()
+
+                    self.actions.append(actor.get_action())
                 else:
                     # This actor doesn't have enough energy yet, so move on to the next
                     self.__advance_actor__()
-                    if self.stop_after_every_process:
-                        return game_result
-
-            # Cascade through the alternates until none left
-            action_result = action.perform(game_result)
-            while action_result.alternate:
-                action = action_result.alternate
-                action_result = action.perform(game_result)
-
-            if self.spend_energy_on_failure or action_result.succeeded:
-                action.actor.finish_turn(action)
-                self.__advance_actor__()
 
     def __current_actor__(self):
         return self.actors[self.current_actor_index]
