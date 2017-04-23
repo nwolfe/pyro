@@ -45,8 +45,7 @@ def instantiate_monster(template):
     ai_comp = pyro.components.ai.new(template['ai'], spells)
     components = [ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
     return GameObject(name=name, components=components, hp=template['hp'],
-                      defense=template['defense'], power=template['power'],
-                      is_fighter=True)
+                      defense=template['defense'], power=template['power'])
 
 
 def make_monster(name, monster_templates):
@@ -104,8 +103,7 @@ def make_player(game):
     ]
     player = GameObject('Player', components, hp=PLAYER_DEFAULT_HP,
                         defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
-                        is_fighter=True, game=game)
-    # game.player = player
+                        game=game)
     hero = Hero(game, player)
     game.player = hero
     return hero

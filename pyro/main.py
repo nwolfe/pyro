@@ -146,6 +146,10 @@ def render_all(ui, game, fov_recompute):
                                                         libtcod.BKGND_SET)
                     game.map.mark_explored(x, y)
 
+    render_ordered = sorted(game.items, key=lambda o: o.component(Graphics).render_order)
+    for game_item in render_ordered:
+        game_item.component(Graphics).draw(ui.console)
+
     render_ordered = sorted(game.objects, key=lambda o: o.component(Graphics).render_order)
     for game_object in render_ordered:
         game_object.component(Graphics).draw(ui.console)
@@ -189,6 +193,8 @@ def render_all(ui, game, fov_recompute):
     libtcod.console_flush()
     for game_object in game.objects:
         game_object.component(Graphics).clear(ui.console)
+    for game_item in game.items:
+        game_item.component(Graphics).clear(ui.console)
 
 
 ###############################################################################
@@ -229,6 +235,7 @@ class Game:
         self.state = state
         self.map = map
         self.objects = objects
+        self.items = None
         self.player = player
         self.log = log
         self.dungeon_level = dungeon_level

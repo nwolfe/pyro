@@ -9,11 +9,9 @@ class PickUpAction(Action):
     # TODO Do this properly; use self.actor not game.player
     def on_perform(self):
         # Pick up first item in the player's tile
-        for go in self.game.objects:
-            item = go.component(Item)
-            if item:
-                if go.pos.equals(self.game.player.pos):
-                    item.pick_up(self.game.player)
+        for item in self.game.items:
+            if item.pos.equals(self.game.player.pos):
+                item.component(Item).pick_up(self.game.player)
         return ActionResult.SUCCESS
 
 

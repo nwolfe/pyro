@@ -39,8 +39,8 @@ class Item(Component):
         else:
             self.item_owner = item_owner
             inventory.add_item(self.owner)
-            if self.owner in self.owner.game.objects:
-                self.owner.game.objects.remove(self.owner)
+            if self.owner in self.owner.game.items:
+                self.owner.game.items.remove(self.owner)
             if self.player_owned():
                 self.owner.game.log.message('You picked up a {0}!'.format(self.owner.name),
                                             libtcod.green)
@@ -50,7 +50,7 @@ class Item(Component):
         # Remove from the inventory and add to the map.
         # Place at owner's coordinates.
         self.item_owner.game_object.component(Inventory).remove_item(self.owner)
-        self.owner.game.objects.append(self.owner)
+        self.owner.game.items.append(self.owner)
         self.owner.pos.x = self.item_owner.pos.x
         self.owner.pos.y = self.item_owner.pos.y
         if self.player_owned():

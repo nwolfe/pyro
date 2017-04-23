@@ -182,12 +182,13 @@ class Map:
 
 
 class LevelBuilder:
-    def __init__(self, game_map, game_objects, game_object_factory, dungeon_level):
+    def __init__(self, game_map, game_objects, game_items, game_object_factory, dungeon_level):
         self.map = game_map
         self.meta_map = [[TileMeta()
                           for _ in range(game_map.height)]
                          for _ in range(game_map.width)]
         self.game_objects = game_objects
+        self.game_items = game_items
         self.game_object_factory = game_object_factory
         self.dungeon_level = dungeon_level
 
@@ -197,6 +198,7 @@ class LevelBuilder:
         self.map.refresh_visibility(game.player.pos)
         game.map = self.map
         game.objects = self.game_objects
+        game.items = self.game_items
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True
@@ -307,7 +309,7 @@ class LevelBuilder:
                 item = self.game_object_factory.new_item(choice)
                 item.pos.x = point.x
                 item.pos.y = point.y
-                self.game_objects.append(item)
+                self.game_items.append(item)
 
     def place_doors(self):
         # Look for tunnelled walls as potential doors
@@ -402,8 +404,9 @@ def randomly_placed_rect(game_map):
 
 def make_map(game, object_factory):
     objects = [game.player]
+    items = []
     game_map = Map(MAP_HEIGHT, MAP_WIDTH)
-    builder = LevelBuilder(game_map, objects, object_factory, game.dungeon_level)
+    builder = LevelBuilder(game_map, objects, items, object_factory, game.dungeon_level)
     rooms = []
     num_rooms = 0
     new_x = 0

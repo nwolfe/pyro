@@ -1,4 +1,5 @@
 import tcod as libtcod
+from itertools import chain
 from pyro.ui import Screen
 from pyro.components import AI, Experience, Graphics, Physics, Inventory, Equipment, Item
 from pyro.direction import Direction
@@ -25,7 +26,7 @@ class EngineScreen(Screen):
         self.hero = self.game.player
         actors = [self.hero]
         for go in self.game.objects:
-            if go.component(AI):
+            if go != self.hero:
                 monster = Monster(self.game, go)
                 go.actor = monster
                 actors.append(monster)
@@ -121,6 +122,11 @@ class EngineScreen(Screen):
                         libtcod.console_set_default_foreground(self.ui.console, glyph.fg_color)
                         libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
 
+        # Draw game items
+        render_ordered = sorted(self.game.items, key=lambda i: i.component(Graphics).render_order)
+        for game_item in render_ordered:
+            game_item.component(Graphics).draw(self.ui.console)
+
         # Draw game objects
         render_ordered = sorted(self.game.objects, key=lambda o: o.component(Graphics).render_order)
         for game_object in render_ordered:
@@ -157,7 +163,7 @@ class EngineScreen(Screen):
                                  'Dungeon Level {}'.format(self.game.dungeon_level))
 
         # Display names of objects under the mouse
-        names = get_names_under_mouse(self.ui.mouse, self.game.objects, self.game.map)
+        names = get_names_under_mouse(self.ui.mouse, self.game)
         libtcod.console_set_default_foreground(self.ui.panel, libtcod.light_gray)
         libtcod.console_print_ex(self.ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                                  names)
@@ -206,7 +212,6 @@ def monster_death(monster, attacker, game):
     monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
     monster.component(Physics).blocks = False
     monster.remove_component(AI)
-    monster.is_fighter = False
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
@@ -232,15 +237,15 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
 
-def get_names_under_mouse(mouse, objects, game_map):
+def get_names_under_mouse(mouse, game):
     # Return a string with the names of all objects under the mouse
     (x, y) = (mouse.cx, mouse.cy)
 
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
-    names = [obj.name for obj in objects
-             if obj.pos.equal_to(x, y) and game_map.is_in_fov(obj.pos.x, obj.pos.y)]
-    return ', '.join(names).capitalize()
+    names = [obj.name for obj in chain(game.objects, game.items)
+             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
+    return ', '.join(names)
 
 
 def inventory_menu(console, inventory, header):
