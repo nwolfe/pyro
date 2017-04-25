@@ -11,21 +11,24 @@
         "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_lightning_bolt",
-        "spawn": [[25, 4]]
+        "spawn": 25,
+        "realspawn": [[25, 4]]
     },
     {
         "name": "Scroll Of Confusion",
         "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_confuse",
-        "spawn": [[10, 2]]
+        "spawn": 10,
+        "realspawn": [[10, 2]]
     },
     {
         "name": "Scroll Of Fireball",
         "glyph": "#",
         "color": "light_yellow",
         "on_use": "cast_fireball",
-        "spawn": [[25, 6]]
+        "spawn": 25,
+        "realspawn": [[25, 6]]
     },
     {
         "name": "Dagger",
@@ -40,7 +43,8 @@
         "color": "sky",
         "slot": "right hand",
         "power": 3,
-        "spawn": [[5, 4]]
+        "spawn": 5,
+        "realspawn": [[5, 4]]
     },
     {
         "name": "Shield",
@@ -48,6 +52,7 @@
         "color": "darker_orange",
         "slot": "left hand",
         "defense": 1,
-        "spawn": [[15, 8]]
+        "spawn": 15,
+        "realspawn": [[15, 8]]
     }
 ]
