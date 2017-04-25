@@ -13,7 +13,7 @@ class WalkAction(Action):
         # See if there is an actor there
         new_pos = self.actor.pos.plus(self.direction)
         target = None
-        for actor in self.game.actors:
+        for actor in self.game.objects:
             if actor.is_alive():
                 if actor.pos.equals(new_pos):
                     target = actor

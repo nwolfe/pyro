@@ -3,7 +3,7 @@ from itertools import chain
 from pyro.ui import Screen
 from pyro.components import AI, Experience, Graphics, Physics, Inventory, Equipment, Item
 from pyro.direction import Direction
-from pyro.engine import Monster, GameEngine, EventType
+from pyro.engine import GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.map import make_map
 from pyro.ui import HitEffect
@@ -24,14 +24,8 @@ class EngineScreen(Screen):
     def initialize_engine(self):
         # TODO This logic can't be here
         self.hero = self.game.player
-        actors = [self.hero]
-        for go in self.game.objects:
-            if go != self.hero:
-                monster = Monster(self.game, go)
-                go.actor = monster
-                actors.append(monster)
+        actors = self.game.objects
         self.engine = GameEngine(actors)
-        self.game.actors = actors
 
     def handle_input(self):
         action = None

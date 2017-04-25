@@ -7,7 +7,7 @@ from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import RENDER_ORDER_ITEM
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
-from pyro.engine import Hero
+from pyro.engine import Hero, Monster
 
 SPELLS = dict(
     confuse=Confuse,
@@ -33,7 +33,7 @@ def instantiate_spell(template):
     return spell
 
 
-def instantiate_monster(template):
+def instantiate_monster(template, game):
     name = template['name']
     exp_comp = Experience(template['experience'])
     graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
@@ -44,14 +44,12 @@ def instantiate_monster(template):
         spells = [instantiate_spell(spell) for spell in template['spells']]
     ai_comp = pyro.components.ai.new(template['ai'], spells)
     components = [ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
-    return GameObject(name=name, components=components, hp=template['hp'],
-                      defense=template['defense'], power=template['power'])
-
-
-def make_monster(name, monster_templates):
-    for template in monster_templates:
-        if template['name'] == name:
-            return instantiate_monster(template)
+    game_object = GameObject(name=name, components=components, hp=template['hp'],
+                             defense=template['defense'], power=template['power'],
+                             game=game)
+    monster = Monster(game, game_object)
+    game_object.actor = monster
+    return monster
 
 
 def load_templates(json_file):
@@ -88,12 +86,6 @@ def instantiate_item(template):
     return GameObject(name=name, components=components)
 
 
-def make_item(name, item_templates):
-    for template in item_templates:
-        if template['name'] == name:
-            return instantiate_item(template)
-
-
 def make_player(game):
     components = [
         Experience(xp=0, level=1),
@@ -105,6 +97,7 @@ def make_player(game):
                         defense=PLAYER_DEFAULT_DEFENSE, power=PLAYER_DEFAULT_POWER,
                         game=game)
     hero = Hero(game, player)
+    player.actor = hero
     game.player = hero
     return hero
 
@@ -120,11 +113,15 @@ class GameObjectFactory:
         self.item_templates = load_templates(item_file)
 
     def new_monster(self, monster_name):
-        monster = make_monster(monster_name, self.monster_templates)
-        monster.game = self.game
-        return monster
+        for template in self.monster_templates:
+            if template['name'] == monster_name:
+                return instantiate_monster(template, self.game)
+        return None
 
     def new_item(self, item_name):
-        item = make_item(item_name, self.item_templates)
-        item.game = self.game
-        return item
+        for template in self.item_templates:
+            if template['name'] == item_name:
+                item = instantiate_item(template)
+                item.game = self.game
+                return item
+        return None

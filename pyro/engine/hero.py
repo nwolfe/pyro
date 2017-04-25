@@ -17,7 +17,3 @@ class Hero(Actor):
 
     def on_create_melee_hit(self):
         return Hit()
-
-    # Temporary bridge to convert usages over to Actors from GameObjects
-    def component(self, component_type):
-        return self.game_object.component(component_type)

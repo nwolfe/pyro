@@ -239,7 +239,6 @@ class Game:
         self.player = player
         self.log = log
         self.dungeon_level = dungeon_level
-        self.actors = None
 
 
 def new_game(object_factory):

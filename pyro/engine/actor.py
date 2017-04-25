@@ -97,3 +97,7 @@ class Actor:
     @property
     def actor(self):
         return self
+
+    # Temporary bridge to convert usages over to Actors from GameObjects
+    def component(self, component_type):
+        return self.game_object.component(component_type)
