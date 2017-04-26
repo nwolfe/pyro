@@ -29,6 +29,6 @@ class Confuse(Spell):
         if monster is None:
             return 'cancelled'
 
-        self.cast(action, player, monster.actor)
+        self.cast(action, player, monster)
         msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
         action.game.log.message(msg.format(monster.name), libtcod.light_green)

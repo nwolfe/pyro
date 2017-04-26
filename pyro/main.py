@@ -202,7 +202,7 @@ def render_all(ui, game, fov_recompute):
 
 
 def check_player_level_up(game, console):
-    player = game.player.game_object
+    player = game.player
     exp = player.component(Experience)
 
     # See if the player's XP is enough to level up
@@ -216,17 +216,17 @@ def check_player_level_up(game, console):
 
     choice = None
     while choice is None:
-        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, player.__base_max_hp__),
-                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, player.__base_power__),
-                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, player.__base_defense__)]
+        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, player.base_max_hp),
+                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, player.base_power),
+                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, player.base_defense)]
         choice = menu(console, 'Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
-            player.__base_max_hp__ += LEVEL_UP_STAT_HP
-            player.__hp__ += LEVEL_UP_STAT_HP
+            player.base_max_hp += LEVEL_UP_STAT_HP
+            player.hp += LEVEL_UP_STAT_HP
         elif choice == 1:
-            player.__base_power__ += LEVEL_UP_STAT_POWER
+            player.base_power += LEVEL_UP_STAT_POWER
         elif choice == 2:
-            player.__base_defense__ += LEVEL_UP_STAT_DEFENSE
+            player.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
 class Game:

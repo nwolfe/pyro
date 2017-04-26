@@ -11,6 +11,10 @@ class Actor:
         self.energy = Energy()
         self.game = game
         self.game_object = game_object
+        self.hp = 0
+        self.base_max_hp = 0
+        self.base_defense = 0
+        self.base_power = 0
 
     def needs_input(self):
         return False
@@ -58,36 +62,32 @@ class Actor:
     def power(self):
         equipped = get_all_equipped(self)
         bonus = sum(equipment.power_bonus for equipment in equipped)
-        return self.game_object.__base_power__ + bonus
+        return self.base_power + bonus
 
     @property
     def defense(self):
         equipped = get_all_equipped(self)
         bonus = sum(equipment.defense_bonus for equipment in equipped)
-        return self.game_object.__base_defense__ + bonus
-
-    @property
-    def hp(self):
-        return self.game_object.__hp__
+        return self.base_defense + bonus
 
     @property
     def max_hp(self):
         equipped = get_all_equipped(self)
         bonus = sum(equipment.max_hp_bonus for equipment in equipped)
-        return self.game_object.__base_max_hp__ + bonus
+        return self.base_max_hp + bonus
 
     def take_damage(self, action, damage, attacker):
         if damage > 0:
-            self.game_object.__hp__ -= damage
+            self.hp -= damage
 
-        if self.game_object.__hp__ <= 0:
+        if self.hp <= 0:
             action.add_event(Event(EventType.DEATH, actor=self, other=attacker))
 
     def heal(self, amount):
         # Heal by the given amount, without going over the maximum
-        self.game_object.__hp__ += amount
-        if self.game_object.__hp__ > self.max_hp:
-            self.game_object.__hp__ = self.max_hp
+        self.hp += amount
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
 
     def is_alive(self):
         return self.hp > 0

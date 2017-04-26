@@ -90,14 +90,14 @@ class Aggressive(BehaviorStrategy):
 
 class AggressiveSpellcaster(BehaviorStrategy):
     def take_turn(self, action, ai):
-        monster = ai.owner
+        monster = ai.owner.actor
         player = monster.game.player
         if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
             # Heal yourself if damaged
-            if monster.actor.hp < monster.actor.max_hp:
+            if monster.hp < monster.max_hp:
                 heals = ai.get_spells(SpellType.HEAL)
                 if len(heals) > 0:
-                    ai.cast_spell(action, heals[0], ai.owner)
+                    ai.cast_spell(action, heals[0], monster)
                     return
 
             # Move towards player if far away
