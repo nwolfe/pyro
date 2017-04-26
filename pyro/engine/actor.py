@@ -92,12 +92,6 @@ class Actor:
     def is_alive(self):
         return self.hp > 0
 
-    # Temporary bridge so Actor can be used in place of a GameObject.
-    # Remove once game.objects is all Actors; monsters are Monsters.
-    @property
-    def actor(self):
-        return self
-
     # Temporary bridge to convert usages over to Actors from GameObjects
     def component(self, component_type):
         return self.game_object.component(component_type)

@@ -15,7 +15,7 @@ class Heal(Spell):
         return caster == target
 
     def cast(self, action, caster, target):
-        target.actor.heal(self.strength)
+        target.heal(self.strength)
 
     def player_cast(self, action, player, ui):
         # Heal the player

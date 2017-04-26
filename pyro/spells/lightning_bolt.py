@@ -33,4 +33,4 @@ class LightningBolt(Spell):
         msg += 'The damage is {1} hit points.'
         msg = msg.format(monster.name, self.strength)
         action.game.log.message(msg, libtcod.light_blue)
-        self.cast(action, player, monster.actor)
+        self.cast(action, player, monster)
