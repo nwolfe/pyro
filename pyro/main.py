@@ -1,4 +1,3 @@
-import shelve
 import tcod as libtcod
 from pyro.components import Experience, Item, Graphics
 from pyro.map import make_map
@@ -283,34 +282,6 @@ def play_game(game, ui, object_factory):
         screen.update()
 
 
-def save_game(game):
-    # Open an empty shelve (possibly overwriting an old one) to write the data
-    save_file = shelve.open('savegame', 'n')
-    save_file['map'] = game.map
-    save_file['objects'] = game.objects
-    save_file['player_index'] = game.objects.index(game.player)
-    save_file['messages'] = game.log.messages
-    save_file['state'] = game.state
-    # save_file['stairs_index'] = game.objects.index(game.stairs)
-    save_file['dungeon_level'] = game.dungeon_level
-    save_file.close()
-
-
-def load_game():
-    # Open the previously saved shelve and load the game data
-    save_file = shelve.open('savegame', 'r')
-    game_map = save_file['map']
-    objects = save_file['objects']
-    player = objects[save_file['player_index']]
-    messages = save_file['messages']
-    state = save_file['state']
-    # stairs = objects[save_file['stairs_index']]
-    dungeon_level = save_file['dungeon_level']
-    save_file.close()
-
-    return Game(state, game_map, objects, player, Log(messages), dungeon_level)
-
-
 def main_menu(ui):
     background = libtcod.image_load('menu_background.png')
 
@@ -326,7 +297,7 @@ def main_menu(ui):
         libtcod.console_set_default_foreground(ui.console, libtcod.light_yellow)
 
         # Show options and wait for the player's choice
-        options = ['Play a new game', 'Continue last game', 'Quit']
+        options = ['Play a new game', 'Quit']
         choice = menu(ui.console, '', options, 24)
 
         if choice == 0:
@@ -334,14 +305,6 @@ def main_menu(ui):
             game = new_game(object_factory)
             play_game(game, ui, object_factory)
         elif choice == 1:
-            # Load last game
-            try:
-                game = load_game()
-                play_game(game, ui, object_factory)
-            except:
-                messagebox(ui.console, '\n No saved game to load.\n', 24)
-                continue
-        elif choice == 2:
             # Quit
             break
 
