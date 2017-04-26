@@ -149,7 +149,7 @@ def render_all(ui, game, fov_recompute):
     for game_item in render_ordered:
         game_item.component(Graphics).draw(ui.console)
 
-    render_ordered = sorted(game.objects, key=lambda o: o.component(Graphics).render_order)
+    render_ordered = sorted(game.actors, key=lambda o: o.component(Graphics).render_order)
     for game_object in render_ordered:
         game_object.component(Graphics).draw(ui.console)
 
@@ -180,7 +180,7 @@ def render_all(ui, game, fov_recompute):
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
-    names = get_names_under_mouse(ui.mouse, game.objects, game.map)
+    names = get_names_under_mouse(ui.mouse, game.actors, game.map)
     libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
     libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                              names)
@@ -190,7 +190,7 @@ def render_all(ui, game, fov_recompute):
                          PANEL_Y)
 
     libtcod.console_flush()
-    for game_object in game.objects:
+    for game_object in game.actors:
         game_object.component(Graphics).clear(ui.console)
     for game_item in game.items:
         game_item.component(Graphics).clear(ui.console)
@@ -233,7 +233,7 @@ class Game:
     def __init__(self, state=None, map=None, objects=None, player=None, log=None, dungeon_level=None):
         self.state = state
         self.map = map
-        self.objects = objects
+        self.actors = objects
         self.items = None
         self.player = player
         self.log = log

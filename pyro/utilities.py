@@ -3,7 +3,7 @@ from pyro.components import Physics
 
 
 def blocked(game, position):
-    return is_blocked(game.map, game.objects, position.x, position.y)
+    return is_blocked(game.map, game.actors, position.x, position.y)
 
 
 def is_blocked(game_map, objects, x, y):
@@ -49,7 +49,7 @@ def target_monster(game, ui, max_range=None):
             return None
 
         # Return the first clicked monster, otherwise continue looking
-        for game_object in game.objects:
+        for game_object in game.actors:
             if game_object != game.player and game_object.actor.is_alive():
                 if game_object.pos.equal_to(x, y):
                     return game_object
@@ -60,7 +60,7 @@ def closest_monster(game, max_range):
     closest_enemy = None
     closest_dist = max_range + 1
 
-    for game_object in game.objects:
+    for game_object in game.actors:
         if game_object != game.player and game_object.actor.is_alive():
             if game.map.is_in_fov(game_object.pos.x, game_object.pos.y):
                 # Calculate distance between this object and the player

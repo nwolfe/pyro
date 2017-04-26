@@ -13,7 +13,7 @@ def astar(game, from_pos, to_pos):
     # target (so that the start and the end points are free).
     # The AI class handles the situation if self is next to the target so
     # it will not use this A* function anyway.
-    for obj in game.objects:
+    for obj in game.actors:
         blocks = obj.component(Physics).blocks
         if blocks and obj.pos.x != to_pos.x and obj.pos.y != to_pos.y:
             # Set the tile as a wall so it must be navigated around

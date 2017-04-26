@@ -24,7 +24,7 @@ class EngineScreen(Screen):
     def initialize_engine(self):
         # TODO This logic can't be here
         self.hero = self.game.player
-        actors = self.game.objects
+        actors = self.game.actors
         self.engine = GameEngine(actors)
 
     def handle_input(self):
@@ -122,7 +122,7 @@ class EngineScreen(Screen):
             game_item.component(Graphics).draw(self.ui.console)
 
         # Draw game objects
-        render_ordered = sorted(self.game.objects, key=lambda o: o.component(Graphics).render_order)
+        render_ordered = sorted(self.game.actors, key=lambda o: o.component(Graphics).render_order)
         for game_object in render_ordered:
             game_object.component(Graphics).draw(self.ui.console)
 
@@ -237,7 +237,7 @@ def get_names_under_mouse(mouse, game):
 
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
-    names = [obj.name for obj in chain(game.objects, game.items)
+    names = [obj.name for obj in chain(game.actors, game.items)
              if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
     return ', '.join(names)
 

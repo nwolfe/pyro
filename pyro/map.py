@@ -182,12 +182,12 @@ class Map:
 
 
 class LevelBuilder:
-    def __init__(self, game_map, game_objects, game_items, game_object_factory, dungeon_level):
+    def __init__(self, game_map, game_actors, game_items, game_object_factory, dungeon_level):
         self.map = game_map
         self.meta_map = [[TileMeta()
                           for _ in range(game_map.height)]
                          for _ in range(game_map.width)]
-        self.game_objects = game_objects
+        self.game_actors = game_actors
         self.game_items = game_items
         self.game_object_factory = game_object_factory
         self.dungeon_level = dungeon_level
@@ -197,7 +197,7 @@ class LevelBuilder:
         self.map.dirty_visibility()
         self.map.refresh_visibility(game.player.pos)
         game.map = self.map
-        game.objects = self.game_objects
+        game.actors = self.game_actors
         game.items = self.game_items
 
     def mark_tunnelled(self, x, y):
@@ -238,7 +238,7 @@ class LevelBuilder:
     def place_grass(self, room):
         if libtcod.random_get_int(0, 1, 2) == 1:
             point = room.random_point_inside()
-            while is_blocked(self.map, self.game_objects, point.x, point.y):
+            while is_blocked(self.map, self.game_actors, point.x, point.y):
                 point = room.random_point_inside()
 
             self.place_grass_tile(point.x, point.y)
@@ -249,7 +249,7 @@ class LevelBuilder:
                 while not self.map.is_on_map(point.x, point.y):
                     point = random_point_surrounding(point)
 
-                if not is_blocked(self.map, self.game_objects, point.x, point.y):
+                if not is_blocked(self.map, self.game_actors, point.x, point.y):
                     self.place_grass_tile(point.x, point.y)
 
     CREATURE_CHANCES = dict(
@@ -275,12 +275,12 @@ class LevelBuilder:
             # Random position for creature
             point = room.random_point_inside()
 
-            if not is_blocked(self.map, self.game_objects, point.x, point.y):
+            if not is_blocked(self.map, self.game_actors, point.x, point.y):
                 choice = random_choice(creature_chances)
                 creature = self.game_object_factory.new_monster(choice)
                 creature.pos.x = point.x
                 creature.pos.y = point.y
-                self.game_objects.append(creature)
+                self.game_actors.append(creature)
 
     def place_boss(self, room_x, room_y):
         bosses = filter(lambda m: m['type'] == 'boss', self.game_object_factory.monster_templates)
@@ -292,7 +292,7 @@ class LevelBuilder:
         boss = self.game_object_factory.new_monster(boss['name'])
         nearby = random_point_surrounding(Point(room_x, room_y))
         boss.pos.x, boss.pos.y = nearby.x, nearby.y
-        self.game_objects.append(boss)
+        self.game_actors.append(boss)
 
     def place_items(self, room):
         # Random number of items
@@ -304,7 +304,7 @@ class LevelBuilder:
             # Random position for item
             point = room.random_point_inside()
 
-            if not is_blocked(self.map, self.game_objects, point.x, point.y):
+            if not is_blocked(self.map, self.game_actors, point.x, point.y):
                 choice = random_choice(item_chances)
                 item = self.game_object_factory.new_item(choice)
                 item.pos.x = point.x
@@ -403,10 +403,10 @@ def randomly_placed_rect(game_map):
 
 
 def make_map(game, object_factory):
-    objects = [game.player]
+    actors = [game.player]
     items = []
     game_map = Map(MAP_HEIGHT, MAP_WIDTH)
-    builder = LevelBuilder(game_map, objects, items, object_factory, game.dungeon_level)
+    builder = LevelBuilder(game_map, actors, items, object_factory, game.dungeon_level)
     rooms = []
     num_rooms = 0
     new_x = 0
