@@ -5,7 +5,6 @@ from pyro.components import Experience, Item, Equipment, Inventory
 from pyro.components import SpellItemUse, Graphics, Physics
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
-from pyro.settings import RENDER_ORDER_ITEM
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
 from pyro.engine import Hero, Monster
 
@@ -70,7 +69,7 @@ def instantiate_item(template):
     name = template['name']
     glyph = template['glyph']
     color = getattr(libtcod, template['color'])
-    graphics = Graphics(glyph, color, RENDER_ORDER_ITEM)
+    graphics = Graphics(glyph, color)
     components = [Physics(), graphics]
     if 'slot' in template:
         equipment = Equipment(slot=template['slot'])

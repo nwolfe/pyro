@@ -34,7 +34,6 @@ MAX_ROOMS = 30
 
 # Render Orders
 RENDER_ORDER_DEFAULT = 10
-RENDER_ORDER_ITEM = 8
 RENDER_ORDER_CORPSE = 1
 
 # Experience and levelling
