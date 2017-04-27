@@ -120,19 +120,17 @@ class EngineScreen(Screen):
         render_ordered = sorted(self.game.items, key=lambda i: i.component(Graphics).render_order)
         for item in render_ordered:
             x, y = item.pos.x, item.pos.y
-            graphics = item.component(Graphics)
-            always_visible = graphics.always_visible and self.game.map.is_explored(x, y)
-            if always_visible or self.game.map.is_in_fov(x, y):
+            if self.game.map.is_in_fov(x, y):
+                graphics = item.component(Graphics)
                 libtcod.console_set_default_foreground(self.ui.console, graphics.color)
                 libtcod.console_put_char(self.ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
-        # Draw game objects
+        # Draw game actors
         render_ordered = sorted(self.game.actors, key=lambda o: o.component(Graphics).render_order)
         for actor in render_ordered:
             x, y = actor.pos.x, actor.pos.y
-            graphics = actor.component(Graphics)
-            always_visible = graphics.always_visible and self.game.map.is_explored(x, y)
-            if always_visible or self.game.map.is_in_fov(x, y):
+            if self.game.map.is_in_fov(x, y):
+                graphics = actor.component(Graphics)
                 libtcod.console_set_default_foreground(self.ui.console, graphics.color)
                 libtcod.console_put_char(self.ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 

@@ -148,18 +148,16 @@ def render_all(ui, game, fov_recompute):
     render_ordered = sorted(game.items, key=lambda o: o.component(Graphics).render_order)
     for item in render_ordered:
         x, y = item.pos.x, item.pos.y
-        graphics = item.component(Graphics)
-        always_visible = graphics.always_visible and game.map.is_explored(x, y)
-        if always_visible or game.map.is_in_fov(x, y):
+        if game.map.is_in_fov(x, y):
+            graphics = item.component(Graphics)
             libtcod.console_set_default_foreground(ui.console, graphics.color)
             libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
     render_ordered = sorted(game.actors, key=lambda o: o.component(Graphics).render_order)
     for actor in render_ordered:
         x, y = actor.pos.x, actor.pos.y
-        graphics = actor.component(Graphics)
-        always_visible = graphics.always_visible and game.map.is_explored(x, y)
-        if always_visible or game.map.is_in_fov(x, y):
+        if game.map.is_in_fov(x, y):
+            graphics = actor.component(Graphics)
             libtcod.console_set_default_foreground(ui.console, graphics.color)
             libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
