@@ -146,12 +146,22 @@ def render_all(ui, game, fov_recompute):
                     game.map.mark_explored(x, y)
 
     render_ordered = sorted(game.items, key=lambda o: o.component(Graphics).render_order)
-    for game_item in render_ordered:
-        game_item.component(Graphics).draw(ui.console)
+    for item in render_ordered:
+        x, y = item.pos.x, item.pos.y
+        graphics = item.component(Graphics)
+        always_visible = graphics.always_visible and game.map.is_explored(x, y)
+        if always_visible or game.map.is_in_fov(x, y):
+            libtcod.console_set_default_foreground(ui.console, graphics.color)
+            libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
     render_ordered = sorted(game.actors, key=lambda o: o.component(Graphics).render_order)
-    for game_object in render_ordered:
-        game_object.component(Graphics).draw(ui.console)
+    for actor in render_ordered:
+        x, y = actor.pos.x, actor.pos.y
+        graphics = actor.component(Graphics)
+        always_visible = graphics.always_visible and game.map.is_explored(x, y)
+        if always_visible or game.map.is_in_fov(x, y):
+            libtcod.console_set_default_foreground(ui.console, graphics.color)
+            libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
@@ -190,10 +200,10 @@ def render_all(ui, game, fov_recompute):
                          PANEL_Y)
 
     libtcod.console_flush()
-    for game_object in game.actors:
-        game_object.component(Graphics).clear(ui.console)
-    for game_item in game.items:
-        game_item.component(Graphics).clear(ui.console)
+    for actor in game.actors:
+        libtcod.console_put_char(console, actor.pos.x, actor.pos.y, ' ', libtcod.BKGND_NONE)
+    for item in game.items:
+        libtcod.console_put_char(console, item.pos.x, item.pos.y, ' ', libtcod.BKGND_NONE)
 
 
 ###############################################################################

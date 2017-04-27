@@ -1,4 +1,3 @@
-import tcod as libtcod
 from pyro.component import Component
 from pyro.settings import RENDER_ORDER_DEFAULT
 
@@ -10,17 +9,3 @@ class Graphics(Component):
         self.color = color
         self.render_order = render_order
         self.always_visible = always_visible
-
-    def draw(self, console):
-        x = self.owner.pos.x
-        y = self.owner.pos.y
-        always_visible = self.always_visible and self.owner.game.map.is_explored(x, y)
-        if always_visible or self.owner.game.map.is_in_fov(x, y):
-            # Set the color and then draw the character that
-            # represents this object at its position
-            libtcod.console_set_default_foreground(console, self.color)
-            libtcod.console_put_char(console, x, y, self.glyph, libtcod.BKGND_NONE)
-
-    def clear(self, console):
-        # Erase the character that represents this object
-        libtcod.console_put_char(console, self.owner.pos.x, self.owner.pos.y, ' ', libtcod.BKGND_NONE)
