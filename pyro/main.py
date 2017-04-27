@@ -1,4 +1,5 @@
 import tcod as libtcod
+from itertools import chain
 from pyro.components import Experience, Item, Graphics
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
@@ -82,14 +83,14 @@ def messagebox(console, text, width=50):
     return menu(console, text, [], width)
 
 
-def get_names_under_mouse(mouse, objects, game_map):
+def get_names_under_mouse(mouse, game):
     # Return a string with the names of all objects under the mouse
     (x, y) = (mouse.cx, mouse.cy)
 
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
-    names = [obj.name for obj in objects
-             if obj.pos.equal_to(x, y) and game_map.is_in_fov(obj.pos.x, obj.pos.y)]
+    names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
+             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
     return ', '.join(names).capitalize()
 
 
@@ -145,16 +146,21 @@ def render_all(ui, game, fov_recompute):
                                                         libtcod.BKGND_SET)
                     game.map.mark_explored(x, y)
 
-    render_ordered = sorted(game.items, key=lambda o: o.component(Graphics).render_order)
-    for item in render_ordered:
+    for item in game.items:
         x, y = item.pos.x, item.pos.y
         if game.map.is_in_fov(x, y):
             graphics = item.component(Graphics)
             libtcod.console_set_default_foreground(ui.console, graphics.color)
             libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
-    render_ordered = sorted(game.actors, key=lambda o: o.component(Graphics).render_order)
-    for actor in render_ordered:
+    for corpse in game.corpses:
+        x, y = corpse.pos.x, corpse.pos.y
+        if game.map.is_in_fov(x, y):
+            glyph = corpse.type.glyph
+            libtcod.console_set_default_foreground(ui.console, glyph.fg_color)
+            libtcod.console_put_char(ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
+
+    for actor in game.actors:
         x, y = actor.pos.x, actor.pos.y
         if game.map.is_in_fov(x, y):
             graphics = actor.component(Graphics)
@@ -188,7 +194,7 @@ def render_all(ui, game, fov_recompute):
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
-    names = get_names_under_mouse(ui.mouse, game.actors, game.map)
+    names = get_names_under_mouse(ui.mouse, game)
     libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
     libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                              names)
@@ -243,6 +249,7 @@ class Game:
         self.map = map
         self.actors = objects
         self.items = None
+        self.corpses = []
         self.player = player
         self.log = log
         self.dungeon_level = dungeon_level

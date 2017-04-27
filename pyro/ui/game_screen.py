@@ -1,7 +1,8 @@
 import tcod as libtcod
+import pyro.engine.corpse
 from itertools import chain
 from pyro.ui import Screen
-from pyro.components import AI, Experience, Graphics, Physics, Inventory, Equipment, Item
+from pyro.components import Experience, Graphics, Inventory, Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
@@ -81,8 +82,9 @@ class EngineScreen(Screen):
         if not self.game.player.is_alive():
             self.game.state = 'dead'
             self.game.log.message('You died!')
-            self.game.player.component(Graphics).glyph = '%'
-            self.game.player.component(Graphics).color = libtcod.dark_red
+            corpse = pyro.engine.corpse.for_hero(self.game.player)
+            self.game.actors.remove(self.game.player)
+            self.game.corpses.append(corpse)
             return
 
         for event in result.events:
@@ -117,17 +119,23 @@ class EngineScreen(Screen):
                         libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
 
         # Draw game items
-        render_ordered = sorted(self.game.items, key=lambda i: i.component(Graphics).render_order)
-        for item in render_ordered:
+        for item in self.game.items:
             x, y = item.pos.x, item.pos.y
             if self.game.map.is_in_fov(x, y):
                 graphics = item.component(Graphics)
                 libtcod.console_set_default_foreground(self.ui.console, graphics.color)
                 libtcod.console_put_char(self.ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
 
+        # Draw corpses
+        for corpse in self.game.corpses:
+            x, y = corpse.pos.x, corpse.pos.y
+            if self.game.map.is_in_fov(x, y):
+                glyph = corpse.type.glyph
+                libtcod.console_set_default_foreground(self.ui.console, glyph.fg_color)
+                libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
+
         # Draw game actors
-        render_ordered = sorted(self.game.actors, key=lambda o: o.component(Graphics).render_order)
-        for actor in render_ordered:
+        for actor in self.game.actors:
             x, y = actor.pos.x, actor.pos.y
             if self.game.map.is_in_fov(x, y):
                 graphics = actor.component(Graphics)
@@ -197,8 +205,6 @@ class EngineScreen(Screen):
 
 
 def monster_death(monster, attacker, game):
-    monster = monster.game_object
-    attacker = attacker.game_object
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
     exp = monster.component(Experience)
@@ -208,12 +214,9 @@ def monster_death(monster, attacker, game):
     else:
         game.log.message('The {0} is dead!'.format(monster.name), libtcod.orange)
     attacker.component(Experience).xp += exp.xp
-    monster.name = 'Remains of {0}'.format(monster.name)
-    monster.component(Graphics).glyph = '%'
-    monster.component(Graphics).color = libtcod.dark_red
-    monster.component(Graphics).render_order = RENDER_ORDER_CORPSE
-    monster.component(Physics).blocks = False
-    monster.remove_component(AI)
+    corpse = pyro.engine.corpse.for_monster(monster)
+    game.actors.remove(monster)
+    game.corpses.append(corpse)
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
@@ -245,7 +248,7 @@ def get_names_under_mouse(mouse, game):
 
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
-    names = [obj.name for obj in chain(game.actors, game.items)
+    names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
              if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
     return ', '.join(names)
 

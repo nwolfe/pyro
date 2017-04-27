@@ -3,6 +3,7 @@ from pyro.utilities import is_blocked
 from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
 from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
 from pyro.settings import TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
+from pyro.engine.glyph import Glyph
 
 
 class Point:
@@ -31,13 +32,6 @@ class Rect:
     def random_point_inside(self):
         return Point(libtcod.random_get_int(0, self.x1+1, self.x2-1),
                      libtcod.random_get_int(0, self.y1+1, self.y2-1))
-
-
-class Glyph:
-    def __init__(self, char, fg_color, bg_color=None):
-        self.char = char
-        self.fg_color = fg_color
-        self.bg_color = bg_color if bg_color else fg_color
 
 
 class Appearance:
