@@ -50,7 +50,7 @@ def target_monster(game, ui, max_range=None):
 
         # Return the first clicked monster, otherwise continue looking
         for game_object in game.actors:
-            if game_object != game.player and game_object.is_alive():
+            if game_object != game.player:
                 if game_object.pos.equal_to(x, y):
                     return game_object
 
@@ -61,7 +61,7 @@ def closest_monster(game, max_range):
     closest_dist = max_range + 1
 
     for game_object in game.actors:
-        if game_object != game.player and game_object.is_alive():
+        if game_object != game.player:
             if game.map.is_in_fov(game_object.pos.x, game_object.pos.y):
                 # Calculate distance between this object and the player
                 dist = game.player.pos.distance_to(game_object.pos)

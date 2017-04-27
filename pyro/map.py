@@ -193,6 +193,7 @@ class LevelBuilder:
         game.map = self.map
         game.actors = self.game_actors
         game.items = self.game_items
+        game.corpses = []
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True

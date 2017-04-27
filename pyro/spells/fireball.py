@@ -24,10 +24,9 @@ class Fireball(Spell):
                                 format(self.radius), libtcod.orange)
         for game_object in caster.game.actors:
             if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
-                if game_object.is_alive():
-                    caster.game.log.message('The {0} gets burned for {1} hit points.'.
-                                            format(game_object.name, self.strength), libtcod.orange)
-                    game_object.take_damage(action, self.strength, caster)
+                caster.game.log.message('The {0} gets burned for {1} hit points.'.
+                                        format(game_object.name, self.strength), libtcod.orange)
+                game_object.take_damage(action, self.strength, caster)
         return self.strength
 
     def player_cast(self, action, player, ui):
@@ -42,7 +41,6 @@ class Fireball(Spell):
                                 format(self.radius), libtcod.orange)
         for game_object in action.game.actors:
             if game_object.pos.distance(x, y) <= self.radius:
-                if game_object.is_alive():
-                    action.game.log.message('The {0} gets burned for {1} hit points.'.
-                                            format(game_object.name, self.strength), libtcod.orange)
-                    game_object.take_damage(action, self.strength, player)
+                action.game.log.message('The {0} gets burned for {1} hit points.'.
+                                        format(game_object.name, self.strength), libtcod.orange)
+                game_object.take_damage(action, self.strength, player)

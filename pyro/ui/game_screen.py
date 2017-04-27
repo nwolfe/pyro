@@ -79,7 +79,7 @@ class EngineScreen(Screen):
 
         result = self.engine.update(self.game)
 
-        if not self.game.player.is_alive():
+        if self.game.player.hp <= 0:
             self.game.state = 'dead'
             self.game.log.message('You died!')
             corpse = pyro.engine.corpse.for_hero(self.game.player)

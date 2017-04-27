@@ -249,7 +249,7 @@ class Game:
         self.map = map
         self.actors = objects
         self.items = None
-        self.corpses = []
+        self.corpses = None
         self.player = player
         self.log = log
         self.dungeon_level = dungeon_level
