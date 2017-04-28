@@ -2,7 +2,7 @@ import tcod as libtcod
 import pyro.engine.corpse
 from itertools import chain
 from pyro.ui import Screen
-from pyro.components import Experience, Graphics, Inventory, Equipment, Item
+from pyro.components import Experience, Inventory, Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
@@ -122,9 +122,8 @@ class EngineScreen(Screen):
         for item in self.game.items:
             x, y = item.pos.x, item.pos.y
             if self.game.map.is_in_fov(x, y):
-                graphics = item.component(Graphics)
-                libtcod.console_set_default_foreground(self.ui.console, graphics.color)
-                libtcod.console_put_char(self.ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
+                libtcod.console_set_default_foreground(self.ui.console, item.glyph.fg_color)
+                libtcod.console_put_char(self.ui.console, x, y, item.glyph.char, libtcod.BKGND_NONE)
 
         # Draw corpses
         for corpse in self.game.corpses:
@@ -138,9 +137,8 @@ class EngineScreen(Screen):
         for actor in self.game.actors:
             x, y = actor.pos.x, actor.pos.y
             if self.game.map.is_in_fov(x, y):
-                graphics = actor.component(Graphics)
-                libtcod.console_set_default_foreground(self.ui.console, graphics.color)
-                libtcod.console_put_char(self.ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
+                libtcod.console_set_default_foreground(self.ui.console, actor.glyph.fg_color)
+                libtcod.console_put_char(self.ui.console, x, y, actor.glyph.char, libtcod.BKGND_NONE)
 
         # Draw effects
         for effect in self.effects:

@@ -2,7 +2,8 @@ import json
 import tcod as libtcod
 import pyro.components.ai
 from pyro.components import Experience, Item, Equipment, Inventory
-from pyro.components import SpellItemUse, Graphics, Physics
+from pyro.components import SpellItemUse, Physics
+from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
@@ -35,16 +36,16 @@ def instantiate_spell(template):
 def instantiate_monster(template, game):
     name = template['name']
     exp_comp = Experience(template['experience'])
-    graphics_comp = Graphics(template['glyph'], getattr(libtcod, template['color']))
     spells = None
     if 'spell' in template:
         spells = [instantiate_spell(template['spell'])]
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
     ai_comp = pyro.components.ai.new(template['ai'], spells)
-    components = [ai_comp, exp_comp, graphics_comp, Physics(blocks=True)]
+    components = [ai_comp, exp_comp, Physics(blocks=True)]
     game_object = GameObject(name=name, components=components, game=game)
     monster = Monster(game, game_object)
+    monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
     monster.hp = template['hp']
     monster.base_max_hp = monster.hp
     monster.base_defense = template['defense']
@@ -67,10 +68,7 @@ def load_templates(json_file):
 
 def instantiate_item(template):
     name = template['name']
-    glyph = template['glyph']
-    color = getattr(libtcod, template['color'])
-    graphics = Graphics(glyph, color)
-    components = [Physics(), graphics]
+    components = [Physics()]
     if 'slot' in template:
         equipment = Equipment(slot=template['slot'])
         if 'power' in template:
@@ -84,18 +82,20 @@ def instantiate_item(template):
         spell = instantiate_spell(ITEM_USES[template['on_use']])
         item = Item(on_use=SpellItemUse(spell))
         components.append(item)
-    return GameObject(name=name, components=components)
+    item = GameObject(name=name, components=components)
+    item.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
+    return item
 
 
 def make_player(game):
     components = [
         Experience(xp=0, level=1),
-        Graphics(glyph='@', color=libtcod.white),
         Inventory(items=[]),
         Physics(blocks=True)
     ]
     player = GameObject('Player', components, game=game)
     hero = Hero(game, player)
+    hero.glyph = Glyph('@', libtcod.white)
     hero.hp = PLAYER_DEFAULT_HP
     hero.base_max_hp = hero.hp
     hero.base_defense = PLAYER_DEFAULT_DEFENSE

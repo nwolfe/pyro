@@ -1,6 +1,6 @@
 import tcod as libtcod
 from itertools import chain
-from pyro.components import Experience, Item, Graphics
+from pyro.components import Experience, Item
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
@@ -149,9 +149,8 @@ def render_all(ui, game, fov_recompute):
     for item in game.items:
         x, y = item.pos.x, item.pos.y
         if game.map.is_in_fov(x, y):
-            graphics = item.component(Graphics)
-            libtcod.console_set_default_foreground(ui.console, graphics.color)
-            libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
+            libtcod.console_set_default_foreground(ui.console, item.glyph.fg_color)
+            libtcod.console_put_char(ui.console, x, y, item.glyph.char, libtcod.BKGND_NONE)
 
     for corpse in game.corpses:
         x, y = corpse.pos.x, corpse.pos.y
@@ -163,9 +162,8 @@ def render_all(ui, game, fov_recompute):
     for actor in game.actors:
         x, y = actor.pos.x, actor.pos.y
         if game.map.is_in_fov(x, y):
-            graphics = actor.component(Graphics)
-            libtcod.console_set_default_foreground(ui.console, graphics.color)
-            libtcod.console_put_char(ui.console, x, y, graphics.glyph, libtcod.BKGND_NONE)
+            libtcod.console_set_default_foreground(ui.console, actor.glyph.fg_color)
+            libtcod.console_put_char(ui.console, x, y, actor.glyph.char, libtcod.BKGND_NONE)
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)

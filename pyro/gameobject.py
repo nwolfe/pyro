@@ -9,3 +9,4 @@ class GameObject(Entity):
         self.pos = Position()
         self.name = name
         self.actor = None
+        self.glyph = None

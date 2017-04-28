@@ -8,6 +8,7 @@ class Actor:
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, game, game_object):
+        self.glyph = None
         self.energy = Energy()
         self.game = game
         self.game_object = game_object
