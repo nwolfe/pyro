@@ -1,6 +1,6 @@
 import tcod as libtcod
 from itertools import chain
-from pyro.components import Experience, Item
+from pyro.components import Item
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
@@ -183,9 +183,8 @@ def render_all(ui, game, fov_recompute):
     # Show player's stats
     render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.hp,
                   game.player.max_hp, libtcod.light_red, libtcod.darker_red)
-    experience = game.player.component(Experience)
-    render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
-                  libtcod.green, libtcod.darkest_green)
+    render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', game.player.xp,
+                  game.player.required_for_level_up(), libtcod.green, libtcod.darkest_green)
 
     # Show the dungeon level
     libtcod.console_print_ex(ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
@@ -215,16 +214,15 @@ def render_all(ui, game, fov_recompute):
 
 def check_player_level_up(game, console):
     player = game.player
-    exp = player.component(Experience)
 
     # See if the player's XP is enough to level up
-    if not exp.can_level_up():
+    if not player.can_level_up():
         return
 
     # Ding! Level up!
-    exp.level_up()
+    player.level_up()
     msg = 'Your battle skills grow stronger! You reached level {}!'
-    game.log.message(msg.format(exp.level), libtcod.yellow)
+    game.log.message(msg.format(player.level), libtcod.yellow)
 
     choice = None
     while choice is None:

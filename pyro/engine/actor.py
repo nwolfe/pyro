@@ -2,6 +2,7 @@ import abc
 from pyro.energy import Energy, NORMAL_SPEED
 from pyro.engine import Event, EventType
 from pyro.components.item import get_all_equipped
+from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR
 
 
 class Actor:
@@ -16,6 +17,8 @@ class Actor:
         self.base_max_hp = 0
         self.base_defense = 0
         self.base_power = 0
+        self.xp = 0
+        self.level = 1
 
     def needs_input(self):
         return False
@@ -89,6 +92,17 @@ class Actor:
         self.hp += amount
         if self.hp > self.max_hp:
             self.hp = self.max_hp
+
+    def required_for_level_up(self):
+        return LEVEL_UP_BASE + self.level * LEVEL_UP_FACTOR
+
+    def can_level_up(self):
+        return self.xp >= self.required_for_level_up()
+
+    def level_up(self):
+        required = self.required_for_level_up()
+        self.level += 1
+        self.xp -= required
 
     # Temporary bridge to convert usages over to Actors from GameObjects
     def component(self, component_type):

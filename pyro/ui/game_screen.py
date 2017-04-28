@@ -2,7 +2,7 @@ import tcod as libtcod
 import pyro.engine.corpse
 from itertools import chain
 from pyro.ui import Screen
-from pyro.components import Experience, Inventory, Equipment, Item
+from pyro.components import Inventory, Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
@@ -162,9 +162,8 @@ class EngineScreen(Screen):
         # Show player's stats
         render_ui_bar(self.ui.panel, 1, 1, BAR_WIDTH, 'HP', self.game.player.hp,
                       self.game.player.max_hp, libtcod.light_red, libtcod.darker_red)
-        experience = self.game.player.component(Experience)
-        render_ui_bar(self.ui.panel, 1, 2, BAR_WIDTH, 'EXP', experience.xp, experience.required_for_level_up(),
-                      libtcod.green, libtcod.darkest_green)
+        render_ui_bar(self.ui.panel, 1, 2, BAR_WIDTH, 'EXP', self.game.player.xp,
+                      self.game.player.required_for_level_up(), libtcod.green, libtcod.darkest_green)
 
         # Show the dungeon level
         libtcod.console_print_ex(self.ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
@@ -205,13 +204,12 @@ class EngineScreen(Screen):
 def monster_death(monster, attacker, game):
     # Transform it into a nasty corpse!
     # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.component(Experience)
     if attacker == game.player:
         game.log.message('The {0} is dead! You gain {1} experience points.'.
-                         format(monster.name, exp.xp), libtcod.orange)
+                         format(monster.name, monster.xp), libtcod.orange)
     else:
         game.log.message('The {0} is dead!'.format(monster.name), libtcod.orange)
-    attacker.component(Experience).xp += exp.xp
+    attacker.xp += monster.xp
     corpse = pyro.engine.corpse.for_monster(monster)
     game.actors.remove(monster)
     game.corpses.append(corpse)
@@ -334,10 +332,9 @@ Maximum HP: {4}
 Attack: {5}
 Defense: {6}
 """
-    exp = game.player.component(Experience)
-    msg = msg.format(exp.level,
-                     exp.xp,
-                     exp.required_for_level_up(),
+    msg = msg.format(game.player.level,
+                     game.player.xp,
+                     game.player.required_for_level_up(),
                      game.player.hp,
                      game.player.max_hp,
                      game.player.power,
