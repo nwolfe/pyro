@@ -5,11 +5,11 @@ from pyro.engine.attack import Hit
 class Monster(Actor):
     def __init__(self, game, monster_object):
         Actor.__init__(self, game, monster_object)
+        self.ai = None
 
     def on_get_action(self):
         # TODO Implement
-        from pyro.components import AI
-        return AIAdapterAction(self.game_object.component(AI))
+        return AIAdapterAction(self.ai)
 
     def on_create_melee_hit(self):
         return Hit()

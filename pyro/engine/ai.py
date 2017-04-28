@@ -1,7 +1,6 @@
 import tcod as libtcod
 import pyro.astar
 import pyro.direction
-from pyro.component import Component
 from pyro.spell import SpellType
 from pyro.engine.actions import AttackAction, WalkAction
 from pyro.utilities import blocked
@@ -22,9 +21,9 @@ def new(name, spells=None):
     return AI(behavior, spells)
 
 
-class AI(Component):
+class AI:
     def __init__(self, behavior=None, spells=None):
-        Component.__init__(self, component_type=AI)
+        self.monster = None
         self.behavior = behavior
         if spells:
             self.__spells = {SpellType.ATTACK: [], SpellType.HEAL: []}
@@ -46,7 +45,7 @@ class AI(Component):
 
     def in_range(self, target, spell_type):
         for spell in self.__spells[spell_type]:
-            if spell.in_range(self.owner, target):
+            if spell.in_range(self.monster, target):
                 return True
         return False
 
@@ -54,18 +53,18 @@ class AI(Component):
         if SpellType.ATTACK == spell.type:
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
-                damage = spell.cast(action, self.owner.actor, target)
+                damage = spell.cast(action, self.monster, target)
                 msg = 'The {0} strikes you with a {1}! You take {2} damage.'
-                msg = msg.format(self.owner.name, spell.name, damage)
-                self.owner.game.log.message('- ' + msg, libtcod.red)
+                msg = msg.format(self.monster.name, spell.name, damage)
+                self.monster.game.log.message('- ' + msg, libtcod.red)
             else:
                 msg = 'The {0} casts a {1} but it fizzles!'
-                msg = msg.format(self.owner.name, spell.name)
-                self.owner.game.log.message(msg)
+                msg = msg.format(self.monster.name, spell.name)
+                self.monster.game.log.message(msg)
         elif SpellType.HEAL == spell.type:
-            spell.cast(action, self.owner.actor, target)
-            msg = 'The {0} heals itself!'.format(self.owner.name)
-            self.owner.game.log.message(msg)
+            spell.cast(action, self.monster, target)
+            msg = 'The {0} heals itself!'.format(self.monster.name)
+            self.monster.game.log.message(msg)
 
 
 class BehaviorStrategy:
@@ -75,12 +74,11 @@ class BehaviorStrategy:
 
 class Aggressive(BehaviorStrategy):
     def take_turn(self, action, ai):
-        monster = ai.owner
-        player = monster.game.player
-        if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
+        player = ai.monster.game.player
+        if ai.monster.game.map.is_in_fov(ai.monster.pos.x, ai.monster.pos.y):
             # Move towards player if far away
-            if monster.pos.distance_to(player.pos) >= 2:
-                direction = pyro.astar.astar(ai.owner.game, monster.pos, player.pos)
+            if ai.monster.pos.distance_to(player.pos) >= 2:
+                direction = pyro.astar.astar(ai.monster.game, ai.monster.pos, player.pos)
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
@@ -90,19 +88,18 @@ class Aggressive(BehaviorStrategy):
 
 class AggressiveSpellcaster(BehaviorStrategy):
     def take_turn(self, action, ai):
-        monster = ai.owner.actor
-        player = monster.game.player
-        if monster.game.map.is_in_fov(monster.pos.x, monster.pos.y):
+        player = ai.monster.game.player
+        if ai.monster.game.map.is_in_fov(ai.monster.pos.x, ai.monster.pos.y):
             # Heal yourself if damaged
-            if monster.hp < monster.max_hp:
+            if ai.monster.hp < ai.monster.max_hp:
                 heals = ai.get_spells(SpellType.HEAL)
                 if len(heals) > 0:
-                    ai.cast_spell(action, heals[0], monster)
+                    ai.cast_spell(action, heals[0], ai.monster)
                     return
 
             # Move towards player if far away
             if not ai.in_range(player, SpellType.ATTACK):
-                direction = pyro.astar.astar(ai.owner.game, monster.pos, player.pos)
+                direction = pyro.astar.astar(ai.monster.game, ai.monster.pos, player.pos)
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
@@ -116,13 +113,13 @@ class AggressiveSpellcaster(BehaviorStrategy):
 class PassiveAggressive(BehaviorStrategy):
     def take_turn(self, action, ai):
         # Become aggressive if we're damaged
-        if ai.owner.actor.hp < ai.owner.actor.max_hp:
+        if ai.monster.hp < ai.monster.max_hp:
             ai.behavior = Aggressive()
 
         # 25% chance to move one square in a random direction
         elif libtcod.random_get_int(0, 1, 4) == 1:
             direction = pyro.direction.random()
-            if not blocked(ai.owner.game, ai.owner.pos.plus(direction)):
+            if not blocked(ai.monster.game, ai.monster.pos.plus(direction)):
                 return WalkAction(direction)
 
 
@@ -136,10 +133,10 @@ class Confused(BehaviorStrategy):
             self.num_turns -= 1
             # Move in a random direction
             direction = pyro.direction.random()
-            if not blocked(ai.owner.game, ai.owner.pos.plus(direction)):
+            if not blocked(ai.monster.game, ai.monster.pos.plus(direction)):
                 return WalkAction(direction)
         else:
             # Restore normal AI
             ai.strategy = self.restore_ai
-            msg = 'The {0} is no longer confused!'.format(ai.owner.name)
-            ai.owner.game.log.message(msg, libtcod.red)
+            msg = 'The {0} is no longer confused!'.format(ai.monster.name)
+            ai.monster.game.log.message(msg, libtcod.red)

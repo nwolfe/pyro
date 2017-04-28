@@ -1,13 +1,12 @@
 import json
 import tcod as libtcod
-import pyro.components.ai
 from pyro.components import Item, Equipment, Inventory
 from pyro.components import SpellItemUse
 from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
-from pyro.engine import Hero, Monster
+from pyro.engine import ai, Hero, Monster
 
 SPELLS = dict(
     confuse=Confuse,
@@ -40,10 +39,10 @@ def instantiate_monster(template, game):
         spells = [instantiate_spell(template['spell'])]
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
-    ai_comp = pyro.components.ai.new(template['ai'], spells)
-    components = [ai_comp]
-    game_object = GameObject(name=name, components=components, game=game)
+    game_object = GameObject(name=name, game=game)
     monster = Monster(game, game_object)
+    monster.ai = ai.new(template['ai'], spells)
+    monster.ai.monster = monster
     monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
     monster.xp = template['experience']
     monster.hp = template['hp']
