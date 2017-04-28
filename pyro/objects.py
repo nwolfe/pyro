@@ -2,7 +2,7 @@ import json
 import tcod as libtcod
 import pyro.components.ai
 from pyro.components import Experience, Item, Equipment, Inventory
-from pyro.components import SpellItemUse, Physics
+from pyro.components import SpellItemUse
 from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
@@ -42,7 +42,7 @@ def instantiate_monster(template, game):
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
     ai_comp = pyro.components.ai.new(template['ai'], spells)
-    components = [ai_comp, exp_comp, Physics(blocks=True)]
+    components = [ai_comp, exp_comp]
     game_object = GameObject(name=name, components=components, game=game)
     monster = Monster(game, game_object)
     monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
@@ -68,7 +68,7 @@ def load_templates(json_file):
 
 def instantiate_item(template):
     name = template['name']
-    components = [Physics()]
+    components = []
     if 'slot' in template:
         equipment = Equipment(slot=template['slot'])
         if 'power' in template:
@@ -90,8 +90,7 @@ def instantiate_item(template):
 def make_player(game):
     components = [
         Experience(xp=0, level=1),
-        Inventory(items=[]),
-        Physics(blocks=True)
+        Inventory(items=[])
     ]
     player = GameObject('Player', components, game=game)
     hero = Hero(game, player)

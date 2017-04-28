@@ -1,7 +1,6 @@
 import math
 import tcod as libtcod
 import pyro.direction
-from pyro.components import Physics
 
 
 def astar(game, from_pos, to_pos):
@@ -13,11 +12,10 @@ def astar(game, from_pos, to_pos):
     # target (so that the start and the end points are free).
     # The AI class handles the situation if self is next to the target so
     # it will not use this A* function anyway.
-    for obj in game.actors:
-        blocks = obj.component(Physics).blocks
-        if blocks and obj.pos.x != to_pos.x and obj.pos.y != to_pos.y:
+    for actor in game.actors:
+        if actor.pos.x != to_pos.x and actor.pos.y != to_pos.y:
             # Set the tile as a wall so it must be navigated around
-            libtcod.map_set_properties(fov, obj.pos.x, obj.pos.y, isTrans=True, isWalk=False)
+            libtcod.map_set_properties(fov, actor.pos.x, actor.pos.y, isTrans=True, isWalk=False)
 
     # Allocate an A* path
     # The 1.41 is the normal diagonal cost of moving, it can be set as 0.0
