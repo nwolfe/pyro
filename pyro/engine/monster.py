@@ -1,4 +1,3 @@
-import tcod as libtcod
 import pyro.engine.corpse
 from pyro.engine import Actor, Action, ActionResult
 from pyro.engine.attack import Hit
@@ -21,13 +20,6 @@ class Monster(Actor):
 
     def on_death(self, attacker):
         # Transform it into a nasty corpse!
-        # It doesn't block, can't be attacked, and doesn't move
-        if attacker == self.game.player:
-            self.game.log.message('The {0} is dead! You gain {1} experience points.'.
-                                  format(self.name, self.xp), libtcod.orange)
-        else:
-            self.game.log.message('The {0} is dead!'.format(self.name), libtcod.orange)
-        attacker.xp += self.xp
         self.game.actors.remove(self)
         self.game.corpses.append(pyro.engine.corpse.for_monster(self))
 

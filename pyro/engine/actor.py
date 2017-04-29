@@ -81,12 +81,16 @@ class Actor:
 
         if self.hp <= 0:
             action.add_event(Event(EventType.DEATH, actor=self, other=attacker))
+            attacker.on_killed(self)
             self.on_death(attacker)
 
     def on_damaged(self, action, damage, attacker):
         pass
 
     def on_death(self, attacker):
+        pass
+
+    def on_killed(self, defender):
         pass
 
     def heal(self, amount):

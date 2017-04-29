@@ -1,3 +1,4 @@
+import tcod as libtcod
 from pyro.engine import Actor
 from pyro.engine.attack import Hit
 import pyro.engine.corpse
@@ -24,3 +25,8 @@ class Hero(Actor):
         self.game.log.message('You died!')
         self.game.actors.remove(self)
         self.game.corpses.append(pyro.engine.corpse.for_hero(self))
+
+    def on_killed(self, defender):
+        self.game.log.message('The {0} is dead! You gain {1} experience points.'.
+                              format(defender.name, defender.xp), libtcod.orange)
+        self.xp += defender.xp
