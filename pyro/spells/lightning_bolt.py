@@ -1,6 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile, Movement
-from pyro.gameobject import GameObject
+import pyro.utilities
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 
@@ -16,27 +15,22 @@ class LightningBolt(Spell):
         self.strength = settings.get('strength', self.strength)
 
     def in_range(self, caster, target):
-        return caster.distance_to(target) <= self.range
+        return caster.pos.distance_to(target.pos) <= self.range
 
-    def cast(self, caster, target):
-        def on_hit(source, t):
-            t.component(Fighter).take_damage(self.strength, source)
-        bolt = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        obj = GameObject(name='Bolt of Lightning', glyph='*', components=[bolt, Movement()],
-                         color=libtcod.blue, blocks=False, game=caster.game)
-        caster.game.add_object(obj)
+    def cast(self, action, caster, target):
+        target.take_damage(action, self.strength, caster)
         return self.strength
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, ui):
         # Find the closest enemy (inside a maximum range) and damage it
-        monster = game.closest_monster(self.range)
+        monster = pyro.utilities.closest_monster(action.game, self.range)
         if monster is None:
-            game.message('No enemy is close enough to strike.', libtcod.red)
+            action.game.log.message('No enemy is close enough to strike.', libtcod.red)
             return 'cancelled'
 
         # Zap it!
         msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
         msg += 'The damage is {1} hit points.'
         msg = msg.format(monster.name, self.strength)
-        game.message(msg, libtcod.light_blue)
-        self.cast(player, monster)
+        action.game.log.message(msg, libtcod.light_blue)
+        self.cast(action, player, monster)

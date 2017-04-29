@@ -1,3 +1,4 @@
+import os
 import tcod as libtcod
 
 # Tile colors
@@ -31,14 +32,6 @@ ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
-# Render Orders
-RENDER_ORDER_DEFAULT = 10
-RENDER_ORDER_STAIRS = 9
-RENDER_ORDER_ITEM = 8
-RENDER_ORDER_DOOR = 7
-RENDER_ORDER_CORPSE = 1
-RENDER_ORDER_GRASS = 0
-
 # Experience and levelling
 LEVEL_UP_BASE = 200
 LEVEL_UP_FACTOR = 150
@@ -47,7 +40,10 @@ LEVEL_UP_STAT_POWER = 1
 LEVEL_UP_STAT_DEFENSE = 1
 
 # Player, monster, spell statistics
-PLAYER_DEFAULT_HP = 100
+if 'HEALTH' in os.environ:
+    PLAYER_DEFAULT_HP = int(os.environ['HEALTH'])
+else:
+    PLAYER_DEFAULT_HP = 100
 PLAYER_DEFAULT_DEFENSE = 1
 PLAYER_DEFAULT_POWER = 2
 SPELL_CONFUSE_RANGE = 5

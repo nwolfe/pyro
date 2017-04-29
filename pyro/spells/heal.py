@@ -1,5 +1,4 @@
 import tcod as libtcod
-from pyro.components import Fighter
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_HEAL_STRENGTH
 
@@ -15,15 +14,14 @@ class Heal(Spell):
     def in_range(self, caster, target):
         return caster == target
 
-    def cast(self, caster, target):
-        target.component(Fighter).heal(self.strength)
+    def cast(self, action, caster, target):
+        target.heal(self.strength)
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, ui):
         # Heal the player
-        fighter = player.component(Fighter)
-        if fighter.hp == fighter.max_hp():
-            game.message('You are already at full health.', libtcod.red)
+        if player.hp == player.max_hp:
+            action.game.log.message('You are already at full health.', libtcod.red)
             return 'cancelled'
 
-        game.message('Your wounds start to feel better!', libtcod.light_violet)
-        self.cast(player, player)
+        action.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
+        self.cast(action, player, player)

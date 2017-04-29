@@ -1,6 +1,5 @@
 import tcod as libtcod
-from pyro.components import Fighter, TargetProjectile, PositionProjectile, Movement
-from pyro.gameobject import GameObject
+import pyro.utilities
 from pyro.spell import Spell, SpellType
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
@@ -18,46 +17,30 @@ class Fireball(Spell):
         self.radius = settings.get('radius', self.radius)
 
     def in_range(self, caster, target):
-        return caster.distance_to(target) <= self.range
+        return caster.pos.distance_to(target.pos) <= self.range
 
-    def cast(self, caster, target):
-        def on_hit(source, t):
-            source.game.message('The fireball explodes, burning everything within {0} tiles!'.
+    def cast(self, action, caster, target):
+        caster.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
-            for game_object in source.game.objects:
-                if game_object.distance(t.x, t.y) <= self.radius:
-                    fighter = game_object.component(Fighter)
-                    if fighter:
-                        source.game.message('The {0} gets burned for {1} hit points.'.format(
-                            game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(self.strength, source)
-        fireball = TargetProjectile(source=caster, target=target, on_hit_fn=on_hit)
-        obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components=[fireball, Movement()], blocks=False,
-                         game=caster.game)
-        caster.game.add_object(obj)
+        for game_object in caster.game.actors:
+            if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
+                caster.game.log.message('The {0} gets burned for {1} hit points.'.
+                                        format(game_object.name, self.strength), libtcod.orange)
+                game_object.take_damage(action, self.strength, caster)
         return self.strength
 
-    def player_cast(self, player, game, ui):
+    def player_cast(self, action, player, ui):
         # Ask the player for a target tile to throw a fireball at
         msg = 'Left-click a target tile for the fireball, or right-click to cancel.'
-        game.message(msg, libtcod.light_cyan)
-        (x, y) = game.target_tile(ui)
+        action.game.log.message(msg, libtcod.light_cyan)
+        (x, y) = pyro.utilities.target_tile(action.game, ui)
         if x is None:
             return 'cancelled'
 
-        def on_hit(source, target_x, target_y):
-            source.game.message('The fireball explodes, burning everything within {0} tiles!'.
+        player.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
-            for game_object in game.objects:
-                if game_object.distance(target_x, target_y) <= self.radius:
-                    fighter = game_object.component(Fighter)
-                    if fighter:
-                        game.message('The {0} gets burned for {1} hit points.'.format(
-                            game_object.name, self.strength), libtcod.orange)
-                        fighter.take_damage(self.strength, source)
-        fireball = PositionProjectile(source=player, target_x=x, target_y=y, on_hit_fn=on_hit)
-        obj = GameObject(name='Fireball', glyph='@', color=libtcod.dark_orange,
-                         components=[fireball, Movement()], blocks=False,
-                         game=game)
-        game.add_object(obj)
+        for game_object in action.game.actors:
+            if game_object.pos.distance(x, y) <= self.radius:
+                action.game.log.message('The {0} gets burned for {1} hit points.'.
+                                        format(game_object.name, self.strength), libtcod.orange)
+                game_object.take_damage(action, self.strength, player)

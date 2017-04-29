@@ -1,8 +1,9 @@
 import tcod as libtcod
-from pyro.gameobject import GameObject
-from pyro.components import Door, Grass
 from pyro.utilities import is_blocked
-from pyro.settings import *
+from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
+from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
+from pyro.settings import TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
+from pyro.engine.glyph import Glyph
 
 
 class Point:
@@ -33,13 +34,82 @@ class Rect:
                      libtcod.random_get_int(0, self.y1+1, self.y2-1))
 
 
+class Appearance:
+    def __init__(self, lit_glyph, unlit_glyph):
+        self.lit = lit_glyph
+        self.unlit = unlit_glyph
+
+
+class TileType:
+    FLOOR = None
+    WALL = None
+    STAIRS = None
+    TALL_GRASS = None
+    CRUSHED_GRASS = None
+    OPEN_DOOR = None
+    CLOSED_DOOR = None
+    def __init__(self, appearance, passable, transparent, is_exit=False, always_visible=False):
+        self.appearance = appearance
+        self.passable = passable
+        self.transparent = transparent
+        self.is_exit = is_exit
+        self.always_visible = always_visible
+        self.opens_to = None
+        self.closes_to = None
+        self.steps_to = None
+
+
+# A passable, transparent tile
+def open_tile(lit, unlit):
+    return TileType(Appearance(lit, unlit), passable=True, transparent=True)
+
+
+# An impassable, opaque tile
+def solid_tile(lit, unlit):
+    return TileType(Appearance(lit, unlit), passable=False, transparent=False)
+
+
+# A passable, opaque tile
+def fog_tile(lit, unlit):
+    return TileType(Appearance(lit, unlit), passable=True, transparent=False)
+
+
+# A passable, transparent tile marked as an exit
+def exit_tile(lit, unlit):
+    return TileType(Appearance(lit, unlit), passable=True, transparent=True, is_exit=True, always_visible=True)
+
+
+TileType.FLOOR = open_tile(Glyph(None, COLOR_LIGHT_GROUND),
+                           Glyph(None, COLOR_DARK_GROUND))
+TileType.WALL = solid_tile(Glyph(None, COLOR_LIGHT_WALL),
+                           Glyph(None, COLOR_DARK_WALL))
+TileType.STAIRS = exit_tile(Glyph('>', libtcod.white, COLOR_LIGHT_GROUND),
+                            Glyph('>', libtcod.white, COLOR_DARK_GROUND))
+TileType.TALL_GRASS = fog_tile(Glyph(':', libtcod.green, COLOR_LIGHT_GRASS),
+                               Glyph(':', COLOR_DARK_GROUND))
+TileType.CRUSHED_GRASS = open_tile(Glyph('.', libtcod.green, COLOR_LIGHT_GROUND),
+                                   Glyph('.', COLOR_DARK_GROUND))
+TileType.OPEN_DOOR = open_tile(Glyph('-', libtcod.white, COLOR_LIGHT_GROUND),
+                               Glyph('-', libtcod.white, COLOR_DARK_GROUND))
+TileType.CLOSED_DOOR = solid_tile(Glyph('+', libtcod.white, COLOR_LIGHT_WALL),
+                                  Glyph('+', libtcod.white, COLOR_DARK_WALL))
+TileType.TALL_GRASS.steps_to = TileType.CRUSHED_GRASS
+TileType.OPEN_DOOR.closes_to = TileType.CLOSED_DOOR
+TileType.CLOSED_DOOR.opens_to = TileType.OPEN_DOOR
+
+
 class Tile:
-    def __init__(self, blocked, block_sight=None):
-        self.blocked = blocked
-        if block_sight is None:
-            block_sight = blocked
-        self.block_sight = block_sight
+    def __init__(self):
+        self.type = TileType.WALL
         self.explored = False
+
+    @property
+    def passable(self):
+        return self.type.passable
+
+    @property
+    def transparent(self):
+        return self.type.transparent
 
 
 class TileMeta:
@@ -52,71 +122,78 @@ class Map:
     def __init__(self, height, width):
         self.height = height
         self.width = width
-        self.game_map = [[Tile(blocked=True)
-                          for _ in range(height)]
-                         for _ in range(width)]
-        self.fov_map = self.make_fov_map()
+        self.tiles = [[Tile()
+                       for _ in range(height)]
+                      for _ in range(width)]
+        self.fov_map = None
+        self.visibility_dirty = False
+
+    def __refresh_fov(self, fov_map):
+        for y in range(self.height):
+            for x in range(self.width):
+                libtcod.map_set_properties(fov_map, x, y,
+                                           self.tiles[x][y].transparent,
+                                           self.tiles[x][y].passable)
+
+    def tile(self, position):
+        return self.tiles[position.x][position.y]
 
     def make_fov_map(self):
         # Create the FOV map according to the generated map
         fov_map = libtcod.map_new(self.width, self.height)
-        for y in range(self.height):
-            for x in range(self.width):
-                libtcod.map_set_properties(fov_map, x, y,
-                                           not self.game_map[x][y].block_sight,
-                                           not self.game_map[x][y].blocked)
+        self.__refresh_fov(fov_map)
         return fov_map
 
     def is_in_fov(self, x, y):
         return libtcod.map_is_in_fov(self.fov_map, x, y)
+
+    def dirty_visibility(self):
+        self.visibility_dirty = True
+
+    def refresh_visibility(self, pos):
+        if self.visibility_dirty:
+            self.__refresh_fov(self.fov_map)
+            libtcod.map_compute_fov(self.fov_map, pos.x, pos.y,
+                                    TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
+            self.visibility_dirty = False
 
     def is_on_map(self, x, y):
         x_in_bounds = 0 <= x < self.width
         y_in_bounds = 0 <= y < self.height
         return x_in_bounds and y_in_bounds
 
-    def block_movement(self, x, y):
-        self.game_map[x][y].blocked = True
-
-    def unblock_movement(self, x, y):
-        self.game_map[x][y].blocked = False
-
     def movement_blocked(self, x, y):
-        return self.game_map[x][y].blocked
-
-    def block_vision(self, x, y):
-        self.game_map[x][y].block_sight = True
-        libtcod.map_set_properties(self.fov_map, x, y, isTrans=False, isWalk=False)
-
-    def unblock_vision(self, x, y):
-        self.game_map[x][y].block_sight = False
-        libtcod.map_set_properties(self.fov_map, x, y, isTrans=True, isWalk=True)
+        return not self.tiles[x][y].passable
 
     def vision_blocked(self, x, y):
-        return self.game_map[x][y].block_sight
+        return not self.tiles[x][y].transparent
 
     def is_explored(self, x, y):
-        return self.game_map[x][y].explored
+        return self.tiles[x][y].explored
 
     def mark_explored(self, x, y):
-        self.game_map[x][y].explored = True
+        self.tiles[x][y].explored = True
 
 
 class LevelBuilder:
-    def __init__(self, game_map, game_objects, game_object_factory, dungeon_level):
+    def __init__(self, game_map, game_actors, game_items, game_object_factory, dungeon_level):
         self.map = game_map
         self.meta_map = [[TileMeta()
                           for _ in range(game_map.height)]
                          for _ in range(game_map.width)]
-        self.game_objects = game_objects
+        self.game_actors = game_actors
+        self.game_items = game_items
         self.game_object_factory = game_object_factory
         self.dungeon_level = dungeon_level
 
-    def mark_wall_tile(self, x, y):
-        self.meta_map[x][y].room_wall = True
-
-    def is_wall_tile(self, x, y):
-        return self.meta_map[x][y].room_wall
+    def finalize(self, game):
+        self.map.fov_map = self.map.make_fov_map()
+        self.map.dirty_visibility()
+        self.map.refresh_visibility(game.player.pos)
+        game.map = self.map
+        game.actors = self.game_actors
+        game.items = self.game_items
+        game.corpses = []
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True
@@ -125,44 +202,38 @@ class LevelBuilder:
         # Go through the tiles in the rectangle and make them passable
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
-                self.map.unblock_movement(x, y)
-                self.map.unblock_vision(x, y)
+                self.map.tiles[x][y].type = TileType.FLOOR
 
         # Mark the exterior tiles as walls
         for x in range(room.x1, room.x2+1):
-            self.mark_wall_tile(x, room.y1)
-            self.mark_wall_tile(x, room.y2)
+            self.meta_map[x][room.y1].room_wall = True
+            self.meta_map[x][room.y2].room_wall = True
         for y in range(room.y1, room.y2+1):
-            self.mark_wall_tile(room.x1, y)
-            self.mark_wall_tile(room.x2, y)
+            self.meta_map[room.x1][y].room_wall = True
+            self.meta_map[room.x2][y].room_wall = True
 
     def create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.map.unblock_movement(x, y)
-            self.map.unblock_vision(x, y)
-            if self.is_wall_tile(x, y):
+            self.map.tiles[x][y].type = TileType.FLOOR
+            if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
     def create_v_tunnel(self, y1, y2, x):
         for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.map.unblock_movement(x, y)
-            self.map.unblock_vision(x, y)
-            if self.is_wall_tile(x, y):
+            self.map.tiles[x][y].type = TileType.FLOOR
+            if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
+    def place_stairs(self, x, y):
+        self.map.tiles[x][y].type = TileType.STAIRS
+
     def place_grass_tile(self, x, y):
-        self.map.block_vision(x, y)
-        grass_comp = Grass(is_crushed=False, standing_glyph=':', crushed_glyph='.')
-        grass = GameObject(x, y, ':', 'tall grass', libtcod.green,
-                           render_order=RENDER_ORDER_GRASS,
-                           components=[grass_comp])
-        self.game_objects.append(grass)
+        self.map.tiles[x][y].type = TileType.TALL_GRASS
 
     def place_grass(self, room):
         if libtcod.random_get_int(0, 1, 2) == 1:
-            grass_tiles = []
             point = room.random_point_inside()
-            while is_blocked(self.map, self.game_objects, point.x, point.y):
+            while is_blocked(self.map, self.game_actors, point.x, point.y):
                 point = room.random_point_inside()
 
             self.place_grass_tile(point.x, point.y)
@@ -173,20 +244,8 @@ class LevelBuilder:
                 while not self.map.is_on_map(point.x, point.y):
                     point = random_point_surrounding(point)
 
-                grass_at_point = False
-                for grass in grass_tiles:
-                    if point.x == grass.x and point.y == grass.y:
-                        grass_at_point = True
-                        break
-
-                if grass_at_point:
-                    continue
-
-                if not is_blocked(self.map, self.game_objects, point.x, point.y):
+                if not is_blocked(self.map, self.game_actors, point.x, point.y):
                     self.place_grass_tile(point.x, point.y)
-
-            for grass in grass_tiles:
-                self.game_objects.append(grass)
 
     CREATURE_CHANCES = dict(
         critter=[[6, 1], [5, 3], [4, 5], [3, 7], [2, 9]],
@@ -211,12 +270,12 @@ class LevelBuilder:
             # Random position for creature
             point = room.random_point_inside()
 
-            if not is_blocked(self.map, self.game_objects, point.x, point.y):
+            if not is_blocked(self.map, self.game_actors, point.x, point.y):
                 choice = random_choice(creature_chances)
                 creature = self.game_object_factory.new_monster(choice)
-                creature.x = point.x
-                creature.y = point.y
-                self.game_objects.append(creature)
+                creature.pos.x = point.x
+                creature.pos.y = point.y
+                self.game_actors.append(creature)
 
     def place_boss(self, room_x, room_y):
         bosses = filter(lambda m: m['type'] == 'boss', self.game_object_factory.monster_templates)
@@ -227,8 +286,8 @@ class LevelBuilder:
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
         boss = self.game_object_factory.new_monster(boss['name'])
         nearby = random_point_surrounding(Point(room_x, room_y))
-        boss.x, boss.y = nearby.x, nearby.y
-        self.game_objects.append(boss)
+        boss.pos.x, boss.pos.y = nearby.x, nearby.y
+        self.game_actors.append(boss)
 
     def place_items(self, room):
         # Random number of items
@@ -240,12 +299,12 @@ class LevelBuilder:
             # Random position for item
             point = room.random_point_inside()
 
-            if not is_blocked(self.map, self.game_objects, point.x, point.y):
+            if not is_blocked(self.map, self.game_actors, point.x, point.y):
                 choice = random_choice(item_chances)
                 item = self.game_object_factory.new_item(choice)
-                item.x = point.x
-                item.y = point.y
-                self.game_objects.append(item)
+                item.pos.x = point.x
+                item.pos.y = point.y
+                self.game_items.append(item)
 
     def place_doors(self):
         # Look for tunnelled walls as potential doors
@@ -261,18 +320,12 @@ class LevelBuilder:
                         continue
 
                     # Make sure to place doors between two walls
-                    wall_above = self.map.movement_blocked(x, y+1)
-                    wall_below = self.map.movement_blocked(x, y-1)
-                    wall_left = self.map.movement_blocked(x-1, y)
-                    wall_right = self.map.movement_blocked(x+1, y)
+                    wall_above = self.meta_map[x][y+1].room_wall
+                    wall_below = self.meta_map[x][y-1].room_wall
+                    wall_left = self.meta_map[x-1][y].room_wall
+                    wall_right = self.meta_map[x+1][y].room_wall
                     if (wall_above and wall_below) or (wall_left and wall_right):
-                        self.map.block_movement(x, y)
-                        self.map.block_vision(x, y)
-                        door_comp = Door(is_open=False, opened_glyph='-', closed_glyph='+')
-                        door = GameObject(x, y, '+', 'door', libtcod.white,
-                                          render_order=RENDER_ORDER_DOOR,
-                                          components=[door_comp])
-                        self.game_objects.append(door)
+                        self.map.tiles[x][y].type = TileType.CLOSED_DOOR
 
 
 def random_choice_index(chances):
@@ -344,10 +397,11 @@ def randomly_placed_rect(game_map):
     return Rect(x, y, w, h)
 
 
-def make_map(player, dungeon_level, object_factory):
-    objects = [player]
+def make_map(game, object_factory):
+    actors = [game.player]
+    items = []
     game_map = Map(MAP_HEIGHT, MAP_WIDTH)
-    builder = LevelBuilder(game_map, objects, object_factory, dungeon_level)
+    builder = LevelBuilder(game_map, actors, items, object_factory, game.dungeon_level)
     rooms = []
     num_rooms = 0
     new_x = 0
@@ -367,8 +421,8 @@ def make_map(player, dungeon_level, object_factory):
 
         if num_rooms == 0:
             # This is the first room, where the player starts at
-            player.x = new_x
-            player.y = new_y
+            game.player.pos.x = new_x
+            game.player.pos.y = new_y
         else:
             # Connect it to the previous room with a tunnel
 
@@ -395,11 +449,9 @@ def make_map(player, dungeon_level, object_factory):
     builder.place_doors()
 
     # Create stairs at the center of the last room
-    stairs = GameObject(new_x, new_y, '>', 'stairs', libtcod.white,
-                        render_order=RENDER_ORDER_STAIRS, always_visible=True)
-    objects.append(stairs)
+    builder.place_stairs(new_x, new_y)
 
     # Put a boss near the stairs
     builder.place_boss(new_x, new_y)
 
-    return game_map, objects, stairs
+    builder.finalize(game)

@@ -1,19 +1,10 @@
 import json
 import tcod as libtcod
-from pyro.ai import Aggressive, AggressiveSpellcaster, PassiveAggressive, Confused
-from pyro.components import AI, Experience, Fighter, Item, Equipment, SpellItemUse, Spellcaster, Movement
+from pyro.engine.item import Item, Equipment, SpellItemUse
+from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
-from pyro.gameobject import GameObject
-from pyro.events import EventListener
-from pyro.settings import RENDER_ORDER_CORPSE, RENDER_ORDER_ITEM
-
-
-MONSTER_AI_CLASSES = dict(
-    aggressive=Aggressive,
-    aggressive_spellcaster=AggressiveSpellcaster,
-    passive_aggressive=PassiveAggressive,
-    confused=Confused
-)
+from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
+from pyro.engine import ai, Hero, Monster
 
 SPELLS = dict(
     confuse=Confuse,
@@ -30,31 +21,6 @@ ITEM_USES = dict(
 )
 
 
-def monster_death(monster, attacker, game):
-    # Transform it into a nasty corpse!
-    # It doesn't block, can't be attacked, and doesn't move
-    exp = monster.component(Experience)
-    if attacker == game.player:
-        game.message('The {0} is dead! You gain {1} experience points.'.
-                     format(monster.name, exp.xp), libtcod.orange)
-    else:
-        game.message('The {0} is dead!'.format(monster.name), libtcod.orange)
-    attacker.component(Experience).xp += exp.xp
-    monster.glyph = '%'
-    monster.color = libtcod.dark_red
-    monster.blocks = False
-    monster.render_order = RENDER_ORDER_CORPSE
-    monster.name = 'Remains of {0}'.format(monster.name)
-    monster.remove_component(Fighter)
-    monster.remove_component(AI)
-
-
-class MonsterDeath(EventListener):
-    def handle_event(self, source, event, context):
-        if event == 'death':
-            monster_death(source, context['attacker'], source.game)
-
-
 def instantiate_spell(template):
     if type(template) is dict:
         spell = SPELLS[template['name']]()
@@ -64,28 +30,24 @@ def instantiate_spell(template):
     return spell
 
 
-def instantiate_monster(template):
+def instantiate_monster(template, game):
     name = template['name']
-    glyph = template['glyph']
-    color = getattr(libtcod, template['color'])
-    ai_comp = MONSTER_AI_CLASSES[template['ai']]()
-    exp_comp = Experience(template['experience'])
-    fighter_comp = Fighter(template['hp'], template['defense'], template['power'])
-    components = [fighter_comp, ai_comp, exp_comp, Movement()]
+    spells = None
     if 'spell' in template:
-        spell = instantiate_spell(template['spell'])
-        components.append(Spellcaster([spell]))
+        spells = [instantiate_spell(template['spell'])]
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
-        components.append(Spellcaster(spells))
-    return GameObject(glyph=glyph, name=name, color=color, blocks=True,
-                      components=components, listeners=[MonsterDeath()])
-
-
-def make_monster(name, monster_templates):
-    for template in monster_templates:
-        if template['name'] == name:
-            return instantiate_monster(template)
+    monster = Monster(game)
+    monster.name = name
+    monster.ai = ai.new(template['ai'], spells)
+    monster.ai.monster = monster
+    monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
+    monster.xp = template['experience']
+    monster.hp = template['hp']
+    monster.base_max_hp = monster.hp
+    monster.base_defense = template['defense']
+    monster.base_power = template['power']
+    return monster
 
 
 def load_templates(json_file):
@@ -102,31 +64,32 @@ def load_templates(json_file):
 
 def instantiate_item(template):
     name = template['name']
-    glyph = template['glyph']
-    color = getattr(libtcod, template['color'])
+    glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
     if 'slot' in template:
-        equipment = Equipment(slot=template['slot'])
+        equipment = Equipment(name, glyph, slot=template['slot'])
         if 'power' in template:
             equipment.power_bonus = template['power']
         if 'defense' in template:
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        return GameObject(glyph=glyph, name=name, color=color,
-                          render_order=RENDER_ORDER_ITEM,
-                          components=[equipment])
+        return equipment
     elif 'on_use' in template:
         spell = instantiate_spell(ITEM_USES[template['on_use']])
-        item = Item(on_use=SpellItemUse(spell))
-        return GameObject(glyph=glyph, name=name, color=color,
-                          render_order=RENDER_ORDER_ITEM,
-                          components=[item])
+        return Item(name, glyph, on_use=SpellItemUse(spell))
 
 
-def make_item(name, item_templates):
-    for template in item_templates:
-        if template['name'] == name:
-            return instantiate_item(template)
+def make_player(game):
+    hero = Hero(game)
+    hero.name = 'Player'
+    hero.inventory = []
+    hero.glyph = Glyph('@', libtcod.white)
+    hero.hp = PLAYER_DEFAULT_HP
+    hero.base_max_hp = hero.hp
+    hero.base_defense = PLAYER_DEFAULT_DEFENSE
+    hero.base_power = PLAYER_DEFAULT_POWER
+    game.player = hero
+    return hero
 
 
 class GameObjectFactory:
@@ -140,11 +103,15 @@ class GameObjectFactory:
         self.item_templates = load_templates(item_file)
 
     def new_monster(self, monster_name):
-        monster = make_monster(monster_name, self.monster_templates)
-        monster.game = self.game
-        return monster
+        for template in self.monster_templates:
+            if template['name'] == monster_name:
+                return instantiate_monster(template, self.game)
+        return None
 
     def new_item(self, item_name):
-        item = make_item(item_name, self.item_templates)
-        item.game = self.game
-        return item
+        for template in self.item_templates:
+            if template['name'] == item_name:
+                item = instantiate_item(template)
+                item.game = self.game
+                return item
+        return None

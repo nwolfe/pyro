@@ -1,323 +1,288 @@
-import shelve
 import tcod as libtcod
-from pyro.objects import GameObjectFactory
+from itertools import chain
 from pyro.map import make_map
-from pyro.game import Game
-from pyro.ui import UserInterface, render_all, messagebox, menu, inventory_menu
-from pyro.gameobject import GameObject
-from pyro.components import AI, Fighter, Experience, Item, Inventory, Door, Grass, Projectile, Movement
-from pyro.events import EventListener
-from pyro.settings import *
+from pyro.objects import GameObjectFactory, make_player
+from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
+from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
+from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
+from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
+from pyro.ui import EngineScreen
+from pyro.engine.log import Log
 
 
-def move_player_or_attack(dx, dy, game):
-    x = game.player.x + dx
-    y = game.player.y + dy
-    target = None
-    for game_object in game.objects:
-        if game_object.component(Fighter):
-            if game_object.x == x and game_object.y == y:
-                target = game_object
-                break
+###############################################################################
+# User Interface                                                              #
+###############################################################################
 
-    if target:
-        game.player.component(Fighter).attack(target)
-        return False, 'attack'
+
+class UserInterface:
+    def __init__(self, keyboard, mouse, console, panel):
+        self.keyboard = keyboard
+        self.mouse = mouse
+        self.console = console
+        self.panel = panel
+
+    def render_all(self, game, fov_recompute):
+        render_all(self, game, fov_recompute)
+
+
+def menu(console, header, options, width):
+    if len(options) > 26:
+        raise ValueError('Cannot have a menu with more than 26 options.')
+
+    # Calculate total height for header (after auto-wrap),
+    # and one line per option
+    if header == '':
+        header_height = 0
     else:
-        door = None
-        grass = None
-        for game_object in game.objects:
-            if game_object.component(Door):
-                if game_object.x == x and game_object.y == y:
-                    door = game_object.component(Door)
-            elif game_object.component(Grass):
-                if game_object.x == x and game_object.y == y:
-                    if not game_object.component(Grass).is_crushed:
-                        grass = game_object.component(Grass)
+        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
+                                                        SCREEN_HEIGHT, header)
+    height = len(options) + header_height
 
-            if door and grass:
-                break
+    # Create an off-screen console that represents the menu's window
+    window = libtcod.console_new(width, height)
 
-        movement = game.player.component(Movement)
-        moved = movement.move(dx, dy) if movement else False
-        if moved:
-            if grass:
-                grass.crush()
-        else:
-            if door:
-                door.open()
-        return True, 'move'
+    # Print the header, with auto-wrap
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    libtcod.console_print_rect_ex(window, 0, 0, width, height,
+                                  libtcod.BKGND_NONE, libtcod.LEFT, header)
 
+    # Print all the options
+    y = header_height
+    letter_index = ord('a')
+    for option in options:
+        text = '({0}) {1}'.format(chr(letter_index), option)
+        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE,
+                                 libtcod.LEFT, text)
+        y += 1
+        letter_index += 1
 
-def close_nearest_door(game):
-    x = game.player.x
-    y = game.player.y
-    for game_object in game.objects:
-        if game_object.component(Door):
-            close_x = (game_object.x == x or game_object.x == x-1 or game_object.x == x+1)
-            close_y = (game_object.y == y or game_object.y == y-1 or game_object.y == y+1)
-            player_on_door = (game_object.x == x and game_object.y == y)
-            if close_x and close_y and not player_on_door:
-                game_object.component(Door).close()
-                break
+    # Blit the contents of the menu window to the root console
+    x = SCREEN_WIDTH/2 - width/2
+    y = SCREEN_HEIGHT/2 - height/2
+    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
 
+    # Present the root console to the player and wait for a key press
+    libtcod.console_flush()
+    key = libtcod.console_wait_for_keypress(True)
 
-def show_character_info(console, game):
-    msg = """Character Information
-
-Level: {0}
-Experience: {1}
-Next Level: {2}
-
-Current HP: {3}
-Maximum HP: {4}
-Attack: {5}
-Defense: {6}
-"""
-    exp = game.player.component(Experience)
-    fighter = game.player.component(Fighter)
-    msg = msg.format(exp.level,
-                     exp.xp,
-                     exp.required_for_level_up(),
-                     fighter.hp,
-                     fighter.max_hp(),
-                     fighter.power(),
-                     fighter.defense())
-    messagebox(console, msg, CHARACTER_SCREEN_WIDTH)
-
-
-def handle_keys(ui, game, object_factory):
-    if ui.keyboard.vk == libtcod.KEY_ENTER and ui.keyboard.lalt:
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
         # Alt-Enter toggles fullscreen
         libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-    elif ui.keyboard.vk == libtcod.KEY_ESCAPE:
-        # Exit game
-        return False, 'exit'
 
-    if game.state != 'playing':
-        return False, None
-
-    key_char = chr(ui.keyboard.c)
-
-    if libtcod.KEY_UP == ui.keyboard.vk or key_char == 'k':
-        return move_player_or_attack(0, -1, game)
-    elif libtcod.KEY_DOWN == ui.keyboard.vk or key_char == 'j':
-        return move_player_or_attack(0, 1, game)
-    elif libtcod.KEY_LEFT == ui.keyboard.vk or key_char == 'h':
-        return move_player_or_attack(-1, 0, game)
-    elif libtcod.KEY_RIGHT == ui.keyboard.vk or key_char == 'l':
-        return move_player_or_attack(1, 0, game)
-    elif key_char == 'f':
-        # Don't move, let the monsters come to you
-        return False, None
-    elif key_char == 'g':
-        # Pick up an item; look for one in the player's tile
-        for game_object in game.objects:
-            item = game_object.component(Item)
-            if item:
-                if game_object.x == game.player.x and game_object.y == game.player.y:
-                    item.pick_up(game.player)
-                    break
-        return False, None
-    elif key_char == 'i':
-        # Show the inventory
-        msg = 'Select an item to use it, or any other key to cancel.\n'
-        inventory = game.player.component(Inventory).items
-        selected_item = inventory_menu(ui.console, inventory, msg)
-        if selected_item:
-            selected_item.use(ui)
-        return False, None
-    elif key_char == 'd':
-        # Show the inventory; if an item is selected, drop it
-        msg = 'Select an item to drop it, or any other key to cancel.\n'
-        inventory = game.player.component(Inventory).items
-        selected_item = inventory_menu(ui.console, inventory, msg)
-        if selected_item:
-            selected_item.drop()
-        return False, None
-    elif libtcod.KEY_ENTER == ui.keyboard.vk:
-        # Go down the stairs to the next level
-        if game.stairs.x == game.player.x and game.stairs.y == game.player.y:
-            next_dungeon_level(game, object_factory)
-            libtcod.console_clear(ui.console)
-        return True, None
-    elif key_char == 'c':
-        show_character_info(ui.console, game)
-        return False, None
-    elif key_char == 'r':
-        close_nearest_door(game)
-        return True, None
+    # Convert ASCII code to an index; if it corresponds to an option, return it
+    index = key.c - ord('a')
+    if index >= 0 and index < len(options):
+        return index
     else:
-        return False, 'idle'
+        return None
+
+
+def messagebox(console, text, width=50):
+    return menu(console, text, [], width)
+
+
+def get_names_under_mouse(mouse, game):
+    # Return a string with the names of all objects under the mouse
+    (x, y) = (mouse.cx, mouse.cy)
+
+    # Create a list with the names of all objects at the mouse's coordinates
+    # and in FOV
+    names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
+             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
+    return ', '.join(names).capitalize()
+
+
+def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
+                  back_color):
+    # Render a bar (HP, experience, etc)
+    bar_width = int(float(value) / maximum * total_width)
+
+    # Render the background first
+    libtcod.console_set_default_background(panel, back_color)
+    libtcod.console_rect(panel, x, y, total_width, 1, False,
+                         libtcod.BKGND_SCREEN)
+
+    # Now render the bar on top
+    libtcod.console_set_default_background(panel, bar_color)
+    if bar_width > 0:
+        libtcod.console_rect(panel, x, y, bar_width, 1, False,
+                             libtcod.BKGND_SCREEN)
+
+    # Finally, some centering text with the values
+    libtcod.console_set_default_foreground(panel, libtcod.white)
+    libtcod.console_print_ex(panel, x + total_width / 2, y,
+                             libtcod.BKGND_NONE, libtcod.CENTER,
+                             '{0}: {1}/{2}'.format(name, value, maximum))
+
+
+def render_all(ui, game, fov_recompute):
+    if fov_recompute:
+        # Recompute FOV if needed (i.e. the player moved)
+        libtcod.map_compute_fov(game.map.fov_map, game.player.pos.x, game.player.pos.y,
+                                TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
+
+        # Set tile background colors according to FOV
+        for y in range(game.map.height):
+            for x in range(game.map.width):
+                visible = game.map.is_in_fov(x, y)
+                wall = game.map.movement_blocked(x, y) and game.map.vision_blocked(x, y)
+                if not visible:
+                    if game.map.is_explored(x, y):
+                        color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
+                        libtcod.console_set_char_background(ui.console,
+                                                            x, y, color,
+                                                            libtcod.BKGND_SET)
+                else:
+                    if wall:
+                        color = COLOR_LIGHT_WALL
+                    elif game.map.vision_blocked(x, y):
+                        color = COLOR_LIGHT_GRASS
+                    else:
+                        color = COLOR_LIGHT_GROUND
+                    libtcod.console_set_char_background(ui.console,
+                                                        x, y, color,
+                                                        libtcod.BKGND_SET)
+                    game.map.mark_explored(x, y)
+
+    for item in game.items:
+        x, y = item.pos.x, item.pos.y
+        if game.map.is_in_fov(x, y):
+            libtcod.console_set_default_foreground(ui.console, item.glyph.fg_color)
+            libtcod.console_put_char(ui.console, x, y, item.glyph.char, libtcod.BKGND_NONE)
+
+    for corpse in game.corpses:
+        x, y = corpse.pos.x, corpse.pos.y
+        if game.map.is_in_fov(x, y):
+            glyph = corpse.type.glyph
+            libtcod.console_set_default_foreground(ui.console, glyph.fg_color)
+            libtcod.console_put_char(ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
+
+    for actor in game.actors:
+        x, y = actor.pos.x, actor.pos.y
+        if game.map.is_in_fov(x, y):
+            libtcod.console_set_default_foreground(ui.console, actor.glyph.fg_color)
+            libtcod.console_put_char(ui.console, x, y, actor.glyph.char, libtcod.BKGND_NONE)
+
+    # Blit the contents of the game (non-GUI) console to the root console
+    libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
+
+    # Prepare to render the GUI panel
+    libtcod.console_set_default_background(ui.panel, libtcod.black)
+    libtcod.console_clear(ui.panel)
+
+    # Print game messages, one line at a time
+    y = 1
+    for (line, color) in game.log.messages:
+        libtcod.console_set_default_foreground(ui.panel, color)
+        libtcod.console_print_ex(ui.panel, MSG_X, y, libtcod.BKGND_NONE,
+                                 libtcod.LEFT, line)
+        y += 1
+
+    # Show player's stats
+    render_ui_bar(ui.panel, 1, 1, BAR_WIDTH, 'HP', game.player.hp,
+                  game.player.max_hp, libtcod.light_red, libtcod.darker_red)
+    render_ui_bar(ui.panel, 1, 2, BAR_WIDTH, 'EXP', game.player.xp,
+                  game.player.required_for_level_up(), libtcod.green, libtcod.darkest_green)
+
+    # Show the dungeon level
+    libtcod.console_print_ex(ui.panel, 1, 4, libtcod.BKGND_NONE, libtcod.LEFT,
+                             'Dungeon Level {}'.format(game.dungeon_level))
+
+    # Display names of objects under the mouse
+    names = get_names_under_mouse(ui.mouse, game)
+    libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
+    libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
+                             names)
+
+    # Blit the contents of the GUI panel to the root console
+    libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
+                         PANEL_Y)
+
+    libtcod.console_flush()
+    for actor in game.actors:
+        libtcod.console_put_char(console, actor.pos.x, actor.pos.y, ' ', libtcod.BKGND_NONE)
+    for item in game.items:
+        libtcod.console_put_char(console, item.pos.x, item.pos.y, ' ', libtcod.BKGND_NONE)
+
+
+###############################################################################
+# Game Logic                                                                  #
+###############################################################################
 
 
 def check_player_level_up(game, console):
-    exp = game.player.component(Experience)
+    player = game.player
 
     # See if the player's XP is enough to level up
-    if not exp.can_level_up():
+    if not player.can_level_up():
         return
 
     # Ding! Level up!
-    exp.level_up()
+    player.level_up()
     msg = 'Your battle skills grow stronger! You reached level {}!'
-    game.message(msg.format(exp.level), libtcod.yellow)
+    game.log.message(msg.format(player.level), libtcod.yellow)
 
     choice = None
     while choice is None:
-        fighter = game.player.component(Fighter)
-        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, fighter.base_max_hp),
-                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, fighter.base_power),
-                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, fighter.base_defense)]
+        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, player.base_max_hp),
+                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, player.base_power),
+                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, player.base_defense)]
         choice = menu(console, 'Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH)
         if choice == 0:
-            fighter.base_max_hp += LEVEL_UP_STAT_HP
-            fighter.hp += LEVEL_UP_STAT_HP
+            player.base_max_hp += LEVEL_UP_STAT_HP
+            player.hp += LEVEL_UP_STAT_HP
         elif choice == 1:
-            fighter.base_power += LEVEL_UP_STAT_POWER
+            player.base_power += LEVEL_UP_STAT_POWER
         elif choice == 2:
-            fighter.base_defense += LEVEL_UP_STAT_DEFENSE
+            player.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
-class PlayerDeath(EventListener):
-    def handle_event(self, player, event, context):
-        if event == 'death':
-            player.game.message('You died!')
-            player.game.state = 'dead'
-
-            player.glyph = '%'
-            player.color = libtcod.dark_red
+class Game:
+    def __init__(self, state=None, map=None, objects=None, player=None, log=None, dungeon_level=None):
+        self.state = state
+        self.map = map
+        self.actors = objects
+        self.items = None
+        self.corpses = None
+        self.player = player
+        self.log = log
+        self.dungeon_level = dungeon_level
 
 
 def new_game(object_factory):
-    # Create the player
-    exp_comp = Experience(xp=0, level=1)
-    fighter_comp = Fighter(hp=PLAYER_DEFAULT_HP,
-                           defense=PLAYER_DEFAULT_DEFENSE,
-                           power=PLAYER_DEFAULT_POWER)
-    player_inventory = Inventory(items=[])
-    player = GameObject(0, 0, '@', 'Player', libtcod.white, blocks=True,
-                        components=[Movement(), exp_comp, fighter_comp, player_inventory],
-                        listeners=[PlayerDeath()])
-
-    # Generate map (not drawn to the screen yet)
-    dungeon_level = 1
-    (game_map, objects, stairs) = make_map(player, dungeon_level, object_factory)
-
-    messages = []
-
-    game = Game('playing', game_map, objects, stairs, player, messages, dungeon_level)
-
+    game = Game(state='playing', log=Log(), dungeon_level=1)
+    player = make_player(game)
     object_factory.game = game
+    make_map(game, object_factory)
 
-    # Initial equipment: a dagger and scroll of lightning bolt
-    dagger = object_factory.new_item('Dagger')
-    dagger.component(Item).pick_up(player)
+    # Starting inventory
+    object_factory.new_item('Dagger').pick_up(player)
+    object_factory.new_item('Scroll Of Lightning Bolt').pick_up(player)
+    object_factory.new_item('Scroll Of Fireball').pick_up(player)
+    object_factory.new_item('Scroll Of Confusion').pick_up(player)
 
-    spell = object_factory.new_item('Scroll Of Lightning Bolt')
-    spell.component(Item).pick_up(player)
-
-    spell = object_factory.new_item('Scroll Of Fireball')
-    spell.component(Item).pick_up(player)
-
-    spell = object_factory.new_item('Scroll Of Confusion')
-    spell.component(Item).pick_up(player)
-
-    game.messages = []
+    game.log.messages = []
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
-    game.message(m, libtcod.red)
+    game.log.message(m, libtcod.red)
 
     return game
 
 
-def next_dungeon_level(game, object_factory):
-    # Advance to the next level
-    # Heal the player by 50%
-    game.message('You take a moment to rest, and recover your strength.',
-                 libtcod.light_violet)
-    fighter = game.player.component(Fighter)
-    fighter.heal(fighter.max_hp() / 2)
-
-    msg = 'After a rare moment of peace, you descend deeper into the heart '
-    msg += 'of the dungeon...'
-    game.message(msg, libtcod.red)
-    game.dungeon_level += 1
-
-    (game_map, objects, stairs) = make_map(game.player, game.dungeon_level, object_factory)
-
-    game.map = game_map
-    game.objects = objects
-    game.stairs = stairs
-
-    for game_object in game.objects:
-        game_object.game = game
-
-
-def update_projectiles(game):
-    projectiles_found = False
-    for game_object in game.objects:
-        projectile = game_object.component(Projectile)
-        if projectile:
-            projectile.tick()
-            projectiles_found = True
-    return projectiles_found
-
-
 def play_game(game, ui, object_factory):
-    for game_object in game.objects:
-        game_object.game = game
-
-    fov_recompute = True
     libtcod.console_clear(ui.console)
+    screen = EngineScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
-        render_all(ui, game, fov_recompute)
-
-        while update_projectiles(game):
-            render_all(ui, game, True)
+        screen.render()
 
         check_player_level_up(game, ui.console)
 
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
-        (fov_recompute, player_action) = handle_keys(ui, game, object_factory)
 
-        if player_action == 'exit':
-            save_game(game)
+        if screen.handle_input():
             break
-
-        if game.state == 'playing' and player_action != 'idle':
-            for game_object in game.objects:
-                ai = game_object.component(AI)
-                if ai:
-                    ai.take_turn()
-
-
-def save_game(game):
-    # Open an empty shelve (possibly overwriting an old one) to write the data
-    save_file = shelve.open('savegame', 'n')
-    save_file['map'] = game.map
-    save_file['objects'] = game.objects
-    save_file['player_index'] = game.objects.index(game.player)
-    save_file['messages'] = game.messages
-    save_file['state'] = game.state
-    save_file['stairs_index'] = game.objects.index(game.stairs)
-    save_file['dungeon_level'] = game.dungeon_level
-    save_file.close()
-
-
-def load_game():
-    # Open the previously saved shelve and load the game data
-    save_file = shelve.open('savegame', 'r')
-    game_map = save_file['map']
-    objects = save_file['objects']
-    player = objects[save_file['player_index']]
-    messages = save_file['messages']
-    state = save_file['state']
-    stairs = objects[save_file['stairs_index']]
-    dungeon_level = save_file['dungeon_level']
-    save_file.close()
-
-    return Game(state, game_map, objects, stairs, player, messages, dungeon_level)
+        screen.update()
 
 
 def main_menu(ui):
@@ -335,7 +300,7 @@ def main_menu(ui):
         libtcod.console_set_default_foreground(ui.console, libtcod.light_yellow)
 
         # Show options and wait for the player's choice
-        options = ['Play a new game', 'Continue last game', 'Quit']
+        options = ['Play a new game', 'Quit']
         choice = menu(ui.console, '', options, 24)
 
         if choice == 0:
@@ -343,14 +308,6 @@ def main_menu(ui):
             game = new_game(object_factory)
             play_game(game, ui, object_factory)
         elif choice == 1:
-            # Load last game
-            try:
-                game = load_game()
-                play_game(game, ui, object_factory)
-            except:
-                messagebox(ui.console, '\n No saved game to load.\n', 24)
-                continue
-        elif choice == 2:
             # Quit
             break
 
