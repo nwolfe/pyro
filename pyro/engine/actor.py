@@ -78,9 +78,13 @@ class Actor:
     def take_damage(self, action, damage, attacker):
         if damage > 0:
             self.hp -= damage
+            self.on_damaged(action, damage, attacker)
 
         if self.hp <= 0:
             action.add_event(Event(EventType.DEATH, actor=self, other=attacker))
+
+    def on_damaged(self, action, damage, attacker):
+        pass
 
     def heal(self, amount):
         # Heal by the given amount, without going over the maximum

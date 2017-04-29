@@ -36,6 +36,9 @@ class AI:
         """Perform a single game turn."""
         return self.behavior.take_turn(action, self)
 
+    def took_damage(self, action, damage, attacker):
+        self.behavior.took_damage(action, damage, attacker, self)
+
     def confuse(self, num_turns):
         old_behavior = self.behavior
         self.behavior = Confused(old_behavior, num_turns)
@@ -71,19 +74,25 @@ class BehaviorStrategy:
     def take_turn(self, action, ai):
         pass
 
+    def took_damage(self, action, damage, attacker, ai):
+        pass
+
 
 class Aggressive(BehaviorStrategy):
+    def __init__(self, target=None):
+        self.target = target
+
     def take_turn(self, action, ai):
-        player = ai.monster.game.player
+        target = self.target if self.target else ai.monster.game.player
         if ai.monster.game.map.is_in_fov(ai.monster.pos.x, ai.monster.pos.y):
             # Move towards player if far away
-            if ai.monster.pos.distance_to(player.pos) >= 2:
-                direction = pyro.astar.astar(ai.monster.game, ai.monster.pos, player.pos)
+            if ai.monster.pos.distance_to(target.pos) >= 2:
+                direction = pyro.astar.astar(ai.monster.game, ai.monster.pos, target.pos)
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
-            elif player.hp > 0:
-                return AttackAction(player)
+            elif target.hp > 0:
+                return AttackAction(target)
 
 
 class AggressiveSpellcaster(BehaviorStrategy):
@@ -112,15 +121,15 @@ class AggressiveSpellcaster(BehaviorStrategy):
 
 class PassiveAggressive(BehaviorStrategy):
     def take_turn(self, action, ai):
-        # Become aggressive if we're damaged
-        if ai.monster.hp < ai.monster.max_hp:
-            ai.behavior = Aggressive()
-
         # 25% chance to move one square in a random direction
-        elif libtcod.random_get_int(0, 1, 4) == 1:
+        if libtcod.random_get_int(0, 1, 4) == 1:
             direction = pyro.direction.random()
             if not blocked(ai.monster.game, ai.monster.pos.plus(direction)):
                 return WalkAction(direction)
+
+    def took_damage(self, action, damage, attacker, ai):
+        # Become aggressive if we're attacked
+        ai.behavior = Aggressive(target=attacker)
 
 
 class Confused(BehaviorStrategy):

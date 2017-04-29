@@ -14,6 +14,9 @@ class Monster(Actor):
     def on_create_melee_hit(self):
         return Hit()
 
+    def on_damaged(self, action, damage, attacker):
+        self.ai.took_damage(action, damage, attacker)
+
 
 class AIAdapterAction(Action):
     def __init__(self, monster_ai):
