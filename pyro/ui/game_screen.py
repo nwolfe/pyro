@@ -2,7 +2,7 @@ import tcod as libtcod
 import pyro.engine.corpse
 from itertools import chain
 from pyro.ui import Screen
-from pyro.components import Inventory, Equipment, Item
+from pyro.components import Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
@@ -51,7 +51,7 @@ class EngineScreen(Screen):
         elif 'd' == key_char:
             # Show the inventory; if an item is selected, drop it
             msg = 'Select an item to drop it, or any other key to cancel.\n'
-            inventory = self.game.player.component(Inventory).items
+            inventory = self.game.player.inventory
             selected_item = inventory_menu(self.ui.console, inventory, msg)
             if selected_item:
                 action = DropAction(selected_item)
@@ -63,7 +63,7 @@ class EngineScreen(Screen):
         elif 'i' == key_char:
             # Show the inventory; if an item is selected, use it
             msg = 'Select an item to use it, or any other key to cancel.\n'
-            inventory = self.game.player.component(Inventory).items
+            inventory = self.game.player.inventory
             selected_item = inventory_menu(self.ui.console, inventory, msg)
             if selected_item:
                 action = UseAction(selected_item, self.ui)

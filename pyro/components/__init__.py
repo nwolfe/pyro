@@ -1,1 +1,1 @@
-from item import Item, Inventory, Equipment, ItemUse, SpellItemUse
+from item import Item, Equipment, ItemUse, SpellItemUse

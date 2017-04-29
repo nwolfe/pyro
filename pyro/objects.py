@@ -1,6 +1,6 @@
 import json
 import tcod as libtcod
-from pyro.components import Item, Equipment, Inventory
+from pyro.components import Item, Equipment
 from pyro.components import SpellItemUse
 from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
@@ -87,11 +87,9 @@ def instantiate_item(template):
 
 
 def make_player(game):
-    components = [
-        Inventory(items=[])
-    ]
-    player = GameObject('Player', components, game=game)
+    player = GameObject('Player', game=game)
     hero = Hero(game, player)
+    hero.inventory = []
     hero.glyph = Glyph('@', libtcod.white)
     hero.hp = PLAYER_DEFAULT_HP
     hero.base_max_hp = hero.hp

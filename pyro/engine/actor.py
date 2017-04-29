@@ -19,6 +19,7 @@ class Actor:
         self.base_power = 0
         self.xp = 0
         self.level = 1
+        self.inventory = None
 
     def needs_input(self):
         return False
