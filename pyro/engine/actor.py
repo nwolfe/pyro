@@ -2,17 +2,19 @@ import abc
 from pyro.energy import Energy, NORMAL_SPEED
 from pyro.engine import Event, EventType
 from pyro.engine.item import get_all_equipped
+from pyro.position import Position
 from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR
 
 
 class Actor:
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, game, game_object):
+    def __init__(self, game):
+        self.name = None
         self.glyph = None
+        self.pos = Position()
         self.energy = Energy()
         self.game = game
-        self.game_object = game_object
         self.hp = 0
         self.base_max_hp = 0
         self.base_defense = 0
@@ -56,14 +58,6 @@ class Actor:
         pass
 
     @property
-    def pos(self):
-        return self.game_object.pos
-
-    @property
-    def name(self):
-        return self.game_object.name
-
-    @property
     def power(self):
         equipped = get_all_equipped(self)
         bonus = sum(equipment.power_bonus for equipment in equipped)
@@ -104,7 +98,3 @@ class Actor:
         required = self.required_for_level_up()
         self.level += 1
         self.xp -= required
-
-    # Temporary bridge to convert usages over to Actors from GameObjects
-    def component(self, component_type):
-        return self.game_object.component(component_type)

@@ -27,7 +27,7 @@ class WalkAction(Action):
 
         # Try moving there
         if not blocked(self.game, new_pos):
-            self.actor.game_object.pos = new_pos
+            self.actor.pos = new_pos
             self.game.map.dirty_visibility()
             # Step on the tile (i.e. tall grass becomes crushed grass)
             tile = self.game.map.tile(new_pos)

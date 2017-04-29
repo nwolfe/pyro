@@ -29,5 +29,3 @@ TODO Don't assume player is the target in AIs
 
 BUGS
 TODO Fix setup.py since code moved to pyro/
-TODO Fix missing messages from items after loading
-    Problem due to persistence and the reference to Game from GameObject

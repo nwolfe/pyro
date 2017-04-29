@@ -3,7 +3,6 @@ import tcod as libtcod
 from pyro.engine.item import Item, Equipment, SpellItemUse
 from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
-from pyro.gameobject import GameObject
 from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
 from pyro.engine import ai, Hero, Monster
 
@@ -38,8 +37,8 @@ def instantiate_monster(template, game):
         spells = [instantiate_spell(template['spell'])]
     elif 'spells' in template:
         spells = [instantiate_spell(spell) for spell in template['spells']]
-    game_object = GameObject(name=name, game=game)
-    monster = Monster(game, game_object)
+    monster = Monster(game)
+    monster.name = name
     monster.ai = ai.new(template['ai'], spells)
     monster.ai.monster = monster
     monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
@@ -48,7 +47,6 @@ def instantiate_monster(template, game):
     monster.base_max_hp = monster.hp
     monster.base_defense = template['defense']
     monster.base_power = template['power']
-    game_object.actor = monster
     return monster
 
 
@@ -82,15 +80,14 @@ def instantiate_item(template):
 
 
 def make_player(game):
-    player = GameObject('Player', game=game)
-    hero = Hero(game, player)
+    hero = Hero(game)
+    hero.name = 'Player'
     hero.inventory = []
     hero.glyph = Glyph('@', libtcod.white)
     hero.hp = PLAYER_DEFAULT_HP
     hero.base_max_hp = hero.hp
     hero.base_defense = PLAYER_DEFAULT_DEFENSE
     hero.base_power = PLAYER_DEFAULT_POWER
-    player.actor = hero
     game.player = hero
     return hero
 

@@ -3,8 +3,8 @@ from pyro.engine.attack import Hit
 
 
 class Hero(Actor):
-    def __init__(self, game, player):
-        Actor.__init__(self, game, player)
+    def __init__(self, game):
+        Actor.__init__(self, game)
         self.next_action = None
 
     def needs_input(self):

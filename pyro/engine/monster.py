@@ -3,8 +3,8 @@ from pyro.engine.attack import Hit
 
 
 class Monster(Actor):
-    def __init__(self, game, monster_object):
-        Actor.__init__(self, game, monster_object)
+    def __init__(self, game):
+        Actor.__init__(self, game)
         self.ai = None
 
     def on_get_action(self):
