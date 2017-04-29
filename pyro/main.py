@@ -1,6 +1,5 @@
 import tcod as libtcod
 from itertools import chain
-from pyro.components import Item
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
@@ -257,18 +256,11 @@ def new_game(object_factory):
     object_factory.game = game
     make_map(game, object_factory)
 
-    # Initial equipment: a dagger and scroll of lightning bolt
-    dagger = object_factory.new_item('Dagger')
-    dagger.component(Item).pick_up(player)
-
-    spell = object_factory.new_item('Scroll Of Lightning Bolt')
-    spell.component(Item).pick_up(player)
-
-    spell = object_factory.new_item('Scroll Of Fireball')
-    spell.component(Item).pick_up(player)
-
-    spell = object_factory.new_item('Scroll Of Confusion')
-    spell.component(Item).pick_up(player)
+    # Starting inventory
+    object_factory.new_item('Dagger').pick_up(player)
+    object_factory.new_item('Scroll Of Lightning Bolt').pick_up(player)
+    object_factory.new_item('Scroll Of Fireball').pick_up(player)
+    object_factory.new_item('Scroll Of Confusion').pick_up(player)
 
     game.log.messages = []
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'

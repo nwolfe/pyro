@@ -1,4 +1,3 @@
-from pyro.components import Item
 from pyro.engine import Action, ActionResult
 
 
@@ -11,7 +10,7 @@ class PickUpAction(Action):
         # Pick up first item in the player's tile
         for item in self.game.items:
             if item.pos.equals(self.game.player.pos):
-                item.component(Item).pick_up(self.game.player)
+                item.pick_up(self.game.player)
         return ActionResult.SUCCESS
 
 

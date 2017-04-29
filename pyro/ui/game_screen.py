@@ -2,10 +2,10 @@ import tcod as libtcod
 import pyro.engine.corpse
 from itertools import chain
 from pyro.ui import Screen
-from pyro.components import Equipment, Item
 from pyro.direction import Direction
 from pyro.engine import GameEngine, EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
+from pyro.engine.item import Equipment
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
@@ -257,15 +257,14 @@ def inventory_menu(console, inventory, header):
         options = []
         for item in inventory:
             text = item.name
-            equipment = item.component(Equipment)
-            if equipment and equipment.is_equipped:
-                text = '{0} (on {1})'.format(text, equipment.slot)
+            if isinstance(item, Equipment) and item.is_equipped:
+                text = '{0} (on {1})'.format(text, item.slot)
             options.append(text)
     selection_index = menu(console, header, options, INVENTORY_WIDTH)
     if selection_index is None or len(inventory) == 0:
         return None
     else:
-        return inventory[selection_index].component(Item)
+        return inventory[selection_index]
 
 
 def menu(console, header, options, width):

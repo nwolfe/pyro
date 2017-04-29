@@ -1,7 +1,6 @@
 import json
 import tcod as libtcod
-from pyro.components import Item, Equipment
-from pyro.components import SpellItemUse
+from pyro.engine.item import Item, Equipment, SpellItemUse
 from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.gameobject import GameObject
@@ -67,23 +66,19 @@ def load_templates(json_file):
 
 def instantiate_item(template):
     name = template['name']
-    components = []
+    glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
     if 'slot' in template:
-        equipment = Equipment(slot=template['slot'])
+        equipment = Equipment(name, glyph, slot=template['slot'])
         if 'power' in template:
             equipment.power_bonus = template['power']
         if 'defense' in template:
             equipment.defense_bonus = template['defense']
         if 'hp' in template:
             equipment.max_hp_bonus = template['hp']
-        components.append(equipment)
+        return equipment
     elif 'on_use' in template:
         spell = instantiate_spell(ITEM_USES[template['on_use']])
-        item = Item(on_use=SpellItemUse(spell))
-        components.append(item)
-    item = GameObject(name=name, components=components)
-    item.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
-    return item
+        return Item(name, glyph, on_use=SpellItemUse(spell))
 
 
 def make_player(game):
