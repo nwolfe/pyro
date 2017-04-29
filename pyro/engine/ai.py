@@ -84,7 +84,7 @@ class Aggressive(BehaviorStrategy):
 
     def take_turn(self, action, ai):
         target = self.target if self.target else ai.monster.game.player
-        if ai.monster.game.map.is_in_fov(ai.monster.pos.x, ai.monster.pos.y):
+        if ai.monster.game.map.is_in_fov(ai.monster.pos):
             # Move towards player if far away
             if ai.monster.pos.distance_to(target.pos) >= 2:
                 direction = pyro.astar.astar(ai.monster.game, ai.monster.pos, target.pos)
@@ -98,7 +98,7 @@ class Aggressive(BehaviorStrategy):
 class AggressiveSpellcaster(BehaviorStrategy):
     def take_turn(self, action, ai):
         player = ai.monster.game.player
-        if ai.monster.game.map.is_in_fov(ai.monster.pos.x, ai.monster.pos.y):
+        if ai.monster.game.map.is_in_fov(ai.monster.pos):
             # Heal yourself if damaged
             if ai.monster.hp < ai.monster.max_hp:
                 heals = ai.get_spells(SpellType.HEAL)

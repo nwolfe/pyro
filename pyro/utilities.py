@@ -30,7 +30,7 @@ def target_tile(game, ui, max_range=None):
 
         (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
-        if (ui.mouse.lbutton_pressed and game.map.is_in_fov(x, y) and
+        if (ui.mouse.lbutton_pressed and game.map.is_xy_in_fov(x, y) and
                 (max_range is None or game.player.pos.distance(x, y) <= max_range)):
             return x, y
 
@@ -60,7 +60,7 @@ def closest_monster(game, max_range):
 
     for game_object in game.actors:
         if game_object != game.player:
-            if game.map.is_in_fov(game_object.pos.x, game_object.pos.y):
+            if game.map.is_in_fov(game_object.pos):
                 # Calculate distance between this object and the player
                 dist = game.player.pos.distance_to(game_object.pos)
                 if dist < closest_dist:

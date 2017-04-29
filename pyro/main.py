@@ -89,7 +89,7 @@ def get_names_under_mouse(mouse, game):
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
     names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
-             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
+             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos)]
     return ', '.join(names).capitalize()
 
 
@@ -125,7 +125,7 @@ def render_all(ui, game, fov_recompute):
         # Set tile background colors according to FOV
         for y in range(game.map.height):
             for x in range(game.map.width):
-                visible = game.map.is_in_fov(x, y)
+                visible = game.map.is_xy_in_fov(x, y)
                 wall = game.map.movement_blocked(x, y) and game.map.vision_blocked(x, y)
                 if not visible:
                     if game.map.is_explored(x, y):
@@ -146,23 +146,23 @@ def render_all(ui, game, fov_recompute):
                     game.map.mark_explored(x, y)
 
     for item in game.items:
-        x, y = item.pos.x, item.pos.y
-        if game.map.is_in_fov(x, y):
+        if game.map.is_in_fov(item.pos):
             libtcod.console_set_default_foreground(ui.console, item.glyph.fg_color)
-            libtcod.console_put_char(ui.console, x, y, item.glyph.char, libtcod.BKGND_NONE)
+            libtcod.console_put_char(ui.console, item.pos.x, item.pos.y,
+                                     item.glyph.char, libtcod.BKGND_NONE)
 
     for corpse in game.corpses:
-        x, y = corpse.pos.x, corpse.pos.y
-        if game.map.is_in_fov(x, y):
+        if game.map.is_in_fov(corpse.pos):
             glyph = corpse.type.glyph
             libtcod.console_set_default_foreground(ui.console, glyph.fg_color)
-            libtcod.console_put_char(ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
+            libtcod.console_put_char(ui.console, corpse.pos.x, corpse.pos.y,
+                                     glyph.char, libtcod.BKGND_NONE)
 
     for actor in game.actors:
-        x, y = actor.pos.x, actor.pos.y
-        if game.map.is_in_fov(x, y):
+        if game.map.is_in_fov(actor.pos):
             libtcod.console_set_default_foreground(ui.console, actor.glyph.fg_color)
-            libtcod.console_put_char(ui.console, x, y, actor.glyph.char, libtcod.BKGND_NONE)
+            libtcod.console_put_char(ui.console, actor.pos.x, actor.pos.y,
+                                     actor.glyph.char, libtcod.BKGND_NONE)
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)

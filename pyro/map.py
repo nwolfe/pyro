@@ -144,8 +144,11 @@ class Map:
         self.__refresh_fov(fov_map)
         return fov_map
 
-    def is_in_fov(self, x, y):
+    def is_xy_in_fov(self, x, y):
         return libtcod.map_is_in_fov(self.fov_map, x, y)
+
+    def is_in_fov(self, pos):
+        return libtcod.map_is_in_fov(self.fov_map, pos.x, pos.y)
 
     def dirty_visibility(self):
         self.visibility_dirty = True

@@ -90,7 +90,7 @@ class EngineScreen(Screen):
         for y in range(self.game.map.height):
             for x in range(self.game.map.width):
                 tile = self.game.map.tiles[x][y]
-                visible = self.game.map.is_in_fov(x, y)
+                visible = self.game.map.is_xy_in_fov(x, y)
                 if not visible:
                     if tile.explored:
                         glyph = tile.type.appearance.unlit
@@ -108,25 +108,25 @@ class EngineScreen(Screen):
 
         # Draw game items
         for item in self.game.items:
-            x, y = item.pos.x, item.pos.y
-            if self.game.map.is_in_fov(x, y):
+            if self.game.map.is_in_fov(item.pos):
                 libtcod.console_set_default_foreground(self.ui.console, item.glyph.fg_color)
-                libtcod.console_put_char(self.ui.console, x, y, item.glyph.char, libtcod.BKGND_NONE)
+                libtcod.console_put_char(self.ui.console, item.pos.x, item.pos.y,
+                                         item.glyph.char, libtcod.BKGND_NONE)
 
         # Draw corpses
         for corpse in self.game.corpses:
-            x, y = corpse.pos.x, corpse.pos.y
-            if self.game.map.is_in_fov(x, y):
+            if self.game.map.is_in_fov(corpse.pos):
                 glyph = corpse.type.glyph
                 libtcod.console_set_default_foreground(self.ui.console, glyph.fg_color)
-                libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
+                libtcod.console_put_char(self.ui.console, corpse.pos.x, corpse.pos.y,
+                                         glyph.char, libtcod.BKGND_NONE)
 
         # Draw game actors
         for actor in self.game.actors:
-            x, y = actor.pos.x, actor.pos.y
-            if self.game.map.is_in_fov(x, y):
+            if self.game.map.is_in_fov(actor.pos):
                 libtcod.console_set_default_foreground(self.ui.console, actor.glyph.fg_color)
-                libtcod.console_put_char(self.ui.console, x, y, actor.glyph.char, libtcod.BKGND_NONE)
+                libtcod.console_put_char(self.ui.console, actor.pos.x, actor.pos.y,
+                                         actor.glyph.char, libtcod.BKGND_NONE)
 
         # Draw effects
         for effect in self.effects:
@@ -219,7 +219,7 @@ def get_names_under_mouse(mouse, game):
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
     names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
-             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos.x, obj.pos.y)]
+             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos)]
     return ', '.join(names)
 
 
