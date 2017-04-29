@@ -1,5 +1,6 @@
 from pyro.engine import Actor
 from pyro.engine.attack import Hit
+import pyro.engine.corpse
 
 
 class Hero(Actor):
@@ -17,3 +18,9 @@ class Hero(Actor):
 
     def on_create_melee_hit(self):
         return Hit()
+
+    def on_death(self, attacker):
+        self.game.state = 'dead'
+        self.game.log.message('You died!')
+        self.game.actors.remove(self)
+        self.game.corpses.append(pyro.engine.corpse.for_hero(self))

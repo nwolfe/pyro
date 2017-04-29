@@ -76,14 +76,17 @@ class Actor:
         return self.base_max_hp + bonus
 
     def take_damage(self, action, damage, attacker):
-        if damage > 0:
-            self.hp -= damage
-            self.on_damaged(action, damage, attacker)
+        self.hp -= damage
+        self.on_damaged(action, damage, attacker)
 
         if self.hp <= 0:
             action.add_event(Event(EventType.DEATH, actor=self, other=attacker))
+            self.on_death(attacker)
 
     def on_damaged(self, action, damage, attacker):
+        pass
+
+    def on_death(self, attacker):
         pass
 
     def heal(self, amount):

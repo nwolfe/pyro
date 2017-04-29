@@ -1,5 +1,4 @@
 import tcod as libtcod
-import pyro.engine.corpse
 from itertools import chain
 from pyro.ui import Screen
 from pyro.direction import Direction
@@ -79,20 +78,9 @@ class EngineScreen(Screen):
 
         result = self.engine.update(self.game)
 
-        if self.game.player.hp <= 0:
-            self.game.state = 'dead'
-            self.game.log.message('You died!')
-            corpse = pyro.engine.corpse.for_hero(self.game.player)
-            self.game.actors.remove(self.game.player)
-            self.game.corpses.append(corpse)
-            return
-
         for event in result.events:
-                if EventType.HIT == event.type:
-                    self.effects.append(HitEffect(event.actor))
-                elif EventType.DEATH == event.type:
-                    if event.actor != self.game.player:
-                        monster_death(event.actor, event.other, self.game)
+            if EventType.HIT == event.type:
+                self.effects.append(HitEffect(event.actor))
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)
 
@@ -199,20 +187,6 @@ class EngineScreen(Screen):
         make_map(self.game, self.factory)
 
         self.initialize_engine()
-
-
-def monster_death(monster, attacker, game):
-    # Transform it into a nasty corpse!
-    # It doesn't block, can't be attacked, and doesn't move
-    if attacker == game.player:
-        game.log.message('The {0} is dead! You gain {1} experience points.'.
-                         format(monster.name, monster.xp), libtcod.orange)
-    else:
-        game.log.message('The {0} is dead!'.format(monster.name), libtcod.orange)
-    attacker.xp += monster.xp
-    corpse = pyro.engine.corpse.for_monster(monster)
-    game.actors.remove(monster)
-    game.corpses.append(corpse)
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
