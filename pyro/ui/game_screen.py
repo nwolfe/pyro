@@ -17,15 +17,7 @@ class EngineScreen(Screen):
         self.ui = ui
         self.factory = factory
         self.effects = []
-        self.hero = None
-        self.engine = None
-        self.initialize_engine()
-
-    def initialize_engine(self):
-        # TODO This logic can't be here
-        self.hero = self.game.player
-        actors = self.game.actors
-        self.engine = GameEngine(actors)
+        self.engine = GameEngine(self.game.actors)
 
     def handle_input(self):
         action = None
@@ -69,7 +61,7 @@ class EngineScreen(Screen):
         elif 'r' == key_char:
             action = CloseDoorAction(self.game.player.pos)
         if action:
-            self.hero.next_action = action
+            self.game.player.next_action = action
         return False
 
     def update(self):
@@ -186,7 +178,7 @@ class EngineScreen(Screen):
 
         make_map(self.game, self.factory)
 
-        self.initialize_engine()
+        self.engine = GameEngine(self.game.actors)
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
