@@ -2,7 +2,7 @@ import tcod as libtcod
 from itertools import chain
 from pyro.ui import Screen
 from pyro.direction import Direction
-from pyro.engine import GameEngine, EventType
+from pyro.engine.game import EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.engine.item import Equipment
 from pyro.map import make_map
@@ -10,14 +10,13 @@ from pyro.ui import HitEffect
 from pyro.settings import *
 
 
-class EngineScreen(Screen):
+class GameScreen(Screen):
     def __init__(self, ui, game, factory):
         Screen.__init__(self)
         self.game = game
         self.ui = ui
         self.factory = factory
         self.effects = []
-        self.engine = GameEngine(self.game.actors)
 
     def handle_input(self):
         action = None
@@ -68,7 +67,7 @@ class EngineScreen(Screen):
         if self.game.state == 'dead':
             return
 
-        result = self.engine.update(self.game)
+        result = self.game.update()
 
         for event in result.events:
             if EventType.HIT == event.type:
@@ -165,6 +164,7 @@ class EngineScreen(Screen):
                 libtcod.console_put_char(self.ui.console, x, y, ' ', libtcod.BKGND_NONE)
 
     def next_dungeon_level(self):
+        # TODO Push all this down into a Game#next_level() method?
         # Advance to the next level
         # Heal the player by 50%
         self.game.log.message('You take a moment to rest, and recover your strength.',
@@ -178,11 +178,8 @@ class EngineScreen(Screen):
 
         make_map(self.game, self.factory)
 
-        self.engine = GameEngine(self.game.actors)
 
-
-def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
-                  back_color):
+def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
     # Render a bar (HP, experience, etc)
     bar_width = int(float(value) / maximum * total_width)
 

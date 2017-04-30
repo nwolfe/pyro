@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.engine import Event, EventType
+from pyro.engine.game import Event, EventType
 
 
 class Hit:

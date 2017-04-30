@@ -195,6 +195,7 @@ class LevelBuilder:
         self.map.refresh_visibility(game.player.pos)
         game.map = self.map
         game.actors = self.game_actors
+        game.current_actor_index = 0
         game.items = self.game_items
         game.corpses = []
 

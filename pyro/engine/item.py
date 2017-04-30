@@ -32,9 +32,9 @@ class Item:
             return False
 
         if len(owner.inventory) >= 26:
-            if owner == self.owner.game.player:
+            if owner == owner.game.player:
                 msg = 'Your inventory is full, cannot pick up {0}.'
-                self.owner.game.log.message(msg.format(self.name), libtcod.red)
+                owner.game.log.message(msg.format(self.name), libtcod.red)
             return False
         else:
             # Add to owner's inventory and remove from the map

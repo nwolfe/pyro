@@ -1,6 +1,6 @@
 import abc
 from pyro.energy import Energy, NORMAL_SPEED
-from pyro.engine import Event, EventType
+from pyro.engine.game import Event, EventType
 from pyro.engine.item import get_all_equipped
 from pyro.position import Position
 from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR

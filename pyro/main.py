@@ -1,13 +1,13 @@
 import tcod as libtcod
 from itertools import chain
+from pyro.engine.game import Game
 from pyro.map import make_map
 from pyro.objects import GameObjectFactory, make_player
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
 from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
-from pyro.ui import EngineScreen
-from pyro.engine.log import Log
+from pyro.ui.game_screen import GameScreen
 
 
 ###############################################################################
@@ -238,20 +238,8 @@ def check_player_level_up(game, console):
             player.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
-class Game:
-    def __init__(self, state=None, map=None, objects=None, player=None, log=None, dungeon_level=None):
-        self.state = state
-        self.map = map
-        self.actors = objects
-        self.items = None
-        self.corpses = None
-        self.player = player
-        self.log = log
-        self.dungeon_level = dungeon_level
-
-
 def new_game(object_factory):
-    game = Game(state='playing', log=Log(), dungeon_level=1)
+    game = Game(state='playing', dungeon_level=1)
     player = make_player(game)
     object_factory.game = game
     make_map(game, object_factory)
@@ -271,7 +259,7 @@ def new_game(object_factory):
 
 def play_game(game, ui, object_factory):
     libtcod.console_clear(ui.console)
-    screen = EngineScreen(ui, game, object_factory)
+    screen = GameScreen(ui, game, object_factory)
     while not libtcod.console_is_window_closed():
         screen.render()
 

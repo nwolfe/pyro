@@ -1,13 +1,21 @@
 from collections import deque
+from pyro.engine.log import Log
 
 
-class GameEngine:
-    def __init__(self, actors):
-        self.actors = actors if actors else []
+class Game:
+    def __init__(self, state, dungeon_level):
+        self.state = state
+        self.map = None
+        self.actors = None
+        self.items = None
+        self.corpses = None
+        self.player = None
+        self.dungeon_level = dungeon_level
+        self.log = Log()
         self.current_actor_index = 0
         self.actions = deque()
 
-    def update(self, game):
+    def update(self):
         game_result = GameResult()
         while True:
             # Process any ongoing or pending actions
@@ -22,17 +30,17 @@ class GameEngine:
                     self.actions.appendleft(action)
                     result = action.perform(game_result)
 
-                game.map.refresh_visibility(game.player.pos)
+                self.map.refresh_visibility(self.player.pos)
                 game_result.made_progress = True
 
                 if result.done:
                     self.actions.popleft()
                     if result.succeeded and action.consumes_energy:
                         action.actor.finish_turn(action)
-                        self.__advance_actor__()
+                        self._advance_actor()
 
                     # Refresh every time the hero takes a turn
-                    if action.actor == game.player:
+                    if action.actor == self.player:
                         return game_result
 
                 if len(game_result.events) > 0:
@@ -41,7 +49,7 @@ class GameEngine:
             # If we get here, all pending actions are done, so advance
             # to the next tick until an actor moves
             while len(self.actions) == 0:
-                actor = self.__current_actor__()
+                actor = self._current_actor()
 
                 # If we are still waiting for input for the actor, just return (again)
                 if actor.energy.can_take_turn() and actor.needs_input():
@@ -56,12 +64,12 @@ class GameEngine:
                     self.actions.append(actor.get_action())
                 else:
                     # This actor doesn't have enough energy yet, so move on to the next
-                    self.__advance_actor__()
+                    self._advance_actor()
 
-    def __current_actor__(self):
+    def _current_actor(self):
         return self.actors[self.current_actor_index]
 
-    def __advance_actor__(self):
+    def _advance_actor(self):
         self.current_actor_index = (self.current_actor_index + 1) % len(self.actors)
 
 
