@@ -15,9 +15,8 @@ class Rect:
         self.y2 = y + h
 
     def center(self):
-        center_x = (self.x1 + self.x2) / 2
-        center_y = (self.y1 + self.y2) / 2
-        return center_x, center_y
+        return Position((self.x1 + self.x2) / 2,
+                        (self.y1 + self.y2) / 2)
 
     def intersect(self, other):
         # Returns true if this rectangle intersects with the other one
@@ -155,9 +154,9 @@ class Map:
                                     TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
             self.visibility_dirty = False
 
-    def is_on_map(self, x, y):
-        x_in_bounds = 0 <= x < self.width
-        y_in_bounds = 0 <= y < self.height
+    def is_on_map(self, position):
+        x_in_bounds = 0 <= position.x < self.width
+        y_in_bounds = 0 <= position.y < self.height
         return x_in_bounds and y_in_bounds
 
     def movement_blocked(self, x, y):
@@ -223,11 +222,11 @@ class LevelBuilder:
             if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
-    def place_stairs(self, x, y):
-        self.map.tiles[x][y].type = TileType.STAIRS
+    def place_stairs(self, position):
+        self.map.tiles[position.x][position.y].type = TileType.STAIRS
 
-    def place_grass_tile(self, x, y):
-        self.map.tiles[x][y].type = TileType.TALL_GRASS
+    def place_grass_tile(self, position):
+        self.map.tiles[position.x][position.y].type = TileType.TALL_GRASS
 
     def place_grass(self, room):
         if libtcod.random_get_int(0, 1, 2) == 1:
@@ -235,16 +234,16 @@ class LevelBuilder:
             while is_blocked(self.map, self.game_actors, point):
                 point = room.random_point_inside()
 
-            self.place_grass_tile(point.x, point.y)
+            self.place_grass_tile(point)
 
             num_grass = libtcod.random_get_int(0, 4, 8)
             for i in range(num_grass):
                 point = random_point_surrounding(point)
-                while not self.map.is_on_map(point.x, point.y):
+                while not self.map.is_on_map(point):
                     point = random_point_surrounding(point)
 
                 if not is_blocked(self.map, self.game_actors, point):
-                    self.place_grass_tile(point.x, point.y)
+                    self.place_grass_tile(point)
 
     CREATURE_CHANCES = dict(
         critter=[[6, 1], [5, 3], [4, 5], [3, 7], [2, 9]],
@@ -275,7 +274,7 @@ class LevelBuilder:
                 creature.pos.copy(point)
                 self.game_actors.append(creature)
 
-    def place_boss(self, room_x, room_y):
+    def place_boss(self, position):
         bosses = filter(lambda m: m['type'] == 'boss', self.game_object_factory.monster_templates)
         if len(bosses) == 0:
             return
@@ -283,7 +282,7 @@ class LevelBuilder:
         # Randomly select a boss and place it near the center of the room
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
         boss = self.game_object_factory.new_monster(boss['name'])
-        boss.pos.copy(random_point_surrounding(Position(room_x, room_y)))
+        boss.pos.copy(random_point_surrounding(position))
         self.game_actors.append(boss)
 
     def place_items(self, room):
@@ -400,8 +399,7 @@ def make_map(game, object_factory):
     builder = LevelBuilder(game_map, actors, items, object_factory, game.dungeon_level)
     rooms = []
     num_rooms = 0
-    new_x = 0
-    new_y = 0
+    current_pos = None
 
     for r in range(MAX_ROOMS):
         new_room = randomly_placed_rect(game_map)
@@ -413,26 +411,25 @@ def make_map(game, object_factory):
         # Room is valid, continue
         builder.create_room(new_room)
 
-        (new_x, new_y) = new_room.center()
+        current_pos = new_room.center()
 
         if num_rooms == 0:
             # This is the first room, where the player starts at
-            game.player.pos.x = new_x
-            game.player.pos.y = new_y
+            game.player.pos.copy(current_pos)
         else:
             # Connect it to the previous room with a tunnel
 
             # Center of the previous room
-            (prev_x, prev_y) = rooms[num_rooms-1].center()
+            previous = rooms[num_rooms-1].center()
 
             if libtcod.random_get_int(0, 0, 1) == 1:
                 # First move horizontally, then vertically
-                builder.create_h_tunnel(prev_x, new_x, prev_y)
-                builder.create_v_tunnel(prev_y, new_y, new_x)
+                builder.create_h_tunnel(previous.x, current_pos.x, previous.y)
+                builder.create_v_tunnel(previous.y, current_pos.y, current_pos.x)
             else:
                 # First move vertically, then horizontally
-                builder.create_v_tunnel(prev_y, new_y, prev_x)
-                builder.create_h_tunnel(prev_x, new_x, new_y)
+                builder.create_v_tunnel(previous.y, current_pos.y, previous.x)
+                builder.create_h_tunnel(previous.x, current_pos.x, current_pos.y)
 
         # Finish
         builder.place_grass(new_room)
@@ -445,9 +442,9 @@ def make_map(game, object_factory):
     builder.place_doors()
 
     # Create stairs at the center of the last room
-    builder.place_stairs(new_x, new_y)
+    builder.place_stairs(current_pos)
 
     # Put a boss near the stairs
-    builder.place_boss(new_x, new_y)
+    builder.place_boss(current_pos)
 
     builder.finalize(game)
