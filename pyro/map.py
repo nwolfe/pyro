@@ -232,7 +232,7 @@ class LevelBuilder:
     def place_grass(self, room):
         if libtcod.random_get_int(0, 1, 2) == 1:
             point = room.random_point_inside()
-            while is_blocked(self.map, self.game_actors, point.x, point.y):
+            while is_blocked(self.map, self.game_actors, point):
                 point = room.random_point_inside()
 
             self.place_grass_tile(point.x, point.y)
@@ -243,7 +243,7 @@ class LevelBuilder:
                 while not self.map.is_on_map(point.x, point.y):
                     point = random_point_surrounding(point)
 
-                if not is_blocked(self.map, self.game_actors, point.x, point.y):
+                if not is_blocked(self.map, self.game_actors, point):
                     self.place_grass_tile(point.x, point.y)
 
     CREATURE_CHANCES = dict(
@@ -269,7 +269,7 @@ class LevelBuilder:
             # Random position for creature
             point = room.random_point_inside()
 
-            if not is_blocked(self.map, self.game_actors, point.x, point.y):
+            if not is_blocked(self.map, self.game_actors, point):
                 choice = random_choice(creature_chances)
                 creature = self.game_object_factory.new_monster(choice)
                 creature.pos.copy(point)
@@ -296,7 +296,7 @@ class LevelBuilder:
             # Random position for item
             point = room.random_point_inside()
 
-            if not is_blocked(self.map, self.game_actors, point.x, point.y):
+            if not is_blocked(self.map, self.game_actors, point):
                 choice = random_choice(item_chances)
                 item = self.game_object_factory.new_item(choice)
                 item.pos.copy(point)

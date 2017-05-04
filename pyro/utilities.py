@@ -2,17 +2,17 @@ import tcod as libtcod
 
 
 def blocked(game, position):
-    return is_blocked(game.map, game.actors, position.x, position.y)
+    return is_blocked(game.map, game.actors, position)
 
 
-def is_blocked(game_map, actors, x, y):
+def is_blocked(game_map, actors, position):
     # First test the map tile
-    if game_map.movement_blocked(x, y):
+    if game_map.movement_blocked(position.x, position.y):
         return True
 
     # Now check for any blocking objects
     for actor in actors:
-        if actor.pos.equal_to(x, y):
+        if actor.pos.equals(position):
             return True
 
     return False
