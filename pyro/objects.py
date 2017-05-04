@@ -21,35 +21,6 @@ ITEM_USES = dict(
 )
 
 
-def instantiate_spell(template):
-    if type(template) is dict:
-        spell = SPELLS[template['name']]()
-        spell.configure(template)
-    else:
-        spell = SPELLS[template]()
-    return spell
-
-
-def instantiate_monster(template, game):
-    name = template['name']
-    spells = None
-    if 'spell' in template:
-        spells = [instantiate_spell(template['spell'])]
-    elif 'spells' in template:
-        spells = [instantiate_spell(spell) for spell in template['spells']]
-    monster = Monster(game)
-    monster.name = name
-    monster.ai = ai.new(template['ai'], spells)
-    monster.ai.monster = monster
-    monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
-    monster.xp = template['experience']
-    monster.hp = template['hp']
-    monster.base_max_hp = monster.hp
-    monster.base_defense = template['defense']
-    monster.base_power = template['power']
-    return monster
-
-
 def load_templates(json_file):
     with open(json_file) as f:
         templates = json.load(f)
@@ -60,23 +31,6 @@ def load_templates(json_file):
             t['glyph'] = str(t['glyph'])
 
         return templates
-
-
-def instantiate_item(template):
-    name = template['name']
-    glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
-    if 'slot' in template:
-        equipment = Equipment(name, glyph, slot=template['slot'])
-        if 'power' in template:
-            equipment.power_bonus = template['power']
-        if 'defense' in template:
-            equipment.defense_bonus = template['defense']
-        if 'hp' in template:
-            equipment.max_hp_bonus = template['hp']
-        return equipment
-    elif 'on_use' in template:
-        spell = instantiate_spell(ITEM_USES[template['on_use']])
-        return Item(name, glyph, on_use=SpellItemUse(spell))
 
 
 def make_player(game):
@@ -93,25 +47,74 @@ def make_player(game):
 
 
 class GameObjectFactory:
-    def __init__(self, game=None):
+    def __init__(self):
         self.monster_templates = None
         self.item_templates = None
-        self.game = game
+        self.game = None
 
     def load_templates(self, monster_file, item_file):
         self.monster_templates = load_templates(monster_file)
         self.item_templates = load_templates(item_file)
 
-    def new_monster(self, monster_name):
+    def new_monster(self, monster_name, position=None):
         for template in self.monster_templates:
             if template['name'] == monster_name:
-                return instantiate_monster(template, self.game)
+                monster = self._instantiate_monster(template)
+                if position:
+                    monster.pos.copy(position)
+                return monster
         return None
 
-    def new_item(self, item_name):
+    def new_item(self, item_name, position=None):
         for template in self.item_templates:
             if template['name'] == item_name:
-                item = instantiate_item(template)
-                item.game = self.game
+                item = self._instantiate_item(template)
+                if position:
+                    item.pos.copy(position)
                 return item
         return None
+
+    def _instantiate_monster(self, template):
+        name = template['name']
+        spells = None
+        if 'spell' in template:
+            spells = [self._instantiate_spell(template['spell'])]
+        elif 'spells' in template:
+            spells = [self._instantiate_spell(spell) for spell in template['spells']]
+        monster = Monster(self.game)
+        monster.name = name
+        monster.ai = ai.new(template['ai'], spells)
+        monster.ai.monster = monster
+        monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
+        monster.xp = template['experience']
+        monster.hp = template['hp']
+        monster.base_max_hp = monster.hp
+        monster.base_defense = template['defense']
+        monster.base_power = template['power']
+        return monster
+
+    def _instantiate_item(self, template):
+        name = template['name']
+        glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
+        if 'slot' in template:
+            equipment = Equipment(name, glyph, slot=template['slot'])
+            if 'power' in template:
+                equipment.power_bonus = template['power']
+            if 'defense' in template:
+                equipment.defense_bonus = template['defense']
+            if 'hp' in template:
+                equipment.max_hp_bonus = template['hp']
+            return equipment
+        elif 'on_use' in template:
+            spell = self._instantiate_spell(ITEM_USES[template['on_use']])
+            return Item(name, glyph, on_use=SpellItemUse(spell))
+
+    def _instantiate_spell(self, template):
+        if type(template) is dict:
+            spell = SPELLS[template['name']]()
+            spell.configure(template)
+        else:
+            spell = SPELLS[template]()
+        return spell
+
+
