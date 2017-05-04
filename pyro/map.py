@@ -277,8 +277,7 @@ class LevelBuilder:
             if not is_blocked(self.map, self.game_actors, point.x, point.y):
                 choice = random_choice(creature_chances)
                 creature = self.game_object_factory.new_monster(choice)
-                creature.pos.x = point.x
-                creature.pos.y = point.y
+                creature.pos.copy(point)
                 self.game_actors.append(creature)
 
     def place_boss(self, room_x, room_y):
@@ -289,8 +288,7 @@ class LevelBuilder:
         # Randomly select a boss and place it near the center of the room
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
         boss = self.game_object_factory.new_monster(boss['name'])
-        nearby = random_point_surrounding(Point(room_x, room_y))
-        boss.pos.x, boss.pos.y = nearby.x, nearby.y
+        boss.pos.copy(random_point_surrounding(Point(room_x, room_y)))
         self.game_actors.append(boss)
 
     def place_items(self, room):
@@ -306,8 +304,7 @@ class LevelBuilder:
             if not is_blocked(self.map, self.game_actors, point.x, point.y):
                 choice = random_choice(item_chances)
                 item = self.game_object_factory.new_item(choice)
-                item.pos.x = point.x
-                item.pos.y = point.y
+                item.pos.copy(point)
                 self.game_items.append(item)
 
     def place_doors(self):

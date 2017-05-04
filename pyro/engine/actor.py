@@ -12,7 +12,7 @@ class Actor:
     def __init__(self, game):
         self.name = None
         self.glyph = None
-        self.pos = Position()
+        self._pos = Position()
         self.energy = Energy()
         self.game = game
         self.hp = 0
@@ -22,6 +22,19 @@ class Actor:
         self.xp = 0
         self.level = 1
         self.inventory = None
+
+    @property
+    def pos(self):
+        return self._pos
+
+    @pos.setter
+    def pos(self, other):
+        if not self._pos.equals(other):
+            self.on_position_changed(self._pos, other)
+            self._pos.copy(other)
+
+    def on_position_changed(self, from_, to):
+        pass
 
     def needs_input(self):
         return False

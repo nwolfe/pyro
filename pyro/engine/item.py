@@ -52,8 +52,7 @@ class Item:
         # Place at owner's coordinates.
         self.owner.inventory.remove(self)
         self.owner.game.items.append(self)
-        self.pos.x = self.owner.pos.x
-        self.pos.y = self.owner.pos.y
+        self.pos.copy(self.owner.pos)
         if self.player_owned():
             self.owner.game.log.message(
                 'You dropped a {0}.'.format(self.name), libtcod.yellow)

@@ -6,6 +6,10 @@ class Position:
         self.x = x
         self.y = y
 
+    def copy(self, other):
+        self.x = other.x
+        self.y = other.y
+
     def equals(self, other):
         return self.x == other.x and self.y == other.y
 
