@@ -4,12 +4,7 @@ from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, M
 from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
 from pyro.settings import TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 from pyro.engine.glyph import Glyph
-
-
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+from pyro.position import Position
 
 
 class Rect:
@@ -30,8 +25,8 @@ class Rect:
                 self.y1 <= other.y2 and self.y2 >= other.y1)
 
     def random_point_inside(self):
-        return Point(libtcod.random_get_int(0, self.x1+1, self.x2-1),
-                     libtcod.random_get_int(0, self.y1+1, self.y2-1))
+        return Position(libtcod.random_get_int(0, self.x1+1, self.x2-1),
+                        libtcod.random_get_int(0, self.y1+1, self.y2-1))
 
 
 class Appearance:
@@ -288,7 +283,7 @@ class LevelBuilder:
         # Randomly select a boss and place it near the center of the room
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
         boss = self.game_object_factory.new_monster(boss['name'])
-        boss.pos.copy(random_point_surrounding(Point(room_x, room_y)))
+        boss.pos.copy(random_point_surrounding(Position(room_x, room_y)))
         self.game_actors.append(boss)
 
     def place_items(self, room):
@@ -370,12 +365,12 @@ def get_spawn_chances(templates, dungeon_level):
     return chances
 
 
-def random_point_surrounding(point):
-    p = Point(libtcod.random_get_int(0, point.x-1, point.x+1),
-              libtcod.random_get_int(0, point.y-1, point.y+1))
-    while p.x == point.x and p.y == point.y:
-        p = Point(libtcod.random_get_int(0, point.x-1, point.x+1),
-                  libtcod.random_get_int(0, point.y-1, point.y+1))
+def random_point_surrounding(position):
+    p = Position(libtcod.random_get_int(0, position.x-1, position.x+1),
+                 libtcod.random_get_int(0, position.y-1, position.y+1))
+    while p.x == position.x and p.y == position.y:
+        p = Position(libtcod.random_get_int(0, position.x-1, position.x+1),
+                     libtcod.random_get_int(0, position.y-1, position.y+1))
     return p
 
 
