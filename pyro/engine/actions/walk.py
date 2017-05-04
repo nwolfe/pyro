@@ -10,6 +10,10 @@ class WalkAction(Action):
         self.direction = direction
 
     def on_perform(self):
+        # Do nothing if we're not moving anywhere
+        if self.direction == Direction.NONE:
+            return ActionResult.SUCCESS
+
         # See if there is an actor there
         new_pos = self.actor.pos.plus(self.direction)
         target = None
@@ -26,13 +30,16 @@ class WalkAction(Action):
             return self.alternate(OpenDoorAction(new_pos))
 
         # Try moving there
-        if not blocked(self.game, new_pos):
-            self.actor.pos = new_pos
-            self.game.map.dirty_visibility()
-            # Step on the tile (i.e. tall grass becomes crushed grass)
-            tile = self.game.map.tile(new_pos)
-            if tile.type.steps_to:
-                tile.type = tile.type.steps_to
+        if blocked(self.game, new_pos):
+            return ActionResult.FAILURE
+
+        self.actor.pos = new_pos
+        self.game.map.dirty_visibility()
+
+        # Step on the tile (i.e. tall grass becomes crushed grass)
+        tile = self.game.map.tile(new_pos)
+        if tile.type.steps_to:
+            tile.type = tile.type.steps_to
 
         return ActionResult.SUCCESS
 
