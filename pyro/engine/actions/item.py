@@ -9,7 +9,7 @@ class PickUpAction(Action):
     def on_perform(self):
         # Pick up first item in the player's tile
         for item in self.game.stage.items:
-            if item.pos.equals(self.game.player.pos):
+            if item.pos == self.game.player.pos:
                 item.pick_up(self.game.player)
         return ActionResult.SUCCESS
 

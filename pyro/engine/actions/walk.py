@@ -18,7 +18,7 @@ class WalkAction(Action):
         new_pos = self.actor.pos.plus(self.direction)
         target = None
         for actor in self.game.stage.actors:
-            if actor.pos.equals(new_pos):
+            if actor.pos == new_pos:
                 target = actor
                 break
 

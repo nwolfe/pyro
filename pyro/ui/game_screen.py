@@ -208,7 +208,7 @@ def get_names_under_mouse(mouse, game):
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
     names = [obj.name for obj in chain(game.stage.actors, game.stage.items, game.stage.corpses)
-             if obj.pos.equal_to(x, y) and game.stage.map.is_in_fov(obj.pos)]
+             if obj.pos.equals(x, y) and game.stage.map.is_in_fov(obj.pos)]
     return ', '.join(names)
 
 

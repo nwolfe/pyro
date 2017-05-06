@@ -10,10 +10,19 @@ class Position:
         self.x = other.x
         self.y = other.y
 
-    def equals(self, other):
+    def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
-    def equal_to(self, x, y):
+    def __ne__(self, other):
+        return not self == other
+
+    def __str__(self):
+        return "({0}, {1})".format(self.x, self.y)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def equals(self, x, y):
         return self.x == x and self.y == y
 
     def distance_to(self, other):

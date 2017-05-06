@@ -29,7 +29,7 @@ class Actor:
 
     @pos.setter
     def pos(self, other):
-        if not self._pos.equals(other):
+        if self._pos != other:
             self.on_position_changed(self._pos, other)
             self._pos.copy(other)
 

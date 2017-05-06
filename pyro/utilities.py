@@ -12,7 +12,7 @@ def is_blocked(game_map, actors, position):
 
     # Now check for any blocking objects
     for actor in actors:
-        if actor.pos.equals(position):
+        if actor.pos == position:
             return True
 
     return False
@@ -49,7 +49,7 @@ def target_monster(game, ui, max_range=None):
         # Return the first clicked monster, otherwise continue looking
         for game_object in game.stage.actors:
             if game_object != game.player:
-                if game_object.pos.equal_to(x, y):
+                if game_object.pos.equals(x, y):
                     return game_object
 
 
