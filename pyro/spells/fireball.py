@@ -22,7 +22,7 @@ class Fireball(Spell):
     def cast(self, action, caster, target):
         caster.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
-        for game_object in caster.game.actors:
+        for game_object in caster.game.stage.actors:
             if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
                 caster.game.log.message('The {0} gets burned for {1} hit points.'.
                                         format(game_object.name, self.strength), libtcod.orange)
@@ -39,7 +39,7 @@ class Fireball(Spell):
 
         player.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
-        for game_object in action.game.actors:
+        for game_object in action.game.stage.actors:
             if game_object.pos.distance(x, y) <= self.radius:
                 action.game.log.message('The {0} gets burned for {1} hit points.'.
                                         format(game_object.name, self.strength), libtcod.orange)

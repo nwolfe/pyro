@@ -40,8 +40,8 @@ class Item:
             # Add to owner's inventory and remove from the map
             self.owner = owner
             owner.inventory.append(self)
-            if self in self.owner.game.items:
-                self.owner.game.items.remove(self)
+            if self in self.owner.game.stage.items:
+                self.owner.game.stage.items.remove(self)
             if self.player_owned():
                 self.owner.game.log.message('You picked up a {0}!'
                                             .format(self.name), libtcod.green)
@@ -51,7 +51,7 @@ class Item:
         # Remove from the inventory and add to the map.
         # Place at owner's coordinates.
         self.owner.inventory.remove(self)
-        self.owner.game.items.append(self)
+        self.owner.game.stage.items.append(self)
         self.pos.copy(self.owner.pos)
         if self.player_owned():
             self.owner.game.log.message(

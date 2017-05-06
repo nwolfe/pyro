@@ -2,7 +2,7 @@ import tcod as libtcod
 
 
 def blocked(game, position):
-    return is_blocked(game.map, game.actors, position)
+    return is_blocked(game.stage.map, game.stage.actors, position)
 
 
 def is_blocked(game_map, actors, position):
@@ -30,7 +30,7 @@ def target_tile(game, ui, max_range=None):
 
         (x, y) = (ui.mouse.cx, ui.mouse.cy)
 
-        if (ui.mouse.lbutton_pressed and game.map.is_xy_in_fov(x, y) and
+        if (ui.mouse.lbutton_pressed and game.stage.map.is_xy_in_fov(x, y) and
                 (max_range is None or game.player.pos.distance(x, y) <= max_range)):
             return x, y
 
@@ -47,7 +47,7 @@ def target_monster(game, ui, max_range=None):
             return None
 
         # Return the first clicked monster, otherwise continue looking
-        for game_object in game.actors:
+        for game_object in game.stage.actors:
             if game_object != game.player:
                 if game_object.pos.equal_to(x, y):
                     return game_object
@@ -58,9 +58,9 @@ def closest_monster(game, max_range):
     closest_enemy = None
     closest_dist = max_range + 1
 
-    for game_object in game.actors:
+    for game_object in game.stage.actors:
         if game_object != game.player:
-            if game.map.is_in_fov(game_object.pos):
+            if game.stage.map.is_in_fov(game_object.pos):
                 # Calculate distance between this object and the player
                 dist = game.player.pos.distance_to(game_object.pos)
                 if dist < closest_dist:

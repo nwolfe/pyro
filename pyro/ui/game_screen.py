@@ -33,7 +33,7 @@ class GameScreen(Screen):
             action = WalkAction(Direction.EAST)
         elif libtcod.KEY_ENTER == self.ui.keyboard.vk:
             pos = self.game.player.pos
-            if self.game.map.tile(pos).type.is_exit:
+            if self.game.stage.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
         elif 'c' == key_char:
@@ -78,10 +78,10 @@ class GameScreen(Screen):
     def render(self):
         # TODO is there more to this?
         # Draw tiles
-        for y in range(self.game.map.height):
-            for x in range(self.game.map.width):
-                tile = self.game.map.tiles[x][y]
-                visible = self.game.map.is_xy_in_fov(x, y)
+        for y in range(self.game.stage.map.height):
+            for x in range(self.game.stage.map.width):
+                tile = self.game.stage.map.tiles[x][y]
+                visible = self.game.stage.map.is_xy_in_fov(x, y)
                 if not visible:
                     if tile.explored:
                         glyph = tile.type.appearance.unlit
@@ -98,23 +98,23 @@ class GameScreen(Screen):
                         libtcod.console_put_char(self.ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
 
         # Draw game items
-        for item in self.game.items:
-            if self.game.map.is_in_fov(item.pos):
+        for item in self.game.stage.items:
+            if self.game.stage.map.is_in_fov(item.pos):
                 libtcod.console_set_default_foreground(self.ui.console, item.glyph.fg_color)
                 libtcod.console_put_char(self.ui.console, item.pos.x, item.pos.y,
                                          item.glyph.char, libtcod.BKGND_NONE)
 
         # Draw corpses
-        for corpse in self.game.corpses:
-            if self.game.map.is_in_fov(corpse.pos):
+        for corpse in self.game.stage.corpses:
+            if self.game.stage.map.is_in_fov(corpse.pos):
                 glyph = corpse.type.glyph
                 libtcod.console_set_default_foreground(self.ui.console, glyph.fg_color)
                 libtcod.console_put_char(self.ui.console, corpse.pos.x, corpse.pos.y,
                                          glyph.char, libtcod.BKGND_NONE)
 
         # Draw game actors
-        for actor in self.game.actors:
-            if self.game.map.is_in_fov(actor.pos):
+        for actor in self.game.stage.actors:
+            if self.game.stage.map.is_in_fov(actor.pos):
                 libtcod.console_set_default_foreground(self.ui.console, actor.glyph.fg_color)
                 libtcod.console_put_char(self.ui.console, actor.pos.x, actor.pos.y,
                                          actor.glyph.char, libtcod.BKGND_NONE)
@@ -124,7 +124,7 @@ class GameScreen(Screen):
             effect.render(self.game, self.ui)
 
         # Blit the contents of the game (non-GUI) console to the root console
-        libtcod.console_blit(self.ui.console, 0, 0, self.game.map.width, self.game.map.height, 0, 0, 0)
+        libtcod.console_blit(self.ui.console, 0, 0, self.game.stage.map.width, self.game.stage.map.height, 0, 0, 0)
 
         # Prepare to render the GUI panel
         libtcod.console_set_default_background(self.ui.panel, libtcod.black)
@@ -159,8 +159,8 @@ class GameScreen(Screen):
                              PANEL_Y)
 
         libtcod.console_flush()
-        for y in range(self.game.map.height):
-            for x in range(self.game.map.width):
+        for y in range(self.game.stage.map.height):
+            for x in range(self.game.stage.map.width):
                 libtcod.console_put_char(self.ui.console, x, y, ' ', libtcod.BKGND_NONE)
 
     def next_dungeon_level(self):
@@ -207,8 +207,8 @@ def get_names_under_mouse(mouse, game):
 
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
-    names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
-             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos)]
+    names = [obj.name for obj in chain(game.stage.actors, game.stage.items, game.stage.corpses)
+             if obj.pos.equal_to(x, y) and game.stage.map.is_in_fov(obj.pos)]
     return ', '.join(names)
 
 

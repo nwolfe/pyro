@@ -187,11 +187,11 @@ class LevelBuilder:
         self.map.fov_map = self.map.make_fov_map()
         self.map.dirty_visibility()
         self.map.refresh_visibility(game.player.pos)
-        game.map = self.map
-        game.actors = self.game_actors
-        game.current_actor_index = 0
-        game.items = self.game_items
-        game.corpses = []
+        game.stage.map = self.map
+        game.stage.actors = self.game_actors
+        game.stage.current_actor_index = 0
+        game.stage.items = self.game_items
+        game.stage.corpses = []
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True

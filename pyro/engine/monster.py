@@ -20,8 +20,8 @@ class Monster(Actor):
 
     def on_death(self, attacker):
         # Transform it into a nasty corpse!
-        self.game.actors.remove(self)
-        self.game.corpses.append(pyro.engine.corpse.for_monster(self))
+        self.game.stage.actors.remove(self)
+        self.game.stage.corpses.append(pyro.engine.corpse.for_monster(self))
 
 
 class AIAdapterAction(Action):

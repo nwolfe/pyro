@@ -88,8 +88,8 @@ def get_names_under_mouse(mouse, game):
 
     # Create a list with the names of all objects at the mouse's coordinates
     # and in FOV
-    names = [obj.name for obj in chain(game.actors, game.items, game.corpses)
-             if obj.pos.equal_to(x, y) and game.map.is_in_fov(obj.pos)]
+    names = [obj.name for obj in chain(game.stage.actors, game.stage.items, game.stage.corpses)
+             if obj.pos.equal_to(x, y) and game.stage.map.is_in_fov(obj.pos)]
     return ', '.join(names).capitalize()
 
 
@@ -119,16 +119,16 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
 def render_all(ui, game, fov_recompute):
     if fov_recompute:
         # Recompute FOV if needed (i.e. the player moved)
-        libtcod.map_compute_fov(game.map.fov_map, game.player.pos.x, game.player.pos.y,
+        libtcod.map_compute_fov(game.stage.map.fov_map, game.player.pos.x, game.player.pos.y,
                                 TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
 
         # Set tile background colors according to FOV
-        for y in range(game.map.height):
-            for x in range(game.map.width):
-                visible = game.map.is_xy_in_fov(x, y)
-                wall = game.map.movement_blocked(x, y) and game.map.vision_blocked(x, y)
+        for y in range(game.stage.map.height):
+            for x in range(game.stage.map.width):
+                visible = game.stage.map.is_xy_in_fov(x, y)
+                wall = game.stage.map.movement_blocked(x, y) and game.stage.map.vision_blocked(x, y)
                 if not visible:
-                    if game.map.is_explored(x, y):
+                    if game.stage.map.is_explored(x, y):
                         color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
                         libtcod.console_set_char_background(ui.console,
                                                             x, y, color,
@@ -136,36 +136,36 @@ def render_all(ui, game, fov_recompute):
                 else:
                     if wall:
                         color = COLOR_LIGHT_WALL
-                    elif game.map.vision_blocked(x, y):
+                    elif game.stage.map.vision_blocked(x, y):
                         color = COLOR_LIGHT_GRASS
                     else:
                         color = COLOR_LIGHT_GROUND
                     libtcod.console_set_char_background(ui.console,
                                                         x, y, color,
                                                         libtcod.BKGND_SET)
-                    game.map.mark_explored(x, y)
+                    game.stage.map.mark_explored(x, y)
 
-    for item in game.items:
-        if game.map.is_in_fov(item.pos):
+    for item in game.stage.items:
+        if game.stage.map.is_in_fov(item.pos):
             libtcod.console_set_default_foreground(ui.console, item.glyph.fg_color)
             libtcod.console_put_char(ui.console, item.pos.x, item.pos.y,
                                      item.glyph.char, libtcod.BKGND_NONE)
 
-    for corpse in game.corpses:
-        if game.map.is_in_fov(corpse.pos):
+    for corpse in game.stage.corpses:
+        if game.stage.map.is_in_fov(corpse.pos):
             glyph = corpse.type.glyph
             libtcod.console_set_default_foreground(ui.console, glyph.fg_color)
             libtcod.console_put_char(ui.console, corpse.pos.x, corpse.pos.y,
                                      glyph.char, libtcod.BKGND_NONE)
 
-    for actor in game.actors:
-        if game.map.is_in_fov(actor.pos):
+    for actor in game.stage.actors:
+        if game.stage.map.is_in_fov(actor.pos):
             libtcod.console_set_default_foreground(ui.console, actor.glyph.fg_color)
             libtcod.console_put_char(ui.console, actor.pos.x, actor.pos.y,
                                      actor.glyph.char, libtcod.BKGND_NONE)
 
     # Blit the contents of the game (non-GUI) console to the root console
-    libtcod.console_blit(ui.console, 0, 0, game.map.width, game.map.height, 0, 0, 0)
+    libtcod.console_blit(ui.console, 0, 0, game.stage.map.width, game.stage.map.height, 0, 0, 0)
 
     # Prepare to render the GUI panel
     libtcod.console_set_default_background(ui.panel, libtcod.black)
@@ -200,9 +200,9 @@ def render_all(ui, game, fov_recompute):
                          PANEL_Y)
 
     libtcod.console_flush()
-    for actor in game.actors:
+    for actor in game.stage.actors:
         libtcod.console_put_char(console, actor.pos.x, actor.pos.y, ' ', libtcod.BKGND_NONE)
-    for item in game.items:
+    for item in game.stage.items:
         libtcod.console_put_char(console, item.pos.x, item.pos.y, ' ', libtcod.BKGND_NONE)
 
 

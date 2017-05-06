@@ -5,14 +5,14 @@ import pyro.direction
 
 def astar(game, from_pos, to_pos):
     # Create a FOV map that has the dimensions of the map
-    fov = game.map.make_fov_map()
+    fov = game.stage.map.make_fov_map()
 
     # Scan all the objects to see if there are objects that must be
     # navigated around. Check also that the object isn't self or the
     # target (so that the start and the end points are free).
     # The AI class handles the situation if self is next to the target so
     # it will not use this A* function anyway.
-    for actor in game.actors:
+    for actor in game.stage.actors:
         if actor.pos.x != to_pos.x and actor.pos.y != to_pos.y:
             # Set the tile as a wall so it must be navigated around
             libtcod.map_set_properties(fov, actor.pos.x, actor.pos.y, isTrans=True, isWalk=False)
