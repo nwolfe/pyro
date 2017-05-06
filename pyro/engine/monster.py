@@ -20,7 +20,7 @@ class Monster(Actor):
 
     def on_death(self, attacker):
         # Transform it into a nasty corpse!
-        self.game.stage.actors.remove(self)
+        self.game.stage.remove_actor(self)
         self.game.stage.corpses.append(pyro.engine.corpse.for_monster(self))
 
 

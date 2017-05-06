@@ -1,4 +1,5 @@
 import tcod as libtcod
+from pyro.engine.game import Stage
 from pyro.utilities import is_blocked
 from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
 from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
@@ -187,11 +188,7 @@ class LevelBuilder:
         self.map.fov_map = self.map.make_fov_map()
         self.map.dirty_visibility()
         self.map.refresh_visibility(game.player.pos)
-        game.stage.map = self.map
-        game.stage.actors = self.game_actors
-        game.stage.current_actor_index = 0
-        game.stage.items = self.game_items
-        game.stage.corpses = []
+        game.stage = Stage(self.map, self.game_actors, self.game_items)
 
     def mark_tunnelled(self, x, y):
         self.meta_map[x][y].tunnelled = True

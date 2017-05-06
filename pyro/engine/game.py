@@ -3,18 +3,29 @@ from pyro.engine.log import Log
 
 
 class Stage:
-    def __init__(self):
-        self.map = None
-        self.actors = None
-        self.items = None
-        self.corpses = None
+    def __init__(self, map_=None, actors=None, items=None):
+        self.map = map_
+        self.actors = []
+        self.items = items
+        self.corpses = []
         self.current_actor_index = 0
+        if actors:
+            for actor in actors:
+                self.actors.append(actor)
 
     def current_actor(self):
         return self.actors[self.current_actor_index]
 
     def advance_actor(self):
         self.current_actor_index = (self.current_actor_index + 1) % len(self.actors)
+
+    def remove_actor(self, actor):
+        index = self.actors.index(actor)
+        if self.current_actor_index > index:
+            self.current_actor_index -= 1
+        self.actors.pop(index)
+        if self.current_actor_index >= len(self.actors):
+            self.current_actor_index = 0
 
 
 class Game:
