@@ -19,10 +19,12 @@ class GameScreen(Screen):
         self.effects = []
 
     def handle_input(self):
+        handled = False
         action = None
         key_char = chr(self.ui.keyboard.c)
         if libtcod.KEY_ESCAPE == self.ui.keyboard.vk:
-            return True
+            self.game.state = 'exit'
+            handled = True
         elif libtcod.KEY_UP == self.ui.keyboard.vk:
             action = WalkAction(Direction.NORTH)
         elif libtcod.KEY_DOWN == self.ui.keyboard.vk:
@@ -36,8 +38,10 @@ class GameScreen(Screen):
             if self.game.stage.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
+            handled = True
         elif 'c' == key_char:
             show_character_info(self.ui.console, self.game)
+            handled = True
         elif 'd' == key_char:
             # Show the inventory; if an item is selected, drop it
             msg = 'Select an item to drop it, or any other key to cancel.\n'
@@ -61,7 +65,8 @@ class GameScreen(Screen):
             action = CloseDoorAction(self.game.player.pos)
         if action:
             self.game.player.next_action = action
-        return False
+            handled = True
+        return handled
 
     def update(self):
         if self.game.state == 'dead':

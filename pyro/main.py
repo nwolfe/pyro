@@ -267,8 +267,9 @@ def play_game(game, ui, object_factory):
 
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
                                     libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
+        screen.handle_input()
 
-        if screen.handle_input():
+        if game.state == 'exit':
             break
         screen.update()
 
