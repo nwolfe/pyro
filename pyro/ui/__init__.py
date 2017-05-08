@@ -1,2 +1,2 @@
 from effects import Effect, HitEffect
-from screen import Screen
+from userinterface import Screen

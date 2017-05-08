@@ -8,6 +8,7 @@ from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, 
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
 from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui.game_screen import GameScreen
+from pyro.ui.userinterface import UserInterface
 
 
 ###############################################################################
@@ -15,7 +16,7 @@ from pyro.ui.game_screen import GameScreen
 ###############################################################################
 
 
-class UserInterface:
+class OldUserInterface:
     def __init__(self, keyboard, mouse, console, panel):
         self.keyboard = keyboard
         self.mouse = mouse
@@ -257,21 +258,21 @@ def new_game(object_factory):
     return game
 
 
-def play_game(game, ui, object_factory):
-    libtcod.console_clear(ui.console)
-    screen = GameScreen(ui, game, object_factory)
+def play_game(game, old_ui, object_factory):
+    libtcod.console_clear(old_ui.console)
+    ui = UserInterface(old_ui)
+    ui.push(GameScreen(game, object_factory))
     while not libtcod.console_is_window_closed():
-        screen.render()
+        ui.refresh()
 
-        check_player_level_up(game, ui.console)
+        check_player_level_up(game, old_ui.console)
 
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                    libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
-        screen.handle_input()
+                                    libtcod.EVENT_MOUSE, old_ui.keyboard, old_ui.mouse)
+        ui.handle_input()
 
         if game.state == 'exit':
             break
-        screen.update()
 
 
 def main_menu(ui):
@@ -316,6 +317,6 @@ keyboard = libtcod.Key()
 mouse = libtcod.Mouse()
 console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-ui = UserInterface(keyboard, mouse, console, panel)
+old_ui = OldUserInterface(keyboard, mouse, console, panel)
 
-main_menu(ui)
+main_menu(old_ui)

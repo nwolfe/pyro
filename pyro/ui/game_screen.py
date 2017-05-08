@@ -11,10 +11,9 @@ from pyro.settings import *
 
 
 class GameScreen(Screen):
-    def __init__(self, ui, game, factory):
+    def __init__(self, game, factory):
         Screen.__init__(self)
         self.game = game
-        self.ui = ui
         self.factory = factory
         self.effects = []
 
