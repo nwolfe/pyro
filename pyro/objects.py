@@ -46,15 +46,11 @@ def make_player(game):
     return hero
 
 
-class GameObjectFactory:
-    def __init__(self):
-        self.monster_templates = None
-        self.item_templates = None
-        self.game = None
-
-    def load_templates(self, monster_file, item_file):
+class _GameObjectFactory:
+    def __init__(self, monster_file, item_file):
         self.monster_templates = load_templates(monster_file)
         self.item_templates = load_templates(item_file)
+        self.game = None
 
     def new_monster(self, monster_name, position=None):
         for template in self.monster_templates:
@@ -118,3 +114,5 @@ class GameObjectFactory:
         return spell
 
 
+FACTORY = _GameObjectFactory(monster_file='resources/monsters.json',
+                             item_file='resources/items.json')

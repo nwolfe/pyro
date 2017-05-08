@@ -11,10 +11,9 @@ from pyro.settings import *
 
 
 class GameScreen(Screen):
-    def __init__(self, game, factory):
+    def __init__(self, game):
         Screen.__init__(self)
         self.game = game
-        self.factory = factory
         self.effects = []
 
     def handle_input(self):
@@ -180,7 +179,7 @@ class GameScreen(Screen):
         self.game.log.message(msg, libtcod.red)
         self.game.dungeon_level += 1
 
-        make_map(self.game, self.factory)
+        make_map(self.game)
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
@@ -189,14 +188,12 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color, bac
 
     # Render the background first
     libtcod.console_set_default_background(panel, back_color)
-    libtcod.console_rect(panel, x, y, total_width, 1, False,
-                         libtcod.BKGND_SCREEN)
+    libtcod.console_rect(panel, x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
 
     # Now render the bar on top
     libtcod.console_set_default_background(panel, bar_color)
     if bar_width > 0:
-        libtcod.console_rect(panel, x, y, bar_width, 1, False,
-                             libtcod.BKGND_SCREEN)
+        libtcod.console_rect(panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
 
     # Finally, some centering text with the values
     libtcod.console_set_default_foreground(panel, libtcod.white)

@@ -2,7 +2,7 @@ import tcod as libtcod
 from itertools import chain
 from pyro.engine.game import Game
 from pyro.map import make_map
-from pyro.objects import GameObjectFactory, make_player
+from pyro.objects import FACTORY, make_player
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
@@ -239,17 +239,17 @@ def check_player_level_up(game, console):
             player.base_defense += LEVEL_UP_STAT_DEFENSE
 
 
-def new_game(object_factory):
+def new_game():
     game = Game(state='playing', dungeon_level=1)
     player = make_player(game)
-    object_factory.game = game
-    make_map(game, object_factory)
+    FACTORY.game = game
+    make_map(game)
 
     # Starting inventory
-    object_factory.new_item('Dagger').pick_up(player)
-    object_factory.new_item('Scroll Of Lightning Bolt').pick_up(player)
-    object_factory.new_item('Scroll Of Fireball').pick_up(player)
-    object_factory.new_item('Scroll Of Confusion').pick_up(player)
+    FACTORY.new_item('Dagger').pick_up(player)
+    FACTORY.new_item('Scroll Of Lightning Bolt').pick_up(player)
+    FACTORY.new_item('Scroll Of Fireball').pick_up(player)
+    FACTORY.new_item('Scroll Of Confusion').pick_up(player)
 
     game.log.messages = []
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
@@ -258,10 +258,10 @@ def new_game(object_factory):
     return game
 
 
-def play_game(game, old_ui, object_factory):
+def play_game(game, old_ui):
     libtcod.console_clear(old_ui.console)
     ui = UserInterface(old_ui)
-    ui.push(GameScreen(game, object_factory))
+    ui.push(GameScreen(game))
     while not libtcod.console_is_window_closed():
         ui.refresh()
 
@@ -278,10 +278,6 @@ def play_game(game, old_ui, object_factory):
 def main_menu(ui):
     background = libtcod.image_load('menu_background.png')
 
-    object_factory = GameObjectFactory()
-    object_factory.load_templates(monster_file='resources/monsters.json',
-                                  item_file='resources/items.json')
-
     while not libtcod.console_is_window_closed():
         # Show the image at twice the regular console resolution
         libtcod.image_blit_2x(background, 0, 0, 0)
@@ -295,8 +291,8 @@ def main_menu(ui):
 
         if choice == 0:
             # New game
-            game = new_game(object_factory)
-            play_game(game, ui, object_factory)
+            game = new_game()
+            play_game(game, ui)
         elif choice == 1:
             # Quit
             break

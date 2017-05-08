@@ -1,4 +1,5 @@
 import tcod as libtcod
+from pyro.objects import FACTORY
 from pyro.engine.game import Stage
 from pyro.utilities import is_blocked
 from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
@@ -174,14 +175,13 @@ class Map:
 
 
 class LevelBuilder:
-    def __init__(self, game_map, game_actors, game_items, game_object_factory, dungeon_level):
+    def __init__(self, game_map, game_actors, game_items, dungeon_level):
         self.map = game_map
         self.meta_map = [[TileMeta()
                           for _ in range(game_map.height)]
                          for _ in range(game_map.width)]
         self.game_actors = game_actors
         self.game_items = game_items
-        self.game_object_factory = game_object_factory
         self.dungeon_level = dungeon_level
 
     def finalize(self, game):
@@ -248,7 +248,7 @@ class LevelBuilder:
     )
 
     def place_creatures(self, creature_type, room):
-        creatures = filter(lambda m: m['type'] == creature_type, self.game_object_factory.monster_templates)
+        creatures = filter(lambda m: m['type'] == creature_type, FACTORY.monster_templates)
         if len(creatures) == 0:
             return
 
@@ -267,24 +267,24 @@ class LevelBuilder:
 
             if not is_blocked(self.map, self.game_actors, point):
                 choice = random_choice(creature_chances)
-                creature = self.game_object_factory.new_monster(choice, point)
+                creature = FACTORY.new_monster(choice, point)
                 self.game_actors.append(creature)
 
     def place_boss(self, position):
-        bosses = filter(lambda m: m['type'] == 'boss', self.game_object_factory.monster_templates)
+        bosses = filter(lambda m: m['type'] == 'boss', FACTORY.monster_templates)
         if len(bosses) == 0:
             return
 
         # Randomly select a boss and place it near the center of the room
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
-        boss = self.game_object_factory.new_monster(boss['name'], random_point_surrounding(position))
+        boss = FACTORY.new_monster(boss['name'], random_point_surrounding(position))
         self.game_actors.append(boss)
 
     def place_items(self, room):
         # Random number of items
         max_items = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
         num_items = libtcod.random_get_int(0, 0, max_items)
-        item_chances = get_spawn_chances(self.game_object_factory.item_templates, self.dungeon_level)
+        item_chances = get_spawn_chances(FACTORY.item_templates, self.dungeon_level)
 
         for i in range(num_items):
             # Random position for item
@@ -292,7 +292,7 @@ class LevelBuilder:
 
             if not is_blocked(self.map, self.game_actors, point):
                 choice = random_choice(item_chances)
-                item = self.game_object_factory.new_item(choice, point)
+                item = FACTORY.new_item(choice, point)
                 self.game_items.append(item)
 
     def place_doors(self):
@@ -386,11 +386,11 @@ def randomly_placed_rect(game_map):
     return Rect(x, y, w, h)
 
 
-def make_map(game, object_factory):
+def make_map(game):
     actors = [game.player]
     items = []
     game_map = Map(MAP_HEIGHT, MAP_WIDTH)
-    builder = LevelBuilder(game_map, actors, items, object_factory, game.dungeon_level)
+    builder = LevelBuilder(game_map, actors, items, game.dungeon_level)
     rooms = []
     num_rooms = 0
     current_pos = None
