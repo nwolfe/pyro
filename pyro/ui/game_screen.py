@@ -8,6 +8,7 @@ from pyro.engine.item import Equipment
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
+from pyro.ui.menu_screen import MenuScreen
 
 
 class GameScreen(Screen):
@@ -38,7 +39,8 @@ class GameScreen(Screen):
                 libtcod.console_clear(self.ui.console)
             handled = True
         elif 'c' == key_char:
-            show_character_info(self.ui.console, self.game)
+            info = character_info(self.game.player)
+            self.ui.push(MenuScreen(info, [], CHARACTER_SCREEN_WIDTH))
             handled = True
         elif 'd' == key_char:
             # Show the inventory; if an item is selected, drop it
@@ -277,13 +279,13 @@ def menu(console, header, options, width):
 
     # Convert ASCII code to an index; if it corresponds to an option, return it
     index = key.c - ord('a')
-    if index >= 0 and index < len(options):
+    if 0 <= index < len(options):
         return index
     else:
         return None
 
 
-def show_character_info(console, game):
+def character_info(player):
     msg = """Character Information
 
 Level: {0}
@@ -295,11 +297,10 @@ Maximum HP: {4}
 Attack: {5}
 Defense: {6}
 """
-    msg = msg.format(game.player.level,
-                     game.player.xp,
-                     game.player.required_for_level_up(),
-                     game.player.hp,
-                     game.player.max_hp,
-                     game.player.power,
-                     game.player.defense)
-    menu(console, msg, [], CHARACTER_SCREEN_WIDTH)
+    return msg.format(player.level,
+                      player.xp,
+                      player.required_for_level_up(),
+                      player.hp,
+                      player.max_hp,
+                      player.power,
+                      player.defense)

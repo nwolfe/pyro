@@ -1,4 +1,3 @@
-import abc
 
 
 class UserInterface:
@@ -27,11 +26,10 @@ class UserInterface:
         self.screens.append(screen)
         self.render()
 
-    def pop(self):
+    def pop(self, result=None):
         screen = self.screens.pop()
         screen.unbind()
-        active = self.screens[len(self.screens) - 1]
-        active.activate()
+        self.screens[len(self.screens) - 1].activate(result)
         self.render()
 
     def refresh(self):
@@ -63,8 +61,6 @@ class UserInterface:
 
 
 class Screen:
-    __metaclass__ = abc.ABCMeta
-
     def __init__(self):
         self.ui = None
         self.transparent = False
@@ -75,17 +71,14 @@ class Screen:
     def unbind(self):
         self.ui = None
 
-    def activate(self):
+    def activate(self, result=None):
         pass
 
-    @abc.abstractmethod
     def update(self):
         pass
 
-    @abc.abstractmethod
     def render(self):
         pass
 
-    @abc.abstractmethod
     def handle_input(self):
         pass
