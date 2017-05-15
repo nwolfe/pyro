@@ -15,17 +15,14 @@ class MenuScreen(Screen):
         self.options = menu_options
         self.width = width
 
-    def handle_input(self):
+    def handle_input(self, key):
         # Convert ASCII code to an index; if it corresponds to an option, return it
-        # TODO Don't wait for keypress
-        key = libtcod.console_wait_for_keypress(True)
-        index = key.c - ord('a')
+        index = key.ord - ord('a')
         if 0 <= index < len(self.options):
             self.ui.pop(MenuSelection(index))
             return True
-        else:
-            self.ui.pop()
-            return False
+        self.ui.pop()
+        return False
 
     def render(self):
         if len(self.options) > 26:

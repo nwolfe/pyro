@@ -55,9 +55,9 @@ class UserInterface:
         # TODO reset dirty flag here
         # TODO move final call to console.flush() here?
 
-    def handle_input(self):
+    def handle_input(self, key):
         index = len(self.screens) - 1
-        self.screens[index].handle_input()
+        self.screens[index].handle_input(key)
 
 
 class Screen:
@@ -80,5 +80,5 @@ class Screen:
     def render(self):
         pass
 
-    def handle_input(self):
+    def handle_input(self, key):
         pass

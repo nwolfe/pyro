@@ -9,6 +9,7 @@ from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MA
 from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui.game_screen import GameScreen
 from pyro.ui.userinterface import UserInterface
+from pyro.ui.keys import key_for_int, Key
 
 
 ###############################################################################
@@ -267,12 +268,34 @@ def play_game(game, old_ui):
 
         check_player_level_up(game, old_ui.console)
 
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                    libtcod.EVENT_MOUSE, old_ui.keyboard, old_ui.mouse)
-        ui.handle_input()
+        key = check_for_input(old_ui)
+        if key:
+            ui.handle_input(key)
 
         if game.state == 'exit':
             break
+
+
+def check_for_input(old_ui):
+    result = None
+    libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
+                                libtcod.EVENT_MOUSE, old_ui.keyboard, old_ui.mouse)
+    k = libtcod.console_check_for_keypress()
+    if k.vk != libtcod.KEY_NONE:
+        result = key_for_int(old_ui.keyboard.c)
+    elif libtcod.KEY_LEFT == old_ui.keyboard.vk:
+        result = Key.LEFT
+    elif libtcod.KEY_RIGHT == old_ui.keyboard.vk:
+        result = Key.RIGHT
+    elif libtcod.KEY_UP == old_ui.keyboard.vk:
+        result = Key.UP
+    elif libtcod.KEY_DOWN == old_ui.keyboard.vk:
+        result = Key.DOWN
+    elif libtcod.KEY_ENTER == old_ui.keyboard.vk:
+        result = Key.ENTER
+    elif libtcod.KEY_ESCAPE == old_ui.keyboard.vk:
+        result = Key.ESCAPE
+    return result
 
 
 def main_menu(ui):
