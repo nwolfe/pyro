@@ -10,22 +10,12 @@ from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_D
 from pyro.ui.game_screen import GameScreen
 from pyro.ui.userinterface import UserInterface
 from pyro.ui.keys import key_for_int, Key
+from pyro.ui.inputs import Input
 
 
 ###############################################################################
 # User Interface                                                              #
 ###############################################################################
-
-
-class OldUserInterface:
-    def __init__(self, keyboard, mouse, console, panel):
-        self.keyboard = keyboard
-        self.mouse = mouse
-        self.console = console
-        self.panel = panel
-
-    def render_all(self, game, fov_recompute):
-        render_all(self, game, fov_recompute)
 
 
 def menu(console, header, options, width):
@@ -203,9 +193,9 @@ def render_all(ui, game, fov_recompute):
 
     libtcod.console_flush()
     for actor in game.stage.actors:
-        libtcod.console_put_char(console, actor.pos.x, actor.pos.y, ' ', libtcod.BKGND_NONE)
+        libtcod.console_put_char(ui.console, actor.pos.x, actor.pos.y, ' ', libtcod.BKGND_NONE)
     for item in game.stage.items:
-        libtcod.console_put_char(console, item.pos.x, item.pos.y, ' ', libtcod.BKGND_NONE)
+        libtcod.console_put_char(ui.console, item.pos.x, item.pos.y, ' ', libtcod.BKGND_NONE)
 
 
 ###############################################################################
@@ -259,16 +249,17 @@ def new_game():
     return game
 
 
-def play_game(game, old_ui):
-    libtcod.console_clear(old_ui.console)
-    ui = UserInterface(old_ui)
+def play_game(game, ui):
+    libtcod.console_clear(ui.console)
+    # TODO Delete this once MainMenuScreen -> GameScreen
+    ui.screens = []
     ui.push(GameScreen(game))
     while not libtcod.console_is_window_closed():
         ui.refresh()
 
-        check_player_level_up(game, old_ui.console)
+        check_player_level_up(game, ui.console)
 
-        key = check_for_input(old_ui)
+        key = check_for_input(ui)
         if key:
             ui.handle_input(key)
 
@@ -276,24 +267,24 @@ def play_game(game, old_ui):
             break
 
 
-def check_for_input(old_ui):
+def check_for_input(ui):
     result = None
     libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                libtcod.EVENT_MOUSE, old_ui.keyboard, old_ui.mouse)
+                                libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
     k = libtcod.console_check_for_keypress()
     if k.vk != libtcod.KEY_NONE:
-        result = key_for_int(old_ui.keyboard.c)
-    elif libtcod.KEY_LEFT == old_ui.keyboard.vk:
+        result = key_for_int(ui.keyboard.c)
+    elif libtcod.KEY_LEFT == ui.keyboard.vk:
         result = Key.LEFT
-    elif libtcod.KEY_RIGHT == old_ui.keyboard.vk:
+    elif libtcod.KEY_RIGHT == ui.keyboard.vk:
         result = Key.RIGHT
-    elif libtcod.KEY_UP == old_ui.keyboard.vk:
+    elif libtcod.KEY_UP == ui.keyboard.vk:
         result = Key.UP
-    elif libtcod.KEY_DOWN == old_ui.keyboard.vk:
+    elif libtcod.KEY_DOWN == ui.keyboard.vk:
         result = Key.DOWN
-    elif libtcod.KEY_ENTER == old_ui.keyboard.vk:
+    elif libtcod.KEY_ENTER == ui.keyboard.vk:
         result = Key.ENTER
-    elif libtcod.KEY_ESCAPE == old_ui.keyboard.vk:
+    elif libtcod.KEY_ESCAPE == ui.keyboard.vk:
         result = Key.ESCAPE
     return result
 
@@ -325,6 +316,18 @@ def main_menu(ui):
 # Initialization & Main Loop                                                  #
 ###############################################################################
 
+
+class OldUserInterface:
+    def __init__(self):
+        self.keyboard = libtcod.Key()
+        self.mouse = libtcod.Mouse()
+        self.console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
+        self.panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
+
+    def render_all(self, game, fov_recompute):
+        render_all(self, game, fov_recompute)
+
+
 libtcod.console_set_custom_font('terminal8x12_gs_tc.png',
                                 libtcod.FONT_TYPE_GREYSCALE |
                                 libtcod.FONT_LAYOUT_TCOD)
@@ -332,10 +335,19 @@ libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
                           'Tombs Of The Ancient Kings', False)
 libtcod.sys_set_fps(LIMIT_FPS)
 
-keyboard = libtcod.Key()
-mouse = libtcod.Mouse()
-console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
-panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-old_ui = OldUserInterface(keyboard, mouse, console, panel)
+ui = UserInterface(OldUserInterface())
 
-main_menu(old_ui)
+ui.bind_key(Key.ESCAPE, Input.EXIT)
+ui.bind_key(Key.ENTER, Input.ENTER)
+ui.bind_key(Key.UP, Input.NORTH)
+ui.bind_key(Key.DOWN, Input.SOUTH)
+ui.bind_key(Key.LEFT, Input.WEST)
+ui.bind_key(Key.RIGHT, Input.EAST)
+ui.bind_key(Key.C, Input.HERO_INFO)
+ui.bind_key(Key.G, Input.PICKUP)
+ui.bind_key(Key.D, Input.DROP)
+ui.bind_key(Key.I, Input.INVENTORY)
+ui.bind_key(Key.F, Input.REST)
+ui.bind_key(Key.R, Input.CLOSE_DOOR)
+
+main_menu(ui)

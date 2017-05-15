@@ -9,7 +9,7 @@ from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
 from pyro.ui.menu_screen import MenuScreen
-from pyro.ui.keys import Key
+from pyro.ui.inputs import Input
 
 
 class GameScreen(Screen):
@@ -18,55 +18,51 @@ class GameScreen(Screen):
         self.game = game
         self.effects = []
 
-    def handle_input(self, key):
-        handled = False
+    def handle_input(self, input_):
         action = None
-        if Key.ESCAPE == key:
+        if Input.EXIT == input_:
             self.game.state = 'exit'
-            handled = True
-        elif Key.UP == key:
+            # TODO self.ui.pop() once MainMenuScreen exists
+        elif Input.NORTH == input_:
             action = WalkAction(Direction.NORTH)
-        elif Key.DOWN == key:
+        elif Input.SOUTH == input_:
             action = WalkAction(Direction.SOUTH)
-        elif Key.LEFT == key:
+        elif Input.WEST == input_:
             action = WalkAction(Direction.WEST)
-        elif Key.RIGHT == key:
+        elif Input.EAST == input_:
             action = WalkAction(Direction.EAST)
-        elif Key.ENTER == key:
+        elif Input.ENTER == input_:
             pos = self.game.player.pos
             if self.game.stage.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
-            handled = True
-        elif Key.C == key:
+        elif Input.HERO_INFO == input_:
             info = character_info(self.game.player)
             self.ui.push(MenuScreen(info, [], CHARACTER_SCREEN_WIDTH))
-            handled = True
-        elif Key.D == key:
+        elif Input.DROP == input_:
             # Show the inventory; if an item is selected, drop it
             msg = 'Select an item to drop it, or any other key to cancel.\n'
             inventory = self.game.player.inventory
             selected_item = inventory_menu(self.ui.console, inventory, msg)
             if selected_item:
                 action = DropAction(selected_item)
-        elif Key.F == key:
+        elif Input.REST == input_:
             # Wait; do nothing and let the world continue
             action = WalkAction(Direction.NONE)
-        elif Key.G == key:
+        elif Input.PICKUP == input_:
             action = PickUpAction()
-        elif Key.I == key:
+        elif Input.INVENTORY == input_:
             # Show the inventory; if an item is selected, use it
             msg = 'Select an item to use it, or any other key to cancel.\n'
             inventory = self.game.player.inventory
             selected_item = inventory_menu(self.ui.console, inventory, msg)
             if selected_item:
                 action = UseAction(selected_item, self.ui)
-        elif Key.R == key:
+        elif Input.CLOSE_DOOR == input_:
             action = CloseDoorAction(self.game.player.pos)
         if action:
             self.game.player.next_action = action
-            handled = True
-        return handled
+        return True
 
     def update(self):
         if self.game.state == 'dead':

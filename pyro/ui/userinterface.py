@@ -4,6 +4,7 @@ class UserInterface:
     def __init__(self, old_ui):
         self.screens = []
         self._old_ui = old_ui
+        self._keybindings = {}
 
     @property
     def keyboard(self):
@@ -20,6 +21,9 @@ class UserInterface:
     @property
     def panel(self):
         return self._old_ui.panel
+
+    def bind_key(self, key, input_):
+        self._keybindings[key] = input_
 
     def push(self, screen):
         screen.bind(self)
@@ -56,8 +60,11 @@ class UserInterface:
         # TODO move final call to console.flush() here?
 
     def handle_input(self, key):
-        index = len(self.screens) - 1
-        self.screens[index].handle_input(key)
+        screen = self.screens[len(self.screens) - 1]
+        if key in self._keybindings:
+            if screen.handle_input(self._keybindings[key]):
+                return
+        screen.handle_key_press(key)
 
 
 class Screen:
@@ -80,5 +87,8 @@ class Screen:
     def render(self):
         pass
 
-    def handle_input(self, key):
+    def handle_input(self, input_):
+        return False
+
+    def handle_key_press(self, key):
         pass

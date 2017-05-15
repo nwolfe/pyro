@@ -15,14 +15,13 @@ class MenuScreen(Screen):
         self.options = menu_options
         self.width = width
 
-    def handle_input(self, key):
+    def handle_key_press(self, key):
         # Convert ASCII code to an index; if it corresponds to an option, return it
+        selection = None
         index = key.ord - ord('a')
         if 0 <= index < len(self.options):
-            self.ui.pop(MenuSelection(index))
-            return True
-        self.ui.pop()
-        return False
+            selection = MenuSelection(index)
+        self.ui.pop(selection)
 
     def render(self):
         if len(self.options) > 26:
