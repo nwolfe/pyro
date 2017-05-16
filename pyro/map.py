@@ -207,22 +207,35 @@ class LevelBuilder:
             self.meta_map[room.x1][y].room_wall = True
             self.meta_map[room.x2][y].room_wall = True
 
-    def create_h_tunnel(self, x1, x2, y):
+    def create_tunnel_to(self, previous_room, current_room):
+        previous = previous_room.center()
+        current = current_room.center()
+        if libtcod.random_get_int(0, 0, 1) == 1:
+            # First move horizontally, then vertically
+            self._create_h_tunnel(previous.x, current.x, previous.y)
+            self._create_v_tunnel(previous.y, current.y, current.x)
+        else:
+            # First move vertically, then horizontally
+            self._create_v_tunnel(previous.y, current.y, previous.x)
+            self._create_h_tunnel(previous.x, current.x, current.y)
+
+    def _create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):
             self.map.tiles[x][y].type = TileType.FLOOR
             if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
-    def create_v_tunnel(self, y1, y2, x):
+    def _create_v_tunnel(self, y1, y2, x):
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.map.tiles[x][y].type = TileType.FLOOR
             if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
-    def place_stairs(self, position):
+    def place_stairs(self, room):
+        position = room.center()
         self.map.tiles[position.x][position.y].type = TileType.STAIRS
 
-    def place_grass_tile(self, position):
+    def _place_grass_tile(self, position):
         self.map.tiles[position.x][position.y].type = TileType.TALL_GRASS
 
     def place_grass(self, room):
@@ -231,7 +244,7 @@ class LevelBuilder:
             while is_blocked(self.map, self.game_actors, point):
                 point = room.random_point_inside()
 
-            self.place_grass_tile(point)
+            self._place_grass_tile(point)
 
             num_grass = libtcod.random_get_int(0, 4, 8)
             for i in range(num_grass):
@@ -240,7 +253,7 @@ class LevelBuilder:
                     point = random_point_surrounding(point)
 
                 if not is_blocked(self.map, self.game_actors, point):
-                    self.place_grass_tile(point)
+                    self._place_grass_tile(point)
 
     CREATURE_CHANCES = dict(
         critter=[[6, 1], [5, 3], [4, 5], [3, 7], [2, 9]],
@@ -270,7 +283,8 @@ class LevelBuilder:
                 creature = FACTORY.new_monster(choice, point)
                 self.game_actors.append(creature)
 
-    def place_boss(self, position):
+    def place_boss(self, room):
+        position = room.center()
         bosses = filter(lambda m: m['type'] == 'boss', FACTORY.monster_templates)
         if len(bosses) == 0:
             return
@@ -393,52 +407,39 @@ def make_map(game):
     builder = LevelBuilder(game_map, actors, items, game.dungeon_level)
     rooms = []
     num_rooms = 0
-    current_pos = None
 
     for r in range(MAX_ROOMS):
-        new_room = randomly_placed_rect(game_map)
+        room = randomly_placed_rect(game_map)
 
         # Throw the new room away if it overlaps with an existing one
-        if room_overlaps_existing(new_room, rooms):
+        if room_overlaps_existing(room, rooms):
             continue
 
         # Room is valid, continue
-        builder.create_room(new_room)
-
-        current_pos = new_room.center()
+        builder.create_room(room)
 
         if num_rooms == 0:
             # This is the first room, where the player starts at
-            game.player.pos.copy(current_pos)
+            game.player.pos.copy(room.center())
         else:
             # Connect it to the previous room with a tunnel
-
-            # Center of the previous room
-            previous = rooms[num_rooms-1].center()
-
-            if libtcod.random_get_int(0, 0, 1) == 1:
-                # First move horizontally, then vertically
-                builder.create_h_tunnel(previous.x, current_pos.x, previous.y)
-                builder.create_v_tunnel(previous.y, current_pos.y, current_pos.x)
-            else:
-                # First move vertically, then horizontally
-                builder.create_v_tunnel(previous.y, current_pos.y, previous.x)
-                builder.create_h_tunnel(previous.x, current_pos.x, current_pos.y)
+            builder.create_tunnel_to(rooms[num_rooms - 1], room)
 
         # Finish
-        builder.place_grass(new_room)
-        builder.place_creatures('mob', new_room)
-        builder.place_items(new_room)
-        builder.place_creatures('critter', new_room)
-        rooms.append(new_room)
+        builder.place_grass(room)
+        builder.place_creatures('mob', room)
+        builder.place_items(room)
+        builder.place_creatures('critter', room)
+        rooms.append(room)
         num_rooms += 1
 
+    # Place doors now that we have rooms and corridors
     builder.place_doors()
 
-    # Create stairs at the center of the last room
-    builder.place_stairs(current_pos)
+    # Place stairs in the last room, along with a boss
+    final_room = rooms[num_rooms - 1]
+    builder.place_stairs(final_room)
+    builder.place_boss(final_room)
 
-    # Put a boss near the stairs
-    builder.place_boss(current_pos)
-
+    # Finalize level generation
     builder.finalize(game)
