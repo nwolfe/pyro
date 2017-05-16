@@ -290,7 +290,7 @@ def check_for_input(ui):
 
 
 def main_menu(ui):
-    background = libtcod.image_load('menu_background.png')
+    background = libtcod.image_load('resources/menu_background.png')
 
     while not libtcod.console_is_window_closed():
         # Show the image at twice the regular console resolution
@@ -328,7 +328,7 @@ class OldUserInterface:
         render_all(self, game, fov_recompute)
 
 
-libtcod.console_set_custom_font('terminal8x12_gs_tc.png',
+libtcod.console_set_custom_font('resources/terminal8x12_gs_tc.png',
                                 libtcod.FONT_TYPE_GREYSCALE |
                                 libtcod.FONT_LAYOUT_TCOD)
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT,
