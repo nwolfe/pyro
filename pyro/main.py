@@ -2,7 +2,7 @@ import tcod as libtcod
 from itertools import chain
 from pyro.engine.game import Game
 from pyro.map import make_map
-from pyro.objects import FACTORY, make_player
+from pyro.objects import FACTORY
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
@@ -232,15 +232,10 @@ def check_player_level_up(game, console):
 
 def new_game():
     game = Game(state='playing', dungeon_level=1)
-    player = make_player(game)
     FACTORY.game = game
+    player = FACTORY.new_player()
+    game.player = player
     make_map(game)
-
-    # Starting inventory
-    FACTORY.new_item('Dagger').pick_up(player)
-    FACTORY.new_item('Scroll Of Lightning Bolt').pick_up(player)
-    FACTORY.new_item('Scroll Of Fireball').pick_up(player)
-    FACTORY.new_item('Scroll Of Confusion').pick_up(player)
 
     game.log.messages = []
     m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'

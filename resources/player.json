@@ -1,0 +1,14 @@
+{
+  "name": "Player",
+  "glyph": "@",
+  "color": "white",
+  "hp": 100,
+  "defense": 1,
+  "power": 2,
+  "starting_items": [
+    "Dagger",
+    "Scroll Of Lightning Bolt",
+    "Scroll Of Fireball",
+    "Scroll Of Confusion"
+  ]
+}

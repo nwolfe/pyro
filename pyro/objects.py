@@ -3,7 +3,6 @@ import tcod as libtcod
 from pyro.engine.item import Item, Equipment, SpellItemUse
 from pyro.engine.glyph import Glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
-from pyro.settings import PLAYER_DEFAULT_HP, PLAYER_DEFAULT_DEFENSE, PLAYER_DEFAULT_POWER
 from pyro.engine import ai, Hero, Monster
 
 SPELLS = dict(
@@ -27,29 +26,20 @@ def load_templates(json_file):
 
         # For some reason the UI renderer can't handle Unicode strings so we
         # need to convert the character glyph to UTF-8 for it to be rendered
-        for t in templates:
-            t['glyph'] = str(t['glyph'])
+        if type(templates) is list:
+            for t in templates:
+                t['glyph'] = str(t['glyph'])
+        elif type(templates) is dict:
+            templates['glyph'] = str(templates['glyph'])
 
         return templates
 
 
-def make_player(game):
-    hero = Hero(game)
-    hero.name = 'Player'
-    hero.inventory = []
-    hero.glyph = Glyph('@', libtcod.white)
-    hero.hp = PLAYER_DEFAULT_HP
-    hero.base_max_hp = hero.hp
-    hero.base_defense = PLAYER_DEFAULT_DEFENSE
-    hero.base_power = PLAYER_DEFAULT_POWER
-    game.player = hero
-    return hero
-
-
 class _GameObjectFactory:
-    def __init__(self, monster_file, item_file):
+    def __init__(self, monster_file, item_file, player_file):
         self.monster_templates = load_templates(monster_file)
         self.item_templates = load_templates(item_file)
+        self._player_template = load_templates(player_file)
         self.game = None
 
     def new_monster(self, monster_name, position=None):
@@ -69,6 +59,21 @@ class _GameObjectFactory:
                     item.pos.copy(position)
                 return item
         return None
+
+    def new_player(self):
+        hero = Hero(self.game)
+        hero.name = self._player_template['name']
+        hero.inventory = []
+        hero.glyph = Glyph(self._player_template['glyph'],
+                           getattr(libtcod, self._player_template['color']))
+        hero.hp = self._player_template['hp']
+        hero.base_max_hp = hero.hp
+        hero.base_defense = self._player_template['defense']
+        hero.base_power = self._player_template['power']
+        self.game.player = hero
+        for item in self._player_template['starting_items']:
+            self.new_item(item).pick_up(hero)
+        return hero
 
     def _instantiate_monster(self, template):
         name = template['name']
@@ -115,4 +120,5 @@ class _GameObjectFactory:
 
 
 FACTORY = _GameObjectFactory(monster_file='resources/monsters.json',
-                             item_file='resources/items.json')
+                             item_file='resources/items.json',
+                             player_file='resources/player.json')

@@ -5,8 +5,8 @@ from pyro.engine.log import Log
 class Stage:
     def __init__(self, map_=None, actors=None, items=None):
         self.map = map_
-        self.actors = actors
-        self.items = items
+        self.actors = actors if actors else []
+        self.items = items if items else []
         self.corpses = []
         self.current_actor_index = 0
 
@@ -28,7 +28,7 @@ class Stage:
 class Game:
     def __init__(self, state, dungeon_level):
         self.state = state
-        self.stage = None
+        self.stage = Stage()
         self.dungeon_level = dungeon_level
         self.log = Log()
         self.actions = deque()
