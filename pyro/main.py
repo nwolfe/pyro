@@ -1,8 +1,8 @@
 import tcod as libtcod
 from itertools import chain
+import pyro.objects as objects
 from pyro.engine.game import Game
 from pyro.map import make_map
-from pyro.objects import FACTORY
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
 from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
@@ -232,8 +232,7 @@ def check_player_level_up(game, console):
 
 def new_game():
     game = Game(state='playing', dungeon_level=1)
-    FACTORY.game = game
-    player = FACTORY.new_player()
+    player = objects.new_player(game)
     game.player = player
     make_map(game)
 
