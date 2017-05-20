@@ -1,4 +1,3 @@
-import os
 import tcod as libtcod
 
 # Tile colors

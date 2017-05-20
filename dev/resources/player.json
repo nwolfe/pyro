@@ -1,0 +1,14 @@
+{
+  "name": "Developer",
+  "glyph": "@",
+  "color": "dark_red",
+  "hp": 1000,
+  "defense": 1,
+  "power": 2,
+  "starting_items": [
+    "Dagger",
+    "Scroll Of Lightning Bolt",
+    "Scroll Of Fireball",
+    "Scroll Of Confusion"
+  ]
+}

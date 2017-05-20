@@ -1,3 +1,4 @@
+import os
 import json
 import tcod as libtcod
 from pyro.engine.item import Item, Equipment, SpellItemUse
@@ -57,9 +58,20 @@ def _load_templates(json_file):
         return templates
 
 
-MONSTER_TEMPLATES = _load_templates('resources/monsters.json')
-ITEM_TEMPLATES = _load_templates('resources/items.json')
-PLAYER_TEMPLATE = _load_templates('resources/player.json')
+if 'MONSTER_TEMPLATES' in os.environ:
+    MONSTER_TEMPLATES = _load_templates(os.environ['MONSTER_TEMPLATES'])
+else:
+    MONSTER_TEMPLATES = _load_templates('resources/monsters.json')
+
+if 'ITEM_TEMPLATES' in os.environ:
+    ITEM_TEMPLATES = _load_templates(os.environ['ITEM_TEMPLATES'])
+else:
+    ITEM_TEMPLATES = _load_templates('resources/items.json')
+
+if 'PLAYER_TEMPLATE' in os.environ:
+    PLAYER_TEMPLATE = _load_templates(os.environ['PLAYER_TEMPLATE'])
+else:
+    PLAYER_TEMPLATE = _load_templates('resources/player.json')
 
 
 SPELLS = dict(
