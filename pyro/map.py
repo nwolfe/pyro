@@ -122,7 +122,7 @@ class Map:
                        for _ in range(height)]
                       for _ in range(width)]
         self.fov_map = None
-        self.visibility_dirty = False
+        self.visibility_dirty = True
 
     def __refresh_fov(self, fov_map):
         for y in range(self.height):
@@ -186,7 +186,6 @@ class LevelBuilder:
 
     def finalize(self, game):
         self.map.fov_map = self.map.make_fov_map()
-        self.map.dirty_visibility()
         self.map.refresh_visibility(game.player.pos)
         game.stage = Stage(self.map, self.game_actors, self.game_items)
 
