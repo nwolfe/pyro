@@ -26,7 +26,7 @@ def target_tile(game, ui, max_range=None):
         # objects under the mouse.
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
                                     ui.keyboard, ui.mouse)
-        ui.render_all(game, False)
+        ui.render_all(game)
 
         (x, y) = (ui.mouse.cx, ui.mouse.cy)
 

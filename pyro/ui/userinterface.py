@@ -6,6 +6,9 @@ class UserInterface:
         self._old_ui = old_ui
         self._keybindings = {}
 
+    def render_all(self, game):
+        self._old_ui.render_all(game, False)
+
     @property
     def keyboard(self):
         return self._old_ui.keyboard
