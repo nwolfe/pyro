@@ -1,0 +1,109 @@
+[
+  {
+    "name": "Rat",
+    "id": "monster.rat",
+    "type": "critter",
+    "glyph": "r",
+    "color": "darkest_pink",
+    "ai": "passive_aggressive",
+    "experience": 10,
+    "hp": 5,
+    "defense": 0,
+    "power": 2,
+    "spawn": [[90, 1],
+              [80, 2],
+              [70, 3],
+              [60, 4],
+              [50, 5],
+              [40, 6],
+              [30, 7],
+              [20, 8],
+              [10, 9],
+              [0, 10]]
+  },
+  {
+    "name": "Orc",
+    "id": "monster.orc",
+    "type": "mob",
+    "glyph": "o",
+    "color": "desaturated_green",
+    "ai": "aggressive",
+    "experience": 35,
+    "hp": 10,
+    "defense": 0,
+    "power": 4,
+    "spawn": 80
+  },
+  {
+    "name": "Troll",
+    "id": "monster.troll",
+    "type": "mob",
+    "glyph": "T",
+    "color": "darker_green",
+    "ai": "aggressive",
+    "experience": 100,
+    "hp": 20,
+    "defense": 2,
+    "power": 8,
+    "spawn": [[15, 3],
+              [30, 5],
+              [60, 7]]
+  },
+  {
+    "name": "Kobold Wizard",
+    "id": "monster.kobold_wizard",
+    "type": "mob",
+    "glyph": "w",
+    "color": "darker_green",
+    "ai": "aggressive_spellcaster",
+    "spell": "lightning_bolt",
+    "experience": 50,
+    "hp": 15,
+    "defense": 0,
+    "power": 2,
+    "spawn": 40
+  },
+  {
+    "name": "Troll Mage",
+    "id": "monster.troll_mage",
+    "type": "boss",
+    "glyph": "M",
+    "color": "darker_blue",
+    "ai": "aggressive_spellcaster",
+    "spell": {
+      "name": "fireball",
+      "range": 4,
+      "strength": 15,
+      "radius": 2
+    },
+    "experience": 200,
+    "hp": 30,
+    "defense": 3,
+    "power": 4
+  },
+  {
+    "name": "King Wizard",
+    "id": "monster.king_wizard",
+    "type": "boss",
+    "glyph": "W",
+    "color": "white",
+    "ai": "aggressive_spellcaster",
+    "spells": [
+      "lightning_bolt",
+      {
+        "name": "fireball",
+        "range": 6,
+        "strength": 10,
+        "radius": 1
+      },
+      {
+        "name": "heal",
+        "strength": 3
+      }
+    ],
+    "experience": 200,
+    "hp": 20,
+    "defense": 1,
+    "power": 1
+  }
+]
