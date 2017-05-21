@@ -70,10 +70,6 @@ def menu(console, header, options, width):
         return None
 
 
-def messagebox(console, text, width=50):
-    return menu(console, text, [], width)
-
-
 def get_names_under_mouse(mouse, game):
     # Return a string with the names of all objects under the mouse
     (x, y) = (mouse.cx, mouse.cy)
