@@ -43,9 +43,9 @@ class GameScreen(Screen):
             # Show the inventory; if an item is selected, drop it
             msg = 'Select an item to drop it, or any other key to cancel.\n'
             inventory = self.game.player.inventory
-            selected_item = inventory_menu(self.ui.console, inventory, msg)
-            if selected_item:
-                action = DropAction(selected_item)
+            drop_item_screen = MenuScreen(msg, inventory, INVENTORY_WIDTH,
+                                          empty_text='Inventory is empty')
+            self.ui.push(drop_item_screen, tag='item.drop')
         elif Input.REST == input_:
             # Wait; do nothing and let the world continue
             action = WalkAction(Direction.NONE)
@@ -67,6 +67,8 @@ class GameScreen(Screen):
     def activate(self, result=None, tag=None):
         if 'item.use' == tag and result:
             self.game.player.next_action = UseAction(result, self.ui)
+        elif 'item.drop' == tag and result:
+            self.game.player.next_action = DropAction(result)
 
     def update(self):
         if self.game.state == 'dead':
