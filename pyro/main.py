@@ -105,40 +105,37 @@ def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color,
 
 
 def render_all(ui, game, fov_recompute):
-    if fov_recompute:
-        # Recompute FOV if needed (i.e. the player moved)
-        libtcod.map_compute_fov(game.stage.map.fov_map, game.player.pos.x, game.player.pos.y,
-                                TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM)
+    libtcod.console_clear(ui.console)
+    libtcod.console_clear(ui.panel)
 
-        # Set tile background colors according to FOV
-        for y in range(game.stage.map.height):
-            for x in range(game.stage.map.width):
-                visible = game.stage.map.is_xy_in_fov(x, y)
-                wall = game.stage.map.movement_blocked(x, y) and game.stage.map.vision_blocked(x, y)
-                if not visible:
-                    if game.stage.map.is_explored(x, y):
-                        color = COLOR_DARK_WALL if wall else COLOR_DARK_GROUND
-                        libtcod.console_set_char_background(ui.console,
-                                                            x, y, color,
-                                                            libtcod.BKGND_SET)
-                else:
-                    if wall:
-                        color = COLOR_LIGHT_WALL
-                    elif game.stage.map.vision_blocked(x, y):
-                        color = COLOR_LIGHT_GRASS
-                    else:
-                        color = COLOR_LIGHT_GROUND
-                    libtcod.console_set_char_background(ui.console,
-                                                        x, y, color,
-                                                        libtcod.BKGND_SET)
-                    game.stage.map.mark_explored(x, y)
+    # Draw tiles
+    for y in range(game.stage.map.height):
+        for x in range(game.stage.map.width):
+            tile = game.stage.map.tiles[x][y]
+            visible = game.stage.map.is_xy_in_fov(x, y)
+            if not visible:
+                if tile.explored:
+                    glyph = tile.type.appearance.unlit
+                    libtcod.console_set_char_background(ui.console, x, y, glyph.bg_color, libtcod.BKGND_SET)
+                    if tile.type.always_visible and glyph.char:
+                        libtcod.console_set_default_foreground(ui.console, glyph.fg_color)
+                        libtcod.console_put_char(ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
+            else:
+                tile.explored = True
+                glyph = tile.type.appearance.lit
+                libtcod.console_set_char_background(ui.console, x, y, glyph.bg_color, libtcod.BKGND_SET)
+                if glyph.char:
+                    libtcod.console_set_default_foreground(ui.console, glyph.fg_color)
+                    libtcod.console_put_char(ui.console, x, y, glyph.char, libtcod.BKGND_NONE)
 
+    # Draw game items
     for item in game.stage.items:
         if game.stage.map.is_in_fov(item.pos):
             libtcod.console_set_default_foreground(ui.console, item.glyph.fg_color)
             libtcod.console_put_char(ui.console, item.pos.x, item.pos.y,
                                      item.glyph.char, libtcod.BKGND_NONE)
 
+    # Draw corpses
     for corpse in game.stage.corpses:
         if game.stage.map.is_in_fov(corpse.pos):
             glyph = corpse.type.glyph
@@ -146,6 +143,7 @@ def render_all(ui, game, fov_recompute):
             libtcod.console_put_char(ui.console, corpse.pos.x, corpse.pos.y,
                                      glyph.char, libtcod.BKGND_NONE)
 
+    # Draw game actors
     for actor in game.stage.actors:
         if game.stage.map.is_in_fov(actor.pos):
             libtcod.console_set_default_foreground(ui.console, actor.glyph.fg_color)
@@ -154,10 +152,6 @@ def render_all(ui, game, fov_recompute):
 
     # Blit the contents of the game (non-GUI) console to the root console
     libtcod.console_blit(ui.console, 0, 0, game.stage.map.width, game.stage.map.height, 0, 0, 0)
-
-    # Prepare to render the GUI panel
-    libtcod.console_set_default_background(ui.panel, libtcod.black)
-    libtcod.console_clear(ui.panel)
 
     # Print game messages, one line at a time
     y = 1
@@ -183,15 +177,13 @@ def render_all(ui, game, fov_recompute):
     libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                              names)
 
+    # Reset the background color for next time
+    libtcod.console_set_default_background(ui.panel, libtcod.black)
+
     # Blit the contents of the GUI panel to the root console
-    libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
-                         PANEL_Y)
+    libtcod.console_blit(ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0, PANEL_Y)
 
     libtcod.console_flush()
-    for actor in game.stage.actors:
-        libtcod.console_put_char(ui.console, actor.pos.x, actor.pos.y, ' ', libtcod.BKGND_NONE)
-    for item in game.stage.items:
-        libtcod.console_put_char(ui.console, item.pos.x, item.pos.y, ' ', libtcod.BKGND_NONE)
 
 
 ###############################################################################
@@ -240,7 +232,6 @@ def new_game():
 
 
 def play_game(game, ui):
-    libtcod.console_clear(ui.console)
     # TODO Delete this once MainMenuScreen -> GameScreen
     ui.screens = []
     ui.push(GameScreen(game))

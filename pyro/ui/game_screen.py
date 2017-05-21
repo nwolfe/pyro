@@ -132,10 +132,6 @@ class GameScreen(Screen):
         # Blit the contents of the game (non-GUI) console to the root console
         libtcod.console_blit(self.ui.console, 0, 0, self.game.stage.map.width, self.game.stage.map.height, 0, 0, 0)
 
-        # Prepare to render the GUI panel
-        libtcod.console_set_default_background(self.ui.panel, libtcod.black)
-        libtcod.console_clear(self.ui.panel)
-
         # Print game messages, one line at a time
         y = 1
         for (line, color) in self.game.log.messages:
@@ -160,14 +156,11 @@ class GameScreen(Screen):
         libtcod.console_print_ex(self.ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT,
                                  names)
 
-        # Blit the contents of the GUI panel to the root console
-        libtcod.console_blit(self.ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0,
-                             PANEL_Y)
+        # Reset the background color for next time
+        libtcod.console_set_default_background(self.ui.panel, libtcod.black)
 
-        libtcod.console_flush()
-        for y in range(self.game.stage.map.height):
-            for x in range(self.game.stage.map.width):
-                libtcod.console_put_char(self.ui.console, x, y, ' ', libtcod.BKGND_NONE)
+        # Blit the contents of the GUI panel to the root console
+        libtcod.console_blit(self.ui.panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0, PANEL_Y)
 
     def next_dungeon_level(self):
         # TODO Push all this down into a Game#next_level() method?

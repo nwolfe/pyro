@@ -12,6 +12,7 @@ class MenuScreen(Screen):
         self._options = menu_options
         self._header = header
         self._width = width
+        self.transparent = True
 
     def handle_key_press(self, key):
         # Convert ASCII code to an index; if it corresponds to an option, return it
@@ -57,6 +58,3 @@ class MenuScreen(Screen):
         x = SCREEN_WIDTH / 2 - self._width / 2
         y = SCREEN_HEIGHT / 2 - height / 2
         libtcod.console_blit(window, 0, 0, self._width, height, 0, x, y, 1.0, 0.7)
-
-        # Present the root console to the player and wait for a key press
-        libtcod.console_flush()

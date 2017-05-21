@@ -1,3 +1,4 @@
+import tcod as libtcod
 
 
 class UserInterface:
@@ -47,6 +48,9 @@ class UserInterface:
         self.render()
 
     def render(self):
+        libtcod.console_clear(self.console)
+        libtcod.console_clear(self.panel)
+
         index = len(self.screens) - 1
         while index >= 0:
             if not self.screens[index].transparent:
@@ -61,7 +65,7 @@ class UserInterface:
             index += 1
 
         # TODO reset dirty flag here
-        # TODO move final call to console.flush() here?
+        libtcod.console_flush()
 
     def handle_input(self, key):
         screen = self.screens[len(self.screens) - 1]
