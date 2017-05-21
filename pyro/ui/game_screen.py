@@ -55,14 +55,18 @@ class GameScreen(Screen):
             # Show the inventory; if an item is selected, use it
             msg = 'Select an item to use it, or any other key to cancel.\n'
             inventory = self.game.player.inventory
-            selected_item = inventory_menu(self.ui.console, inventory, msg)
-            if selected_item:
-                action = UseAction(selected_item, self.ui)
+            use_item_screen = MenuScreen(msg, inventory, INVENTORY_WIDTH,
+                                         empty_text='Inventory is empty')
+            self.ui.push(use_item_screen, tag='item.use')
         elif Input.CLOSE_DOOR == input_:
             action = CloseDoorAction(self.game.player.pos)
         if action:
             self.game.player.next_action = action
         return True
+
+    def activate(self, result=None, tag=None):
+        if 'item.use' == tag and result:
+            self.game.player.next_action = UseAction(result, self.ui)
 
     def update(self):
         if self.game.state == 'dead':

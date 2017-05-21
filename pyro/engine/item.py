@@ -27,6 +27,9 @@ class Item:
         self.on_use = on_use
         self.owner = None
 
+    def __str__(self):
+        return self.name
+
     def pick_up(self, owner):
         if owner.inventory is None:
             return False
@@ -84,6 +87,12 @@ class Equipment(Item):
         self.defense_bonus = defense_bonus
         self.max_hp_bonus = max_hp_bonus
         self.is_equipped = False
+
+    def __str__(self):
+        if self.is_equipped:
+            return "{0} (on {1})".format(self.name, self.slot)
+        else:
+            return self.name
 
     def pick_up(self, owner):
         if Item.pick_up(self, owner):
