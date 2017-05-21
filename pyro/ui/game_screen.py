@@ -4,7 +4,6 @@ from pyro.ui import Screen
 from pyro.direction import Direction
 from pyro.engine.game import EventType
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
-from pyro.engine.item import Equipment
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
@@ -215,76 +214,6 @@ def get_names_under_mouse(mouse, game):
     names = [obj.name for obj in chain(game.stage.actors, game.stage.items, game.stage.corpses)
              if obj.pos.equals(x, y) and game.stage.map.is_in_fov(obj.pos)]
     return ', '.join(names)
-
-
-def inventory_menu(console, inventory, header):
-    # Show a menu with each item of the inventory as an option
-    if len(inventory) == 0:
-        options = ['Inventory is empty']
-    else:
-        options = []
-        for item in inventory:
-            text = item.name
-            if isinstance(item, Equipment) and item.is_equipped:
-                text = '{0} (on {1})'.format(text, item.slot)
-            options.append(text)
-    selection_index = menu(console, header, options, INVENTORY_WIDTH)
-    if selection_index is None or len(inventory) == 0:
-        return None
-    else:
-        return inventory[selection_index]
-
-
-def menu(console, header, options, width):
-    if len(options) > 26:
-        raise ValueError('Cannot have a menu with more than 26 options.')
-
-    # Calculate total height for header (after auto-wrap),
-    # and one line per option
-    if header == '':
-        header_height = 0
-    else:
-        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
-                                                        SCREEN_HEIGHT, header)
-    height = len(options) + header_height
-
-    # Create an off-screen console that represents the menu's window
-    window = libtcod.console_new(width, height)
-
-    # Print the header, with auto-wrap
-    libtcod.console_set_default_foreground(window, libtcod.white)
-    libtcod.console_print_rect_ex(window, 0, 0, width, height,
-                                  libtcod.BKGND_NONE, libtcod.LEFT, header)
-
-    # Print all the options
-    y = header_height
-    letter_index = ord('a')
-    for option in options:
-        text = '({0}) {1}'.format(chr(letter_index), option)
-        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE,
-                                 libtcod.LEFT, text)
-        y += 1
-        letter_index += 1
-
-    # Blit the contents of the menu window to the root console
-    x = SCREEN_WIDTH/2 - width/2
-    y = SCREEN_HEIGHT/2 - height/2
-    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
-
-    # Present the root console to the player and wait for a key press
-    libtcod.console_flush()
-    key = libtcod.console_wait_for_keypress(True)
-
-    if key.vk == libtcod.KEY_ENTER and key.lalt:
-        # Alt-Enter toggles fullscreen
-        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-
-    # Convert ASCII code to an index; if it corresponds to an option, return it
-    index = key.c - ord('a')
-    if 0 <= index < len(options):
-        return index
-    else:
-        return None
 
 
 def character_info(player):
