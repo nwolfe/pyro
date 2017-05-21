@@ -175,7 +175,7 @@ class Map:
 
 
 class LevelBuilder:
-    def __init__(self, game, game_map, game_actors, game_items, dungeon_level):
+    def __init__(self, game, game_map, game_actors, game_items):
         self._game = game
         self.map = game_map
         self.meta_map = [[TileMeta()
@@ -183,7 +183,6 @@ class LevelBuilder:
                          for _ in range(game_map.width)]
         self.game_actors = game_actors
         self.game_items = game_items
-        self.dungeon_level = dungeon_level
 
     def finalize(self):
         self.map.fov_map = self.map.make_fov_map()
@@ -266,9 +265,9 @@ class LevelBuilder:
             return
 
         # Random number of creatures
-        max_creatures = from_dungeon_level(self.CREATURE_CHANCES[creature_type], self.dungeon_level)
+        max_creatures = from_dungeon_level(self.CREATURE_CHANCES[creature_type], self._game.dungeon_level)
         num_creatures = libtcod.random_get_int(0, 0, max_creatures)
-        creature_chances = get_spawn_chances(creatures, self.dungeon_level)
+        creature_chances = get_spawn_chances(creatures, self._game.dungeon_level)
 
         chance = libtcod.random_get_int(0, 1, 100)
         if chance <= 5:
@@ -296,9 +295,9 @@ class LevelBuilder:
 
     def place_items(self, room):
         # Random number of items
-        max_items = from_dungeon_level([[1, 1], [2, 4]], self.dungeon_level)
+        max_items = from_dungeon_level([[1, 1], [2, 4]], self._game.dungeon_level)
         num_items = libtcod.random_get_int(0, 0, max_items)
-        item_chances = get_spawn_chances(objects.ITEM_TEMPLATES, self.dungeon_level)
+        item_chances = get_spawn_chances(objects.ITEM_TEMPLATES, self._game.dungeon_level)
 
         for i in range(num_items):
             # Random position for item
@@ -404,7 +403,7 @@ def make_map(game):
     actors = [game.player]
     items = []
     game_map = Map(MAP_HEIGHT, MAP_WIDTH)
-    builder = LevelBuilder(game, game_map, actors, items, game.dungeon_level)
+    builder = LevelBuilder(game, game_map, actors, items)
     rooms = []
     num_rooms = 0
 
