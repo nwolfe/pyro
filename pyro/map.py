@@ -291,7 +291,7 @@ class LevelBuilder:
 
         # Randomly select a boss and place it near the center of the room
         boss = bosses[libtcod.random_get_int(0, 0, len(bosses)-1)]
-        boss = objects.new_monster(self._game, boss['name'], random_point_surrounding(position))
+        boss = objects.new_monster(self._game, boss['id'], random_point_surrounding(position))
         self.game_actors.append(boss)
 
     def place_items(self, room):
@@ -366,9 +366,9 @@ def get_spawn_chances(templates, dungeon_level):
         if 'spawn' in t:
             chance = t['spawn']
             if isinstance(chance, list):
-                chances[t['name']] = from_dungeon_level(chance, dungeon_level)
+                chances[t['id']] = from_dungeon_level(chance, dungeon_level)
             else:
-                chances[t['name']] = chance
+                chances[t['id']] = chance
     return chances
 
 

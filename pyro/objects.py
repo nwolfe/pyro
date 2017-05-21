@@ -23,9 +23,9 @@ def new_player(game):
     return hero
 
 
-def new_monster(game, monster_name, position=None):
+def new_monster(game, monster_id, position=None):
     for template in MONSTER_TEMPLATES:
-        if template['name'] == monster_name:
+        if template['id'] == monster_id:
             monster = _instantiate_monster(game, template)
             if position:
                 monster.pos.copy(position)
@@ -33,9 +33,9 @@ def new_monster(game, monster_name, position=None):
     return None
 
 
-def new_item(item_name, position=None):
+def new_item(item_id, position=None):
     for template in ITEM_TEMPLATES:
-        if template['name'] == item_name:
+        if template['id'] == item_id:
             item = _instantiate_item(template)
             if position:
                 item.pos.copy(position)

@@ -6,9 +6,9 @@
   "defense": 1,
   "power": 2,
   "starting_items": [
-    "Dagger",
-    "Scroll Of Lightning Bolt",
-    "Scroll Of Fireball",
-    "Scroll Of Confusion"
+    "item.dagger",
+    "item.lightning_bolt_scroll",
+    "item.fireball_scroll",
+    "item.confusion_scroll"
   ]
 }

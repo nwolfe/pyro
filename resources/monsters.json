@@ -1,6 +1,7 @@
 [
   {
     "name": "Rat",
+    "id": "monster.rat",
     "type": "critter",
     "glyph": "r",
     "color": "darkest_pink",
@@ -22,6 +23,7 @@
   },
   {
     "name": "Orc",
+    "id": "monster.orc",
     "type": "mob",
     "glyph": "o",
     "color": "desaturated_green",
@@ -34,6 +36,7 @@
   },
   {
     "name": "Troll",
+    "id": "monster.troll",
     "type": "mob",
     "glyph": "T",
     "color": "darker_green",
@@ -48,6 +51,7 @@
   },
   {
     "name": "Kobold Wizard",
+    "id": "monster.kobold_wizard",
     "type": "mob",
     "glyph": "w",
     "color": "darker_green",
@@ -61,6 +65,7 @@
   },
   {
     "name": "Troll Mage",
+    "id": "monster.troll_mage",
     "type": "boss",
     "glyph": "M",
     "color": "darker_blue",
@@ -78,6 +83,7 @@
   },
   {
     "name": "King Wizard",
+    "id": "monster.king_wizard",
     "type": "boss",
     "glyph": "W",
     "color": "white",
