@@ -3,12 +3,19 @@ from pyro.ui.userinterface import Screen
 from pyro.settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
+class MenuSelection:
+    def __init__(self, choice, index):
+        self.choice = choice
+        self.index = index
+
+
 class MenuScreen(Screen):
-    def __init__(self, header, menu_options, width, empty_text=None):
+    def __init__(self, header, menu_options, width, empty_text=None, require_selection=False):
         Screen.__init__(self)
         if len(menu_options) > 26:
             raise ValueError('Cannot have a menu with more than 26 options.')
         self._empty_text = [empty_text] if empty_text else None
+        self._selection_required = require_selection
         self._options = menu_options
         self._header = header
         self._width = width
@@ -16,11 +23,11 @@ class MenuScreen(Screen):
 
     def handle_key_press(self, key):
         # Convert ASCII code to an index; if it corresponds to an option, return it
-        selection = None
         index = key.ord - ord('a')
         if 0 <= index < len(self._options):
-            selection = self._options[index]
-        self.ui.pop(selection)
+            self.ui.pop(MenuSelection(self._options[index], index))
+        elif not self._selection_required:
+            self.ui.pop()
 
     def render(self):
         if len(self._options) == 0 and self._empty_text:

@@ -3,10 +3,8 @@ from itertools import chain
 import pyro.objects as objects
 from pyro.engine.game import Game
 from pyro.map import make_map
-from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
-from pyro.settings import COLOR_DARK_WALL, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_LIGHT_GRASS, COLOR_LIGHT_GROUND
+from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, LIMIT_FPS
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
-from pyro.settings import LEVEL_UP_STAT_HP, LEVEL_UP_STAT_POWER, LEVEL_UP_STAT_DEFENSE, LEVEL_SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui.game_screen import GameScreen
 from pyro.ui.userinterface import UserInterface
 from pyro.ui.keys import key_for_int, Key
@@ -64,7 +62,7 @@ def menu(console, header, options, width):
 
     # Convert ASCII code to an index; if it corresponds to an option, return it
     index = key.c - ord('a')
-    if index >= 0 and index < len(options):
+    if 0 <= index < len(options):
         return index
     else:
         return None
@@ -191,33 +189,6 @@ def render_all(ui, game, fov_recompute):
 ###############################################################################
 
 
-def check_player_level_up(game, console):
-    player = game.player
-
-    # See if the player's XP is enough to level up
-    if not player.can_level_up():
-        return
-
-    # Ding! Level up!
-    player.level_up()
-    msg = 'Your battle skills grow stronger! You reached level {}!'
-    game.log.message(msg.format(player.level), libtcod.yellow)
-
-    choice = None
-    while choice is None:
-        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, player.base_max_hp),
-                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, player.base_power),
-                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, player.base_defense)]
-        choice = menu(console, 'Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH)
-        if choice == 0:
-            player.base_max_hp += LEVEL_UP_STAT_HP
-            player.hp += LEVEL_UP_STAT_HP
-        elif choice == 1:
-            player.base_power += LEVEL_UP_STAT_POWER
-        elif choice == 2:
-            player.base_defense += LEVEL_UP_STAT_DEFENSE
-
-
 def new_game():
     game = Game(state='playing', dungeon_level=1)
     player = objects.new_player(game)
@@ -237,8 +208,6 @@ def play_game(game, ui):
     ui.push(GameScreen(game))
     while not libtcod.console_is_window_closed():
         ui.refresh()
-
-        check_player_level_up(game, ui.console)
 
         key = check_for_input(ui)
         if key:

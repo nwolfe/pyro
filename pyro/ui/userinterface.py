@@ -38,7 +38,7 @@ class UserInterface:
     def pop(self, result=None):
         screen = self.screens.pop()
         screen.unbind()
-        self.screens[len(self.screens) - 1].activate(result, screen.tag)
+        self.top_screen().activate(result, screen.tag)
         self.render()
 
     def refresh(self):
@@ -68,11 +68,14 @@ class UserInterface:
         libtcod.console_flush()
 
     def handle_input(self, key):
-        screen = self.screens[len(self.screens) - 1]
+        screen = self.top_screen()
         if key in self._keybindings:
             if screen.handle_input(self._keybindings[key]):
                 return
         screen.handle_key_press(key)
+
+    def top_screen(self):
+        return self.screens[len(self.screens) - 1]
 
 
 class Screen:

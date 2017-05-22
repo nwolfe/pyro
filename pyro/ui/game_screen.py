@@ -64,14 +64,25 @@ class GameScreen(Screen):
         return True
 
     def activate(self, result=None, tag=None):
-        if 'item.use' == tag and result:
-            self.game.player.next_action = UseAction(result, self.ui)
-        elif 'item.drop' == tag and result:
-            self.game.player.next_action = DropAction(result)
+        if 'item.use' == tag and result.choice:
+            self.game.player.next_action = UseAction(result.choice, self.ui)
+        elif 'item.drop' == tag and result.choice:
+            self.game.player.next_action = DropAction(result.choice)
+        elif 'level-up.stat' == tag:
+            if result.index == 0:
+                self.game.player.base_max_hp += LEVEL_UP_STAT_HP
+                self.game.player.hp += LEVEL_UP_STAT_HP
+            elif result.index == 1:
+                self.game.player.base_power += LEVEL_UP_STAT_POWER
+            elif result.index == 2:
+                self.game.player.base_defense += LEVEL_UP_STAT_DEFENSE
 
     def update(self):
         if self.game.state == 'dead':
             return
+
+        if self.game.player.can_level_up():
+            self._level_up_player()
 
         result = self.game.update()
 
@@ -80,6 +91,22 @@ class GameScreen(Screen):
                 self.effects.append(HitEffect(event.actor))
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)
+
+    def _level_up_player(self):
+        # Only push one level-up screen at a time
+        if self.ui.top_screen().tag == 'level-up.stat':
+            return
+
+        # Ding! Level up!
+        self.game.player.level_up()
+        msg = 'Your battle skills grow stronger! You reached level {}!'
+        self.game.log.message(msg.format(self.game.player.level), libtcod.yellow)
+        options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, self.game.player.base_max_hp),
+                   'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, self.game.player.base_power),
+                   'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, self.game.player.base_defense)]
+        level_up_screen = MenuScreen('Level up! Choose a stat to raise:\n', options, LEVEL_SCREEN_WIDTH,
+                                     require_selection=True)
+        self.ui.push(level_up_screen, tag='level-up.stat')
 
     def render(self):
         # TODO is there more to this?
