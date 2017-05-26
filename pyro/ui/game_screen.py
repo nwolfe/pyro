@@ -20,8 +20,7 @@ class GameScreen(Screen):
     def handle_input(self, input_):
         action = None
         if Input.EXIT == input_:
-            self.game.state = 'exit'
-            # TODO self.ui.pop() once MainMenuScreen exists
+            self.ui.pop()
         elif Input.NORTH == input_:
             action = WalkAction(Direction.NORTH)
         elif Input.SOUTH == input_:
@@ -64,6 +63,9 @@ class GameScreen(Screen):
         return True
 
     def activate(self, result=None, tag=None):
+        if result is None:
+            return
+
         if 'item.use' == tag and result.choice:
             self.game.player.next_action = UseAction(result.choice, self.ui)
         elif 'item.drop' == tag and result.choice:

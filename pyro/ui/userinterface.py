@@ -1,4 +1,6 @@
 import tcod as libtcod
+from pyro.settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from pyro.ui.keys import key_for_int, Key
 
 
 class UserInterface:
@@ -38,8 +40,9 @@ class UserInterface:
     def pop(self, result=None):
         screen = self.screens.pop()
         screen.unbind()
-        self.top_screen().activate(result, screen.tag)
-        self.render()
+        if len(self.screens) > 0:
+            self.top_screen().activate(result, screen.tag)
+            self.render()
 
     def refresh(self):
         for screen in self.screens:
@@ -67,15 +70,41 @@ class UserInterface:
         # TODO reset dirty flag here
         libtcod.console_flush()
 
-    def handle_input(self, key):
-        screen = self.top_screen()
-        if key in self._keybindings:
-            if screen.handle_input(self._keybindings[key]):
-                return
-        screen.handle_key_press(key)
+    def handle_input(self):
+        key = self._check_for_keypress()
+        if key:
+            screen = self.top_screen()
+            if key in self._keybindings:
+                if screen.handle_input(self._keybindings[key]):
+                    return
+            screen.handle_key_press(key)
 
     def top_screen(self):
         return self.screens[len(self.screens) - 1]
+
+    def is_running(self):
+        return not libtcod.console_is_window_closed() and len(self.screens) > 0
+
+    def _check_for_keypress(self):
+        result = None
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
+                                    libtcod.EVENT_MOUSE, self.keyboard, self.mouse)
+        k = libtcod.console_check_for_keypress()
+        if k.vk != libtcod.KEY_NONE:
+            result = key_for_int(self.keyboard.c)
+        elif libtcod.KEY_LEFT == self.keyboard.vk:
+            result = Key.LEFT
+        elif libtcod.KEY_RIGHT == self.keyboard.vk:
+            result = Key.RIGHT
+        elif libtcod.KEY_UP == self.keyboard.vk:
+            result = Key.UP
+        elif libtcod.KEY_DOWN == self.keyboard.vk:
+            result = Key.DOWN
+        elif libtcod.KEY_ENTER == self.keyboard.vk:
+            result = Key.ENTER
+        elif libtcod.KEY_ESCAPE == self.keyboard.vk:
+            result = Key.ESCAPE
+        return result
 
 
 class Screen:
@@ -104,3 +133,44 @@ class Screen:
 
     def handle_key_press(self, key):
         pass
+
+
+# TODO This seems inappropriate in this userinterface module.
+# Where should this function live?
+def draw_menu(console, header, options, width, empty_text=None):
+    if len(options) > 26:
+        raise ValueError('Cannot have a menu with more than 26 options.')
+
+    if len(options) == 0 and empty_text:
+        options = [empty_text]
+
+    # Calculate total height for header (after auto-wrap),
+    # and one line per option
+    if header == '':
+        header_height = 0
+    else:
+        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
+                                                        SCREEN_HEIGHT, header)
+    height = len(options) + header_height
+
+    # Create an off-screen console that represents the menu's window
+    window = libtcod.console_new(width, height)
+
+    # Print the header, with auto-wrap
+    libtcod.console_set_default_foreground(window, libtcod.white)
+    libtcod.console_print_rect_ex(window, 0, 0, width, height,
+                                  libtcod.BKGND_NONE, libtcod.LEFT, header)
+
+    # Print all the options
+    y = header_height
+    letter_index = ord('a')
+    for option in options:
+        text = '({0}) {1}'.format(chr(letter_index), option)
+        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
+        y += 1
+        letter_index += 1
+
+    # Blit the contents of the menu window to the root console
+    x = SCREEN_WIDTH / 2 - width / 2
+    y = SCREEN_HEIGHT / 2 - height / 2
+    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)

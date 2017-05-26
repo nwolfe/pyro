@@ -1,13 +1,10 @@
 import tcod as libtcod
 from itertools import chain
-import pyro.objects as objects
-from pyro.engine.game import Game
-from pyro.map import make_map
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, LIMIT_FPS
 from pyro.settings import MSG_X, BAR_WIDTH, PANEL_HEIGHT, PANEL_Y, MAP_WIDTH, MAP_HEIGHT
-from pyro.ui.game_screen import GameScreen
+from pyro.ui.main_menu_screen import MainMenuScreen
 from pyro.ui.userinterface import UserInterface
-from pyro.ui.keys import key_for_int, Key
+from pyro.ui.keys import Key
 from pyro.ui.inputs import Input
 
 
@@ -15,57 +12,15 @@ from pyro.ui.inputs import Input
 # User Interface                                                              #
 ###############################################################################
 
+class OldUserInterface:
+    def __init__(self):
+        self.keyboard = libtcod.Key()
+        self.mouse = libtcod.Mouse()
+        self.console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
+        self.panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
 
-def menu(console, header, options, width):
-    if len(options) > 26:
-        raise ValueError('Cannot have a menu with more than 26 options.')
-
-    # Calculate total height for header (after auto-wrap),
-    # and one line per option
-    if header == '':
-        header_height = 0
-    else:
-        header_height = libtcod.console_get_height_rect(console, 0, 0, width,
-                                                        SCREEN_HEIGHT, header)
-    height = len(options) + header_height
-
-    # Create an off-screen console that represents the menu's window
-    window = libtcod.console_new(width, height)
-
-    # Print the header, with auto-wrap
-    libtcod.console_set_default_foreground(window, libtcod.white)
-    libtcod.console_print_rect_ex(window, 0, 0, width, height,
-                                  libtcod.BKGND_NONE, libtcod.LEFT, header)
-
-    # Print all the options
-    y = header_height
-    letter_index = ord('a')
-    for option in options:
-        text = '({0}) {1}'.format(chr(letter_index), option)
-        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE,
-                                 libtcod.LEFT, text)
-        y += 1
-        letter_index += 1
-
-    # Blit the contents of the menu window to the root console
-    x = SCREEN_WIDTH/2 - width/2
-    y = SCREEN_HEIGHT/2 - height/2
-    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
-
-    # Present the root console to the player and wait for a key press
-    libtcod.console_flush()
-    key = libtcod.console_wait_for_keypress(True)
-
-    if key.vk == libtcod.KEY_ENTER and key.lalt:
-        # Alt-Enter toggles fullscreen
-        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
-
-    # Convert ASCII code to an index; if it corresponds to an option, return it
-    index = key.c - ord('a')
-    if 0 <= index < len(options):
-        return index
-    else:
-        return None
+    def render_all(self, game, fov_recompute):
+        render_all(self, game, fov_recompute)
 
 
 def get_names_under_mouse(mouse, game):
@@ -185,95 +140,8 @@ def render_all(ui, game, fov_recompute):
 
 
 ###############################################################################
-# Game Logic                                                                  #
-###############################################################################
-
-
-def new_game():
-    game = Game(state='playing', dungeon_level=1)
-    player = objects.new_player(game)
-    game.player = player
-    make_map(game)
-
-    game.log.messages = []
-    m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
-    game.log.message(m, libtcod.red)
-
-    return game
-
-
-def play_game(game, ui):
-    # TODO Delete this once MainMenuScreen -> GameScreen
-    ui.screens = []
-    ui.push(GameScreen(game))
-    while not libtcod.console_is_window_closed():
-        ui.refresh()
-
-        key = check_for_input(ui)
-        if key:
-            ui.handle_input(key)
-
-        if game.state == 'exit':
-            break
-
-
-def check_for_input(ui):
-    result = None
-    libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                libtcod.EVENT_MOUSE, ui.keyboard, ui.mouse)
-    k = libtcod.console_check_for_keypress()
-    if k.vk != libtcod.KEY_NONE:
-        result = key_for_int(ui.keyboard.c)
-    elif libtcod.KEY_LEFT == ui.keyboard.vk:
-        result = Key.LEFT
-    elif libtcod.KEY_RIGHT == ui.keyboard.vk:
-        result = Key.RIGHT
-    elif libtcod.KEY_UP == ui.keyboard.vk:
-        result = Key.UP
-    elif libtcod.KEY_DOWN == ui.keyboard.vk:
-        result = Key.DOWN
-    elif libtcod.KEY_ENTER == ui.keyboard.vk:
-        result = Key.ENTER
-    elif libtcod.KEY_ESCAPE == ui.keyboard.vk:
-        result = Key.ESCAPE
-    return result
-
-
-def main_menu(ui):
-    background = libtcod.image_load('resources/menu_background.png')
-
-    while not libtcod.console_is_window_closed():
-        # Show the image at twice the regular console resolution
-        libtcod.image_blit_2x(background, 0, 0, 0)
-
-        # Show options and wait for the player's choice
-        options = ['Play a new game', 'Quit']
-        choice = menu(ui.console, '', options, 24)
-
-        if choice == 0:
-            # New game
-            game = new_game()
-            play_game(game, ui)
-        elif choice == 1:
-            # Quit
-            break
-
-
-###############################################################################
 # Initialization & Main Loop                                                  #
 ###############################################################################
-
-
-class OldUserInterface:
-    def __init__(self):
-        self.keyboard = libtcod.Key()
-        self.mouse = libtcod.Mouse()
-        self.console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
-        self.panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
-
-    def render_all(self, game, fov_recompute):
-        render_all(self, game, fov_recompute)
-
 
 libtcod.console_set_custom_font('resources/terminal8x12_gs_tc.png',
                                 libtcod.FONT_TYPE_GREYSCALE |
@@ -297,4 +165,8 @@ ui.bind_key(Key.I, Input.INVENTORY)
 ui.bind_key(Key.F, Input.REST)
 ui.bind_key(Key.R, Input.CLOSE_DOOR)
 
-main_menu(ui)
+ui.push(MainMenuScreen())
+
+while ui.is_running():
+    ui.refresh()
+    ui.handle_input()
