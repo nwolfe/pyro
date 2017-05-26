@@ -246,9 +246,6 @@ def main_menu(ui):
         # Show the image at twice the regular console resolution
         libtcod.image_blit_2x(background, 0, 0, 0)
 
-        # Show the game's title and credits
-        libtcod.console_set_default_foreground(ui.console, libtcod.light_yellow)
-
         # Show options and wait for the player's choice
         options = ['Play a new game', 'Quit']
         choice = menu(ui.console, '', options, 24)
