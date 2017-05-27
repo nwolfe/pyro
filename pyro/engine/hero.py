@@ -21,7 +21,6 @@ class Hero(Actor):
         return Hit()
 
     def on_death(self, attacker):
-        self.game.state = 'dead'
         self.game.log.message('You died!')
         self.game.stage.remove_actor(self)
         self.game.stage.corpses.append(pyro.engine.corpse.for_hero(self))

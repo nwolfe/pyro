@@ -26,8 +26,7 @@ class Stage:
 
 
 class Game:
-    def __init__(self, state, dungeon_level):
-        self.state = state
+    def __init__(self, dungeon_level):
         self.stage = Stage()
         self.dungeon_level = dungeon_level
         self.log = Log()

@@ -91,7 +91,7 @@ class Aggressive(BehaviorStrategy):
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
-            elif target.hp > 0:
+            elif target.is_alive():
                 return AttackAction(target)
 
 
@@ -112,7 +112,7 @@ class AggressiveSpellcaster(BehaviorStrategy):
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
-            elif player.hp > 0:
+            elif player.is_alive():
                 attacks = ai.get_spells(SpellType.ATTACK)
                 if len(attacks) > 0:
                     random_attack = attacks[libtcod.random_get_int(0, 0, len(attacks)-1)]

@@ -29,7 +29,7 @@ class MainMenuScreen(Screen):
 
 
 def _new_game():
-    game = Game(state='playing', dungeon_level=1)
+    game = Game(dungeon_level=1)
     player = objects.new_player(game)
     game.player = player
     make_map(game)

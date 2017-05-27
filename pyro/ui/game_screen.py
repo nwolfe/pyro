@@ -80,17 +80,15 @@ class GameScreen(Screen):
                 self.game.player.base_defense += LEVEL_UP_STAT_DEFENSE
 
     def update(self):
-        if self.game.state == 'dead':
-            return
+        if self.game.player.is_alive():
+            if self.game.player.can_level_up():
+                self._level_up_player()
 
-        if self.game.player.can_level_up():
-            self._level_up_player()
+            result = self.game.update()
 
-        result = self.game.update()
-
-        for event in result.events:
-            if EventType.HIT == event.type:
-                self.effects.append(HitEffect(event.actor))
+            for event in result.events:
+                if EventType.HIT == event.type:
+                    self.effects.append(HitEffect(event.actor))
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)
 

@@ -108,6 +108,9 @@ class Actor:
         if self.hp > self.max_hp:
             self.hp = self.max_hp
 
+    def is_alive(self):
+        return self.hp > 0
+
     def required_for_level_up(self):
         return LEVEL_UP_BASE + self.level * LEVEL_UP_FACTOR
 
