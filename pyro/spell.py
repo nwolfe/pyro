@@ -1,17 +1,15 @@
 import abc
 
 
-class SpellType:
-    ATTACK = 'attack'
-    HEAL = 'heal'
-
-
 class Spell:
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, name, spell_type):
+    TYPE_ATTACK = 'attack'
+    TYPE_HEAL = 'heal'
+
+    def __init__(self, name, type_):
         self.name = name
-        self.type = spell_type
+        self.type = type_
 
     def configure(self, settings):
         pass

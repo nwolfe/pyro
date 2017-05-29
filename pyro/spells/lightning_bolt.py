@@ -1,12 +1,12 @@
 import tcod as libtcod
 import pyro.utilities
-from pyro.spell import Spell, SpellType
+from pyro.spell import Spell
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 
 
 class LightningBolt(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Lightning Bolt', SpellType.ATTACK)
+        Spell.__init__(self, 'Lightning Bolt', Spell.TYPE_ATTACK)
         self.range = SPELL_LIGHTNING_BOLT_RANGE
         self.strength = SPELL_LIGHTNING_BOLT_STRENGTH
 

@@ -95,21 +95,12 @@ class GameResult:
 
 
 class Event:
-    def __init__(self, kind, actor=None, position=None, direction=None, other=None):
-        self.type = kind
+    TYPE_BOLT = 'bolt'
+    TYPE_DEATH = 'death'
+    TYPE_HIT = 'hit'
+    def __init__(self, type_, actor=None, position=None, direction=None, other=None):
+        self.type = type_
         self.actor = actor
         self.position = position
         self.direction = direction
         self.other = other
-
-
-class EventType:
-    BOLT = None
-    DEATH = None
-    HIT = None
-    def __init__(self, name):
-        self.name = name
-
-EventType.BOLT = EventType('bolt')
-EventType.DEATH = EventType('death')
-EventType.HIT = EventType('hit')

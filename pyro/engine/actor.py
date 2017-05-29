@@ -1,6 +1,6 @@
 import abc
 from pyro.energy import Energy, NORMAL_SPEED
-from pyro.engine.game import Event, EventType
+from pyro.engine.game import Event
 from pyro.engine.item import get_all_equipped
 from pyro.position import Position
 from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR
@@ -89,7 +89,7 @@ class Actor:
         self.on_damaged(action, damage, attacker)
 
         if self.hp <= 0:
-            action.add_event(Event(EventType.DEATH, actor=self, other=attacker))
+            action.add_event(Event(Event.TYPE_DEATH, actor=self, other=attacker))
             attacker.on_killed(self)
             self.on_death(attacker)
 

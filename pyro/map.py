@@ -1,3 +1,4 @@
+from collections import namedtuple
 import tcod as libtcod
 import pyro.objects as objects
 from pyro.engine.game import Stage
@@ -5,7 +6,7 @@ from pyro.utilities import is_blocked
 from pyro.settings import ROOM_MIN_SIZE, ROOM_MAX_SIZE, MAP_HEIGHT, MAP_WIDTH, MAX_ROOMS
 from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
 from pyro.settings import TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGORITHM
-from pyro.engine.glyph import Glyph
+from pyro.engine.glyph import glyph
 from pyro.position import Position
 
 
@@ -30,13 +31,10 @@ class Rect:
                         libtcod.random_get_int(0, self.y1+1, self.y2-1))
 
 
-class Appearance:
-    def __init__(self, lit_glyph, unlit_glyph):
-        self.lit = lit_glyph
-        self.unlit = unlit_glyph
+_Appearance = namedtuple('Appearance', 'lit unlit')
 
 
-class TileType:
+class _TileType:
     FLOOR = None
     WALL = None
     STAIRS = None
@@ -55,48 +53,47 @@ class TileType:
         self.steps_to = None
 
 
-# A passable, transparent tile
-def open_tile(lit, unlit):
-    return TileType(Appearance(lit, unlit), passable=True, transparent=True)
+def _open_tile(lit, unlit):
+    """A passable, transparent tile"""
+    return _TileType(_Appearance(lit, unlit), passable=True, transparent=True)
 
 
-# An impassable, opaque tile
-def solid_tile(lit, unlit):
-    return TileType(Appearance(lit, unlit), passable=False, transparent=False)
+def _solid_tile(lit, unlit):
+    """"An impassable, opaque tile"""
+    return _TileType(_Appearance(lit, unlit), passable=False, transparent=False)
 
 
-# A passable, opaque tile
-def fog_tile(lit, unlit):
-    return TileType(Appearance(lit, unlit), passable=True, transparent=False)
+def _fog_tile(lit, unlit):
+    """"A passable, opaque tile"""
+    return _TileType(_Appearance(lit, unlit), passable=True, transparent=False)
 
 
-# A passable, transparent tile marked as an exit
-def exit_tile(lit, unlit):
-    return TileType(Appearance(lit, unlit), passable=True, transparent=True, is_exit=True, always_visible=True)
-
-
-TileType.FLOOR = open_tile(Glyph(None, COLOR_LIGHT_GROUND),
-                           Glyph(None, COLOR_DARK_GROUND))
-TileType.WALL = solid_tile(Glyph(None, COLOR_LIGHT_WALL),
-                           Glyph(None, COLOR_DARK_WALL))
-TileType.STAIRS = exit_tile(Glyph('>', libtcod.white, COLOR_LIGHT_GROUND),
-                            Glyph('>', libtcod.white, COLOR_DARK_GROUND))
-TileType.TALL_GRASS = fog_tile(Glyph(':', libtcod.green, COLOR_LIGHT_GRASS),
-                               Glyph(':', COLOR_DARK_GROUND))
-TileType.CRUSHED_GRASS = open_tile(Glyph('.', libtcod.green, COLOR_LIGHT_GROUND),
-                                   Glyph('.', COLOR_DARK_GROUND))
-TileType.OPEN_DOOR = open_tile(Glyph('-', libtcod.white, COLOR_LIGHT_GROUND),
-                               Glyph('-', libtcod.white, COLOR_DARK_GROUND))
-TileType.CLOSED_DOOR = solid_tile(Glyph('+', libtcod.white, COLOR_LIGHT_WALL),
-                                  Glyph('+', libtcod.white, COLOR_DARK_WALL))
-TileType.TALL_GRASS.steps_to = TileType.CRUSHED_GRASS
-TileType.OPEN_DOOR.closes_to = TileType.CLOSED_DOOR
-TileType.CLOSED_DOOR.opens_to = TileType.OPEN_DOOR
+def _exit_tile(lit, unlit):
+    """A passable, transparent tile marked as an exit"""
+    return _TileType(_Appearance(lit, unlit), passable=True, transparent=True, is_exit=True, always_visible=True)
 
 
 class Tile:
+    TYPE_FLOOR = _open_tile(glyph(None, COLOR_LIGHT_GROUND),
+                            glyph(None, COLOR_DARK_GROUND))
+    TYPE_WALL = _solid_tile(glyph(None, COLOR_LIGHT_WALL),
+                            glyph(None, COLOR_DARK_WALL))
+    TYPE_STAIRS = _exit_tile(glyph('>', libtcod.white, COLOR_LIGHT_GROUND),
+                             glyph('>', libtcod.white, COLOR_DARK_GROUND))
+    TYPE_CRUSHED_GRASS = _open_tile(glyph('.', libtcod.green, COLOR_LIGHT_GROUND),
+                                    glyph('.', COLOR_DARK_GROUND))
+    TYPE_TALL_GRASS = _fog_tile(glyph(':', libtcod.green, COLOR_LIGHT_GRASS),
+                                glyph(':', COLOR_DARK_GROUND))
+    TYPE_CLOSED_DOOR = _solid_tile(glyph('+', libtcod.white, COLOR_LIGHT_WALL),
+                                   glyph('+', libtcod.white, COLOR_DARK_WALL))
+    TYPE_OPEN_DOOR = _open_tile(glyph('-', libtcod.white, COLOR_LIGHT_GROUND),
+                                glyph('-', libtcod.white, COLOR_DARK_GROUND))
+    TYPE_TALL_GRASS.steps_to = TYPE_CRUSHED_GRASS
+    TYPE_OPEN_DOOR.closes_to = TYPE_CLOSED_DOOR
+    TYPE_CLOSED_DOOR.opens_to = TYPE_OPEN_DOOR
+
     def __init__(self):
-        self.type = TileType.WALL
+        self.type = Tile.TYPE_WALL
         self.explored = False
 
     @property
@@ -196,7 +193,7 @@ class LevelBuilder:
         # Go through the tiles in the rectangle and make them passable
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
-                self.map.tiles[x][y].type = TileType.FLOOR
+                self.map.tiles[x][y].type = Tile.TYPE_FLOOR
 
         # Mark the exterior tiles as walls
         for x in range(room.x1, room.x2+1):
@@ -220,22 +217,22 @@ class LevelBuilder:
 
     def _create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.map.tiles[x][y].type = TileType.FLOOR
+            self.map.tiles[x][y].type = Tile.TYPE_FLOOR
             if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
     def _create_v_tunnel(self, y1, y2, x):
         for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.map.tiles[x][y].type = TileType.FLOOR
+            self.map.tiles[x][y].type = Tile.TYPE_FLOOR
             if self.meta_map[x][y].room_wall:
                 self.mark_tunnelled(x, y)
 
     def place_stairs(self, room):
         position = room.center()
-        self.map.tiles[position.x][position.y].type = TileType.STAIRS
+        self.map.tiles[position.x][position.y].type = Tile.TYPE_STAIRS
 
     def _place_grass_tile(self, position):
-        self.map.tiles[position.x][position.y].type = TileType.TALL_GRASS
+        self.map.tiles[position.x][position.y].type = Tile.TYPE_TALL_GRASS
 
     def place_grass(self, room):
         if libtcod.random_get_int(0, 1, 2) == 1:
@@ -327,7 +324,7 @@ class LevelBuilder:
                     wall_left = self.meta_map[x-1][y].room_wall
                     wall_right = self.meta_map[x+1][y].room_wall
                     if (wall_above and wall_below) or (wall_left and wall_right):
-                        self.map.tiles[x][y].type = TileType.CLOSED_DOOR
+                        self.map.tiles[x][y].type = Tile.TYPE_CLOSED_DOOR
 
 
 def random_choice_index(chances):

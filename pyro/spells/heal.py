@@ -1,11 +1,11 @@
 import tcod as libtcod
-from pyro.spell import Spell, SpellType
+from pyro.spell import Spell
 from pyro.settings import SPELL_HEAL_STRENGTH
 
 
 class Heal(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Healing', SpellType.HEAL)
+        Spell.__init__(self, 'Healing', Spell.TYPE_HEAL)
         self.strength = SPELL_HEAL_STRENGTH
 
     def configure(self, settings):

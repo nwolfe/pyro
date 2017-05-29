@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.engine.game import Event, EventType
+from pyro.engine.game import Event
 
 
 class Hit:
@@ -25,4 +25,4 @@ class Hit:
                 attacker.name, defender.name)
             action.game.log.message(msg)
 
-        action.add_event(Event(EventType.HIT, actor=defender))
+        action.add_event(Event(Event.TYPE_HIT, actor=defender))

@@ -2,7 +2,7 @@ import os
 import json
 import tcod as libtcod
 from pyro.engine.item import Item, Equipment, SpellItemUse
-from pyro.engine.glyph import Glyph
+from pyro.engine.glyph import glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.engine import ai, Hero, Monster
 
@@ -11,7 +11,7 @@ def new_player(game):
     hero = Hero(game)
     hero.name = PLAYER_TEMPLATE['name']
     hero.inventory = []
-    hero.glyph = Glyph(PLAYER_TEMPLATE['glyph'],
+    hero.glyph = glyph(PLAYER_TEMPLATE['glyph'],
                        getattr(libtcod, PLAYER_TEMPLATE['color']))
     hero.hp = PLAYER_TEMPLATE['hp']
     hero.base_max_hp = hero.hp
@@ -100,7 +100,7 @@ def _instantiate_monster(game, template):
     monster.name = name
     monster.ai = ai.new(template['ai'], spells)
     monster.ai.monster = monster
-    monster.glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
+    monster.glyph = glyph(template['glyph'], getattr(libtcod, template['color']))
     monster.xp = template['experience']
     monster.hp = template['hp']
     monster.base_max_hp = monster.hp
@@ -111,9 +111,9 @@ def _instantiate_monster(game, template):
 
 def _instantiate_item(template):
     name = template['name']
-    glyph = Glyph(template['glyph'], getattr(libtcod, template['color']))
+    glyph_ = glyph(template['glyph'], getattr(libtcod, template['color']))
     if 'slot' in template:
-        equipment = Equipment(name, glyph, slot=template['slot'])
+        equipment = Equipment(name, glyph_, slot=template['slot'])
         if 'power' in template:
             equipment.power_bonus = template['power']
         if 'defense' in template:
@@ -123,7 +123,7 @@ def _instantiate_item(template):
         return equipment
     elif 'on_use' in template:
         spell = _instantiate_spell(ITEM_USES[template['on_use']])
-        return Item(name, glyph, on_use=SpellItemUse(spell))
+        return Item(name, glyph_, on_use=SpellItemUse(spell))
 
 
 def _instantiate_spell(template):

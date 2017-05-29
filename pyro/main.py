@@ -3,7 +3,7 @@ from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui.main_menu_screen import MainMenuScreen
 from pyro.ui.userinterface import UserInterface
 from pyro.ui.keys import Key
-from pyro.ui.inputs import Input
+import pyro.ui.inputs as inputs
 
 libtcod.console_set_custom_font('resources/terminal8x12_gs_tc.png',
                                 libtcod.FONT_TYPE_GREYSCALE |
@@ -14,18 +14,18 @@ libtcod.sys_set_fps(LIMIT_FPS)
 
 ui = UserInterface()
 
-ui.bind_key(Key.ESCAPE, Input.EXIT)
-ui.bind_key(Key.ENTER, Input.ENTER)
-ui.bind_key(Key.UP, Input.NORTH)
-ui.bind_key(Key.DOWN, Input.SOUTH)
-ui.bind_key(Key.LEFT, Input.WEST)
-ui.bind_key(Key.RIGHT, Input.EAST)
-ui.bind_key(Key.C, Input.HERO_INFO)
-ui.bind_key(Key.G, Input.PICKUP)
-ui.bind_key(Key.D, Input.DROP)
-ui.bind_key(Key.I, Input.INVENTORY)
-ui.bind_key(Key.F, Input.REST)
-ui.bind_key(Key.R, Input.CLOSE_DOOR)
+ui.bind_key(Key.ESCAPE, inputs.EXIT)
+ui.bind_key(Key.ENTER, inputs.ENTER)
+ui.bind_key(Key.UP, inputs.NORTH)
+ui.bind_key(Key.DOWN, inputs.SOUTH)
+ui.bind_key(Key.LEFT, inputs.WEST)
+ui.bind_key(Key.RIGHT, inputs.EAST)
+ui.bind_key(Key.C, inputs.HERO_INFO)
+ui.bind_key(Key.G, inputs.PICKUP)
+ui.bind_key(Key.D, inputs.DROP)
+ui.bind_key(Key.I, inputs.INVENTORY)
+ui.bind_key(Key.F, inputs.REST)
+ui.bind_key(Key.R, inputs.CLOSE_DOOR)
 
 ui.push(MainMenuScreen())
 

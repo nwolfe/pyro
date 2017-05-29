@@ -1,7 +1,7 @@
 import tcod as libtcod
 import pyro.astar
 import pyro.direction
-from pyro.spell import SpellType
+from pyro.spell import Spell
 from pyro.engine.actions import AttackAction, WalkAction
 from pyro.utilities import blocked
 from pyro.settings import SPELL_CONFUSE_TURNS
@@ -26,7 +26,7 @@ class AI:
         self.monster = None
         self.behavior = behavior
         if spells:
-            self.__spells = {SpellType.ATTACK: [], SpellType.HEAL: []}
+            self.__spells = {Spell.TYPE_ATTACK: [], Spell.TYPE_HEAL: []}
             for spell in spells:
                 self.__spells[spell.type].append(spell)
         else:
@@ -53,7 +53,7 @@ class AI:
         return False
 
     def cast_spell(self, action, spell, target):
-        if SpellType.ATTACK == spell.type:
+        if Spell.TYPE_ATTACK == spell.type:
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
                 damage = spell.cast(action, self.monster, target)
@@ -64,7 +64,7 @@ class AI:
                 msg = 'The {0} casts a {1} but it fizzles!'
                 msg = msg.format(self.monster.name, spell.name)
                 self.monster.game.log.message(msg)
-        elif SpellType.HEAL == spell.type:
+        elif Spell.TYPE_HEAL == spell.type:
             spell.cast(action, self.monster, target)
             msg = 'The {0} heals itself!'.format(self.monster.name)
             self.monster.game.log.message(msg)
@@ -101,19 +101,19 @@ class AggressiveSpellcaster(BehaviorStrategy):
         if ai.monster.game.stage.map.is_in_fov(ai.monster.pos):
             # Heal yourself if damaged
             if ai.monster.hp < ai.monster.max_hp:
-                heals = ai.get_spells(SpellType.HEAL)
+                heals = ai.get_spells(Spell.TYPE_HEAL)
                 if len(heals) > 0:
                     ai.cast_spell(action, heals[0], ai.monster)
                     return
 
             # Move towards player if far away
-            if not ai.in_range(player, SpellType.ATTACK):
+            if not ai.in_range(player, Spell.TYPE_ATTACK):
                 direction = pyro.astar.astar(ai.monster.game, ai.monster.pos, player.pos)
                 return WalkAction(direction)
 
             # Close enough, attack! (If the player is still alive)
             elif player.is_alive():
-                attacks = ai.get_spells(SpellType.ATTACK)
+                attacks = ai.get_spells(Spell.TYPE_ATTACK)
                 if len(attacks) > 0:
                     random_attack = attacks[libtcod.random_get_int(0, 0, len(attacks)-1)]
                     ai.cast_spell(action, random_attack, player)

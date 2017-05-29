@@ -1,12 +1,12 @@
 import tcod as libtcod
 import pyro.utilities
-from pyro.spell import Spell, SpellType
+from pyro.spell import Spell
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
 
 class Fireball(Spell):
     def __init__(self):
-        Spell.__init__(self, 'Fireball', SpellType.ATTACK)
+        Spell.__init__(self, 'Fireball', Spell.TYPE_ATTACK)
         self.range = SPELL_FIREBALL_RANGE
         self.strength = SPELL_FIREBALL_STRENGTH
         self.radius = SPELL_FIREBALL_RADIUS

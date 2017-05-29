@@ -2,13 +2,13 @@ import tcod as libtcod
 from itertools import chain
 from pyro.ui import Screen
 from pyro.direction import Direction
-from pyro.engine.game import EventType
+from pyro.engine.game import Event
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
 from pyro.ui.menu_screen import MenuScreen
-from pyro.ui.inputs import Input
+import pyro.ui.inputs as inputs
 
 
 class GameScreen(Screen):
@@ -19,44 +19,44 @@ class GameScreen(Screen):
 
     def handle_input(self, input_):
         action = None
-        if Input.EXIT == input_:
+        if inputs.EXIT == input_:
             self.ui.pop()
-        elif Input.NORTH == input_:
+        elif inputs.NORTH == input_:
             action = WalkAction(Direction.NORTH)
-        elif Input.SOUTH == input_:
+        elif inputs.SOUTH == input_:
             action = WalkAction(Direction.SOUTH)
-        elif Input.WEST == input_:
+        elif inputs.WEST == input_:
             action = WalkAction(Direction.WEST)
-        elif Input.EAST == input_:
+        elif inputs.EAST == input_:
             action = WalkAction(Direction.EAST)
-        elif Input.ENTER == input_:
+        elif inputs.ENTER == input_:
             pos = self.game.player.pos
             if self.game.stage.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
                 libtcod.console_clear(self.ui.console)
-        elif Input.HERO_INFO == input_:
+        elif inputs.HERO_INFO == input_:
             info = character_info(self.game.player)
             self.ui.push(MenuScreen(info, [], CHARACTER_SCREEN_WIDTH))
-        elif Input.DROP == input_:
+        elif inputs.DROP == input_:
             # Show the inventory; if an item is selected, drop it
             msg = 'Select an item to drop it, or any other key to cancel.\n'
             inventory = self.game.player.inventory
             drop_item_screen = MenuScreen(msg, inventory, INVENTORY_WIDTH,
                                           empty_text='Inventory is empty')
             self.ui.push(drop_item_screen, tag='item.drop')
-        elif Input.REST == input_:
+        elif inputs.REST == input_:
             # Wait; do nothing and let the world continue
             action = WalkAction(Direction.NONE)
-        elif Input.PICKUP == input_:
+        elif inputs.PICKUP == input_:
             action = PickUpAction()
-        elif Input.INVENTORY == input_:
+        elif inputs.INVENTORY == input_:
             # Show the inventory; if an item is selected, use it
             msg = 'Select an item to use it, or any other key to cancel.\n'
             inventory = self.game.player.inventory
             use_item_screen = MenuScreen(msg, inventory, INVENTORY_WIDTH,
                                          empty_text='Inventory is empty')
             self.ui.push(use_item_screen, tag='item.use')
-        elif Input.CLOSE_DOOR == input_:
+        elif inputs.CLOSE_DOOR == input_:
             action = CloseDoorAction(self.game.player.pos)
         if action:
             self.game.player.next_action = action
@@ -87,7 +87,7 @@ class GameScreen(Screen):
             result = self.game.update()
 
             for event in result.events:
-                if EventType.HIT == event.type:
+                if Event.TYPE_HIT == event.type:
                     self.effects.append(HitEffect(event.actor))
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)

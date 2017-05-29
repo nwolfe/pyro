@@ -1,10 +1,8 @@
+from collections import namedtuple
 from pyro.ui.userinterface import Screen, draw_menu
 
 
-class MenuSelection:
-    def __init__(self, choice=None, index=None):
-        self.choice = choice
-        self.index = index
+MenuSelection = namedtuple('MenuSelection', 'choice index')
 
 
 class MenuScreen(Screen):

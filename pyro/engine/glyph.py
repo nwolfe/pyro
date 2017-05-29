@@ -1,7 +1,8 @@
+from collections import namedtuple
 
 
-class Glyph:
-    def __init__(self, char, fg_color, bg_color=None):
-        self.char = char
-        self.fg_color = fg_color
-        self.bg_color = bg_color if bg_color else fg_color
+_Glyph = namedtuple('Glyph', 'char fg_color bg_color')
+
+
+def glyph(char, fg_color, bg_color=None):
+    return _Glyph(char, fg_color, bg_color if bg_color else fg_color)
