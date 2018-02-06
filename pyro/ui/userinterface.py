@@ -166,18 +166,6 @@ def draw_menu(console, header, options, width, empty_text=None):
 
 
 # TODO Delete in favor of a Screen
-def _get_names_under_mouse(mouse, game):
-    # Return a string with the names of all objects under the mouse
-    (x, y) = (mouse.cx, mouse.cy)
-
-    # Create a list with the names of all objects at the mouse's coordinates
-    # and in FOV
-    names = [obj.name for obj in chain(game.stage.actors, game.stage.items, game.stage.corpses)
-             if obj.pos.equals(x, y) and game.stage.map.is_in_fov(obj.pos)]
-    return ', '.join(names).capitalize()
-
-
-# TODO Delete in favor of a Screen
 def _render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
     # Render a bar (HP, experience, etc)
     bar_width = int(float(value) / maximum * total_width)
@@ -266,7 +254,9 @@ def _render_all(ui, game):
                              'Dungeon Level {}'.format(game.dungeon_level))
 
     # Display names of objects under the mouse
-    names = _get_names_under_mouse(ui.mouse, game)
+    names = [obj.name for obj in chain(game.stage.actors, game.stage.items, game.stage.corpses)
+             if obj.pos.equals(ui.mouse.cx, ui.mouse.cy) and game.stage.map.is_in_fov(obj.pos)]
+    names = ', '.join(names).capitalize()
     libtcod.console_set_default_foreground(ui.panel, libtcod.light_gray)
     libtcod.console_print_ex(ui.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, names)
 
