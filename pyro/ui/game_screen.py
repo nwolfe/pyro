@@ -8,6 +8,7 @@ from pyro.map import make_map
 from pyro.ui import HitEffect
 from pyro.settings import *
 from pyro.ui.menu_screen import MenuScreen
+from pyro.ui.targetscreen import TargetScreen
 import pyro.ui.inputs as inputs
 
 
@@ -16,6 +17,8 @@ class GameScreen(Screen):
         Screen.__init__(self)
         self.game = game
         self.effects = []
+        self.current_target = None
+        self.current_target_actor = None
 
     def handle_input(self, input_):
         action = None
@@ -67,7 +70,16 @@ class GameScreen(Screen):
             return
 
         if 'item.use' == tag and result.choice:
-            self.game.player.next_action = UseAction(result.choice, self.ui)
+            item = result.choice
+            if item.requires_target():
+                self.ui.push(TargetScreen(self, item), tag='item.select-target')
+            else:
+                self.game.player.next_action = UseAction(result.choice)
+        elif 'item.select-target' == tag:
+            if self.current_target_actor:
+                self.game.player.next_action = UseAction(result, self.current_target_actor)
+                self.current_target_actor = None
+            # TODO Add self.current_target x,y position support here
         elif 'item.drop' == tag and result.choice:
             self.game.player.next_action = DropAction(result.choice)
         elif 'level-up.stat' == tag:

@@ -6,8 +6,11 @@ from pyro.position import Position
 class ItemUse:
     __metaclass__ = abc.ABCMeta
 
+    def requires_target(self):
+        return False
+
     @abc.abstractmethod
-    def use(self, action, actor, ui):
+    def use(self, action, actor, target=None):
         pass
 
 
@@ -15,8 +18,11 @@ class SpellItemUse(ItemUse):
     def __init__(self, spell):
         self.spell = spell
 
-    def use(self, action, actor, ui):
-        return self.spell.player_cast(action, actor, ui)
+    def requires_target(self):
+        return self.spell.requires_target()
+
+    def use(self, action, actor, target=None):
+        return self.spell.cast(action, actor, target)
 
 
 class Item:
@@ -29,6 +35,9 @@ class Item:
 
     def __str__(self):
         return self.name
+
+    def requires_target(self):
+        return self.on_use is not None and self.on_use.requires_target()
 
     def pick_up(self, owner):
         if owner.inventory is None:
@@ -60,14 +69,14 @@ class Item:
             self.owner.game.log.message(
                 'You dropped a {0}.'.format(self.name), libtcod.yellow)
 
-    def use(self, action, ui):
+    def use(self, action, target=None):
         # Call the use_fn if we have one
         if self.on_use is None:
             self.owner.game.log.message(
                 'The {0} cannot be used.'.format(self.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
-            result = self.on_use.use(action, self.owner, ui)
+            result = self.on_use.use(action, self.owner, target)
             if result != 'cancelled':
                 self.owner.inventory.remove(self)
 
@@ -103,7 +112,7 @@ class Equipment(Item):
         self.unequip()
         Item.drop(self)
 
-    def use(self, action, ui):
+    def use(self, action, target=None):
         self.toggle_equip()
 
     def toggle_equip(self):

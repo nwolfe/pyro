@@ -22,6 +22,5 @@ class Spell:
     def cast(self, action, caster, target):
         pass
 
-    @abc.abstractmethod
-    def player_cast(self, action, player, ui):
-        pass
+    def requires_target(self):
+        return True

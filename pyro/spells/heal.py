@@ -15,13 +15,14 @@ class Heal(Spell):
         return caster == target
 
     def cast(self, action, caster, target):
+        if caster.is_player():
+            if caster.hp == caster.max_hp:
+                action.game.log.message('You are already at full health.', libtcod.red)
+                return
+            action.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
+            target = caster
+
         target.heal(self.strength)
 
-    def player_cast(self, action, player, ui):
-        # Heal the player
-        if player.hp == player.max_hp:
-            action.game.log.message('You are already at full health.', libtcod.red)
-            return 'cancelled'
-
-        action.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
-        self.cast(action, player, player)
+    def requires_target(self):
+        return False

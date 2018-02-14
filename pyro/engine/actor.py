@@ -121,3 +121,6 @@ class Actor:
         required = self.required_for_level_up()
         self.level += 1
         self.xp -= required
+
+    def is_player(self):
+        return self == self.game.player

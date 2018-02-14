@@ -60,13 +60,17 @@ class UserInterface:
         libtcod.console_flush()
 
     def handle_input(self):
+        screen = self.top_screen()
+
         key = self._check_for_keypress()
         if key:
-            screen = self.top_screen()
             if key in self._keybindings:
                 if screen.handle_input(self._keybindings[key]):
                     return
             screen.handle_key_press(key)
+
+        if self.mouse.lbutton_pressed or self.mouse.rbutton_pressed:
+            screen.handle_mouse_click(self.mouse)
 
     def top_screen(self):
         return self.screens[len(self.screens) - 1]
@@ -121,6 +125,9 @@ class Screen:
         return False
 
     def handle_key_press(self, key):
+        pass
+
+    def handle_mouse_click(self, mouse):
         pass
 
 

@@ -1,5 +1,4 @@
 import tcod as libtcod
-import pyro.utilities
 from pyro.spell import Spell
 from pyro.settings import SPELL_CONFUSE_RANGE, SPELL_CONFUSE_TURNS
 
@@ -18,16 +17,8 @@ class Confuse(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
+        if caster.is_player():
+            msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
+            action.game.log.message(msg.format(target.name), libtcod.light_green)
+
         target.ai.confuse(self.num_turns)
-
-    def player_cast(self, action, player, ui):
-        # Ask the player for a target to confuse
-        action.game.log.message('Left-click an enemy to confuse it, or right-click to cancel.',
-                                libtcod.light_cyan)
-        monster = pyro.utilities.target_monster(action.game, ui, self.range)
-        if monster is None:
-            return 'cancelled'
-
-        self.cast(action, player, monster)
-        msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
-        action.game.log.message(msg.format(monster.name), libtcod.light_green)

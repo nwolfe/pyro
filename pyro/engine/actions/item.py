@@ -25,12 +25,12 @@ class DropAction(Action):
 
 
 class UseAction(Action):
-    def __init__(self, item, ui):
+    def __init__(self, item, target=None):
         Action.__init__(self)
-        self.item = item
-        self.ui = ui
+        self._item = item
+        self._target = target
 
     def on_perform(self):
-        self.item.use(self, self.ui)
+        self._item.use(self, self._target)
         return ActionResult.SUCCESS
 
