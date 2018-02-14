@@ -1,4 +1,3 @@
-import tcod as libtcod
 
 
 def blocked(game, position):
@@ -16,41 +15,6 @@ def is_blocked(game_map, actors, position):
             return True
 
     return False
-
-
-def target_tile(game, ui, max_range=None):
-    # Return the position of a tile left-clicked in player's FOV
-    # (optionally in a range), or (None, None) if right-clicked.
-    while True:
-        # Render the screen. This erases the inventory and shows the names of
-        # objects under the mouse.
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
-                                    ui.keyboard, ui.mouse)
-        ui.render_all(game)
-
-        (x, y) = (ui.mouse.cx, ui.mouse.cy)
-
-        if (ui.mouse.lbutton_pressed and game.stage.map.is_xy_in_fov(x, y) and
-                (max_range is None or game.player.pos.distance(x, y) <= max_range)):
-            return x, y
-
-        if ui.mouse.rbutton_pressed or ui.keyboard.vk == libtcod.KEY_ESCAPE:
-            return None, None
-
-
-def target_monster(game, ui, max_range=None):
-    # Returns a clicked monster inside FOV up to a range, or None if
-    # right-clicked
-    while True:
-        (x, y) = target_tile(game, ui, max_range)
-        if x is None:
-            return None
-
-        # Return the first clicked monster, otherwise continue looking
-        for game_object in game.stage.actors:
-            if game_object != game.player:
-                if game_object.pos.equals(x, y):
-                    return game_object
 
 
 def closest_monster(game, max_range):
