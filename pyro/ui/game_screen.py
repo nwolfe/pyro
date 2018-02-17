@@ -17,8 +17,6 @@ class GameScreen(Screen):
         Screen.__init__(self)
         self.game = game
         self.effects = []
-        self.current_target = None
-        self.current_target_actor = None
 
     def handle_input(self, input_):
         action = None
@@ -65,22 +63,22 @@ class GameScreen(Screen):
             self.game.player.next_action = action
         return True
 
-    def activate(self, result=None, tag=None):
+    def activate(self, result=None, tag=None, data=None):
         if result is None:
             return
 
-        if 'item.use' == tag and result.choice:
+        if 'item.use' == tag:
             item = result.choice
             if item.requires_target():
-                self.ui.push(TargetScreen(self, item), tag='item.select-target')
+                self.ui.push(TargetScreen(self),
+                             tag='item.select-target', data=item)
             else:
-                self.game.player.next_action = UseAction(result.choice)
+                self.game.player.next_action = UseAction(item)
         elif 'item.select-target' == tag:
-            if self.current_target_actor:
-                self.game.player.next_action = UseAction(result, self.current_target_actor)
-                self.current_target_actor = None
+            if result.actor:
+                self.game.player.next_action = UseAction(data, result.actor)
             # TODO Add self.current_target x,y position support here
-        elif 'item.drop' == tag and result.choice:
+        elif 'item.drop' == tag:
             self.game.player.next_action = DropAction(result.choice)
         elif 'level-up.stat' == tag:
             if result.index == 0:

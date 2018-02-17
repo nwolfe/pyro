@@ -17,8 +17,9 @@ class UserInterface:
     def bind_key(self, key, input_):
         self._keybindings[key] = input_
 
-    def push(self, screen, tag=None):
+    def push(self, screen, tag=None, data=None):
         screen.tag = tag
+        screen.data = data
         screen.bind(self)
         self.screens.append(screen)
         self.render()
@@ -27,7 +28,7 @@ class UserInterface:
         screen = self.screens.pop()
         screen.unbind()
         if len(self.screens) > 0:
-            self.top_screen().activate(result, screen.tag)
+            self.top_screen().activate(result, screen.tag, screen.data)
             self.render()
 
     def refresh(self):
@@ -102,6 +103,7 @@ class Screen:
         self.ui = None
         self.transparent = False
         self.tag = None
+        self.data = None
 
     def bind(self, ui):
         self.ui = ui
@@ -109,7 +111,7 @@ class Screen:
     def unbind(self):
         self.ui = None
 
-    def activate(self, result=None, tag=None):
+    def activate(self, result=None, tag=None, data=None):
         pass
 
     def update(self):
