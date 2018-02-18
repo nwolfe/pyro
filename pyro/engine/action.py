@@ -30,6 +30,12 @@ class Action:
         action.bind(self.actor, self.consumes_energy)
         return ActionResult(alternate=action)
 
+    def succeed(self):
+        return ActionResult.SUCCESS
+
+    def fail(self):
+        return ActionResult.FAILURE
+
 
 class ActionResult:
     SUCCESS = None

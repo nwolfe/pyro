@@ -31,7 +31,13 @@ class UseAction(Action):
         self._target = target
 
     def on_perform(self):
-        if self._item.use(self, self._target):
-            return ActionResult.SUCCESS
-        else:
-            return ActionResult.FAILURE
+        # TODO Implement the rest of this method from UseAction#onPerform()
+        # TODO if item.can_equip() return alternate(EquipAction(loc, item))
+        # TODO if not item.can_use() then return fail()
+
+        # TODO Remove need for target parameter
+        action = self._item.use2(self._target)
+
+        # TODO if item.count == 0 then removeItem() else countChanged()
+
+        return self.alternate(action)

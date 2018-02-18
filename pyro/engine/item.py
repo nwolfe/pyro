@@ -2,6 +2,7 @@ import abc
 import tcod as libtcod
 from pyro.position import Position
 from pyro.spell import CastResult
+from pyro.engine import Action
 
 
 class ItemUse:
@@ -88,6 +89,24 @@ class Item:
 
     def player_owned(self):
         return self.owner == self.owner.game.player
+
+    # TODO Replace use() with this action-based implementation
+    def use2(self, target):
+        return ItemAdapter(self, target)
+
+
+# TODO Delete class once Item.use2() takes over Item.use()
+class ItemAdapter(Action):
+    def __init__(self, item, target):
+        Action.__init__(self)
+        self.item = item
+        self.target = target
+
+    def on_perform(self):
+        if self.item.use(self, self.target):
+            return self.succeed()
+        else:
+            return self.fail()
 
 
 class Equipment(Item):
