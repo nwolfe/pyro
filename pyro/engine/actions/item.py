@@ -31,6 +31,7 @@ class UseAction(Action):
         self._target = target
 
     def on_perform(self):
-        self._item.use(self, self._target)
-        return ActionResult.SUCCESS
-
+        if self._item.use(self, self._target):
+            return ActionResult.SUCCESS
+        else:
+            return ActionResult.FAILURE

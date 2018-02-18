@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.spell import Spell
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 
 
@@ -27,4 +27,4 @@ class Fireball(Spell):
                 action.game.log.message('The {0} gets burned for {1} hit points.'.
                                         format(game_object.name, self.strength), libtcod.orange)
                 game_object.take_damage(action, self.strength, caster)
-        return self.strength
+        return CastResult.hit(self.strength)

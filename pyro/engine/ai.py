@@ -59,9 +59,9 @@ class AI:
         if Spell.TYPE_ATTACK == spell.type:
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
-                damage = spell.cast(action, self.monster, target)
+                result = spell.cast(action, self.monster, target)
                 msg = 'The {0} strikes you with a {1}! You take {2} damage.'
-                msg = msg.format(self.monster.name, spell.name, damage)
+                msg = msg.format(self.monster.name, spell.name, result.damage)
                 self.monster.game.log.message('- ' + msg, libtcod.red)
             else:
                 msg = 'The {0} casts a {1} but it fizzles!'

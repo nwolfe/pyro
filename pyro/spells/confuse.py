@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.spell import Spell
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_CONFUSE_RANGE, SPELL_CONFUSE_TURNS
 
 
@@ -23,3 +23,6 @@ class Confuse(Spell):
                 msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
                 action.game.log.message(msg.format(target.name), libtcod.light_green)
             target.ai.confuse(self.num_turns)
+            return CastResult.hit(-1)
+        else:
+            return CastResult.invalid_target()

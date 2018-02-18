@@ -24,3 +24,31 @@ class Spell:
 
     def requires_target(self):
         return True
+
+
+class CastResult:
+
+    TYPE_HIT = 'hit'
+    TYPE_MISS = 'miss'
+    TYPE_CANCEL = 'cancel'
+    TYPE_INVALID_TARGET = 'invalid_target'
+
+    def __init__(self, type_, damage=None):
+        self.type = type_
+        self.damage = damage
+
+    @classmethod
+    def hit(cls, damage):
+        return CastResult(CastResult.TYPE_HIT, damage)
+
+    @classmethod
+    def miss(cls):
+        return CastResult(CastResult.TYPE_MISS)
+
+    @classmethod
+    def cancel(cls):
+        return CastResult(CastResult.TYPE_CANCEL)
+
+    @classmethod
+    def invalid_target(cls):
+        return CastResult(CastResult.TYPE_INVALID_TARGET)

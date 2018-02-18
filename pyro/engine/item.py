@@ -1,6 +1,7 @@
 import abc
 import tcod as libtcod
 from pyro.position import Position
+from pyro.spell import CastResult
 
 
 class ItemUse:
@@ -72,13 +73,18 @@ class Item:
     def use(self, action, target=None):
         # Call the use_fn if we have one
         if self.on_use is None:
-            self.owner.game.log.message(
-                'The {0} cannot be used.'.format(self.name))
+            self.owner.game.log.message('The {0} cannot be used.'.format(self.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
             result = self.on_use.use(action, self.owner, target)
-            if result != 'cancelled':
+            cancelled = result.type == CastResult.TYPE_CANCEL
+            invalid_target = result.type == CastResult.TYPE_INVALID_TARGET
+            if not cancelled and not invalid_target:
                 self.owner.inventory.remove(self)
+                return True
+            elif invalid_target:
+                self.owner.game.log.message('Invalid target.', libtcod.orange)
+        return False
 
     def player_owned(self):
         return self.owner == self.owner.game.player

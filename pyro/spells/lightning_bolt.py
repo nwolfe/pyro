@@ -1,6 +1,6 @@
 import tcod as libtcod
 import pyro.utilities
-from pyro.spell import Spell
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 
 
@@ -25,7 +25,7 @@ class LightningBolt(Spell):
             target = pyro.utilities.closest_monster(action.game, self.range)
             if target is None:
                 action.game.log.message('No enemy is close enough to strike.', libtcod.red)
-                return 'cancelled'
+                return CastResult.cancel()
             msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
             msg += 'The damage is {1} hit points.'
             msg = msg.format(target.name, self.strength)
@@ -33,4 +33,4 @@ class LightningBolt(Spell):
             target.take_damage(action, self.strength, caster)
         else:
             target.actor.take_damage(action, self.strength, caster)
-        return self.strength
+        return CastResult.hit(self.strength)
