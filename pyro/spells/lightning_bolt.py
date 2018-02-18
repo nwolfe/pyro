@@ -30,6 +30,7 @@ class LightningBolt(Spell):
             msg += 'The damage is {1} hit points.'
             msg = msg.format(target.name, self.strength)
             action.game.log.message(msg, libtcod.light_blue)
-
-        target.take_damage(action, self.strength, caster)
+            target.take_damage(action, self.strength, caster)
+        else:
+            target.actor.take_damage(action, self.strength, caster)
         return self.strength

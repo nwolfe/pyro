@@ -1,11 +1,8 @@
 import tcod as libtcod
-from collections import namedtuple
 from pyro.ui.userinterface import Screen
 from pyro.ui.keys import Key
 from pyro.position import Position
-
-
-TargetSelection = namedtuple('TargetSelection', 'actor position')
+from pyro.target import Target
 
 
 class TargetScreen(Screen):
@@ -24,7 +21,7 @@ class TargetScreen(Screen):
         pos = Position(mouse.cx, mouse.cy)
         if mouse.lbutton_pressed and self._game_screen.game.stage.map.is_in_fov(pos):
             monster = self.__monster_at(pos)
-            self.ui.pop(TargetSelection(monster, pos))
+            self.ui.pop(Target(monster, pos))
         else:
             self.ui.pop()
 

@@ -2,6 +2,7 @@ import tcod as libtcod
 import pyro.astar
 import pyro.direction
 from pyro.spell import Spell
+from pyro.target import Target
 from pyro.engine.actions import AttackAction, WalkAction
 from pyro.utilities import blocked
 from pyro.settings import SPELL_CONFUSE_TURNS
@@ -47,12 +48,14 @@ class AI:
         return self.__spells[spell_type]
 
     def in_range(self, target, spell_type):
+        target = Target(actor=target)
         for spell in self.__spells[spell_type]:
             if spell.in_range(self.monster, target):
                 return True
         return False
 
     def cast_spell(self, action, spell, target):
+        target = Target(actor=target)
         if Spell.TYPE_ATTACK == spell.type:
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:

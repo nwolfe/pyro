@@ -17,8 +17,9 @@ class Confuse(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def cast(self, action, caster, target):
-        if caster.is_player():
-            msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
-            action.game.log.message(msg.format(target.name), libtcod.light_green)
-
-        target.ai.confuse(self.num_turns)
+        target = target.actor
+        if target:
+            if caster.is_player():
+                msg = 'The eyes of the {0} look vacant as he starts to stumble around!'
+                action.game.log.message(msg.format(target.name), libtcod.light_green)
+            target.ai.confuse(self.num_turns)

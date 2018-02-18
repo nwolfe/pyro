@@ -12,17 +12,17 @@ class Heal(Spell):
         self.strength = settings.get('strength', self.strength)
 
     def in_range(self, caster, target):
-        return caster == target
+        return caster.pos == target.pos
 
     def cast(self, action, caster, target):
         if caster.is_player():
             if caster.hp == caster.max_hp:
                 action.game.log.message('You are already at full health.', libtcod.red)
-                return
-            action.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
-            target = caster
-
-        target.heal(self.strength)
+            else:
+                action.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
+                caster.heal(self.strength)
+        else:
+            target.actor.heal(self.strength)
 
     def requires_target(self):
         return False

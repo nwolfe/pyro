@@ -23,7 +23,7 @@ class Fireball(Spell):
         action.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
                                 format(self.radius), libtcod.orange)
         for game_object in action.game.stage.actors:
-            if game_object.pos.distance(target.pos.x, target.pos.y) <= self.radius:
+            if game_object.pos.distance_to(target.pos) <= self.radius:
                 action.game.log.message('The {0} gets burned for {1} hit points.'.
                                         format(game_object.name, self.strength), libtcod.orange)
                 game_object.take_damage(action, self.strength, caster)

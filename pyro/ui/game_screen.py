@@ -75,9 +75,8 @@ class GameScreen(Screen):
             else:
                 self.game.player.next_action = UseAction(item)
         elif 'item.select-target' == tag:
-            if result.actor:
-                self.game.player.next_action = UseAction(data, result.actor)
-            # TODO Add self.current_target x,y position support here
+            item, target = data, result
+            self.game.player.next_action = UseAction(item, target)
         elif 'item.drop' == tag:
             self.game.player.next_action = DropAction(result.choice)
         elif 'level-up.stat' == tag:
