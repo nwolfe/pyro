@@ -63,9 +63,6 @@ class Item:
                 self.owner.game.log.message('Invalid target.', libtcod.orange)
         return False
 
-    def player_owned(self):
-        return self.owner == self.owner.game.player
-
     # TODO Replace use() with this action-based implementation
     def use2(self, target):
         """Returns an Action."""
@@ -121,7 +118,7 @@ class Equipment(Item):
         if replacing is not None:
             replacing.unequip()
         self.is_equipped = True
-        if self.player_owned():
+        if self.owner == self.owner.game.player:
             msg = 'Equipped {0} on {1}.'.format(self.name, self.slot)
             self.owner.game.log.message(msg, libtcod.light_green)
 
@@ -130,7 +127,7 @@ class Equipment(Item):
         if not self.is_equipped:
             return
         self.is_equipped = False
-        if self.player_owned():
+        if self.owner == self.owner.game.player:
             self.owner.game.log.message('Unequipped {0} from {1}.'.format(
                 self.name, self.slot), libtcod.light_yellow)
 
