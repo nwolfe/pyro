@@ -45,17 +45,6 @@ class Item:
     def requires_target(self):
         return self.on_use is not None and self.on_use.requires_target()
 
-    # TODO Move behavior into DropAction
-    def drop(self):
-        # Remove from the inventory and add to the map.
-        # Place at owner's coordinates.
-        self.owner.inventory.remove(self)
-        self.owner.game.stage.items.append(self)
-        self.pos.copy(self.owner.pos)
-        if self.player_owned():
-            self.owner.game.log.message(
-                'You dropped a {0}.'.format(self.name), libtcod.yellow)
-
     # TODO Move behavior into UseAction
     def use(self, action, target=None):
         # Call the use_fn if we have one
@@ -115,10 +104,6 @@ class Equipment(Item):
             return "{0} (on {1})".format(self.name, self.slot)
         else:
             return self.name
-
-    def drop(self):
-        self.unequip()
-        Item.drop(self)
 
     def use(self, action, target=None):
         self.toggle_equip()

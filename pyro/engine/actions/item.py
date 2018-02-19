@@ -1,6 +1,7 @@
 import abc
 import tcod as libtcod
 from pyro.engine import Action, ItemLocation
+from pyro.engine.item import Equipment
 
 
 class ItemAction(Action):
@@ -44,9 +45,20 @@ class DropAction(ItemAction):
     def __init__(self, item):
         ItemAction.__init__(self, item)
 
-    # TODO Move Item#drop() behavior here
     def on_perform(self):
-        self._item.drop()
+        """Assumes only the player can drop items."""
+        # TODO Add support for dropping equipped items
+        # TODO Add support for stacks of items
+        self._item.owner.inventory.remove(self._item)
+        self.game.stage.items.append(self._item)
+        self._item.pos.copy(self._item.owner.pos)
+
+        # TODO Get rid of Equipment class and the need for this
+        if isinstance(self._item, Equipment):
+            self._item.unequip()
+
+        self.game.log.message('You dropped a {0}.'.format(self._item.name),
+                              libtcod.yellow)
         return self.succeed()
 
 
