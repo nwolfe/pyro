@@ -49,7 +49,13 @@ class GameScreen(Screen):
             # Wait; do nothing and let the world continue
             action = WalkAction(Direction.NONE)
         elif inputs.PICKUP == input_:
-            action = PickUpAction()
+            items_at_player = filter(lambda i: i.pos == self.game.player.pos,
+                                     self.game.stage.items)
+            # TODO Handle multiple items better; selection menu?
+            if len(items_at_player) > 0:
+                action = PickUpAction(items_at_player[0])
+            else:
+                self.game.log.message('There is nothing here.')
         elif inputs.INVENTORY == input_:
             # Show the inventory; if an item is selected, use it
             msg = 'Select an item to use it, or any other key to cancel.\n'

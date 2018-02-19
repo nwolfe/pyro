@@ -1,23 +1,6 @@
 import abc
-from pyro.engine import Action, ActionResult, ItemLocation
-
-
-class PickUpAction(Action):
-    def __init__(self):
-        Action.__init__(self)
-
-    # TODO Do this properly; use self.actor not game.player
-    # TODO Move Item#pick_up() behavior here
-    def on_perform(self):
-        # Pick up first item in the player's tile
-        for item in self.game.stage.items:
-            if item.pos == self.game.player.pos:
-                item.pick_up(self.game.player)
-        return ActionResult.SUCCESS
-
-
-# TODO class EquipAction
-# TODO class UnequipAction
+import tcod as libtcod
+from pyro.engine import Action, ItemLocation
 
 
 class ItemAction(Action):
@@ -30,6 +13,32 @@ class ItemAction(Action):
         self._location = location
 
 
+class PickUpAction(ItemAction):
+    def __init__(self, item):
+        ItemAction.__init__(self, item, ItemLocation.GROUND)
+
+    def on_perform(self):
+        """Assumes only the player can pick up items."""
+        # TODO Add support for stacks of items
+        owner = self.game.player
+        if len(owner.inventory) >= 26:
+            msg = 'Your inventory is full, cannot pick up {0}.'
+            self.game.log.message(msg.format(self._item.name), libtcod.red)
+            return self.fail()
+        else:
+            self._item.owner = owner
+            owner.inventory.append(self._item)
+            if self._item in self.game.stage.items:
+                self.game.stage.items.remove(self._item)
+            self.game.log.message('You picked up a {0}!'.format(self._item.name),
+                                  libtcod.green)
+            return self.succeed()
+
+
+# TODO class EquipAction
+# TODO class UnequipAction
+
+
 class DropAction(ItemAction):
     # TODO Location parameter
     def __init__(self, item):
@@ -38,7 +47,7 @@ class DropAction(ItemAction):
     # TODO Move Item#drop() behavior here
     def on_perform(self):
         self._item.drop()
-        return ActionResult.SUCCESS
+        return self.succeed()
 
 
 class UseAction(ItemAction):

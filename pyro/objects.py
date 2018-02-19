@@ -18,8 +18,13 @@ def new_player(game):
     hero.base_defense = PLAYER_TEMPLATE['defense']
     hero.base_power = PLAYER_TEMPLATE['power']
     game.player = hero
-    for item in PLAYER_TEMPLATE['starting_items']:
-        new_item(item).pick_up(hero)
+    for i in PLAYER_TEMPLATE['starting_items']:
+        # TODO Don't reimplement this here
+        item = new_item(i)
+        item.owner = hero
+        hero.inventory.append(item)
+        if isinstance(item, Equipment):
+            item.is_equipped = True
     return hero
 
 

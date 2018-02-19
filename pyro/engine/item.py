@@ -45,27 +45,6 @@ class Item:
     def requires_target(self):
         return self.on_use is not None and self.on_use.requires_target()
 
-    # TODO Move behavior into PickUpAction
-    def pick_up(self, owner):
-        if owner.inventory is None:
-            return False
-
-        if len(owner.inventory) >= 26:
-            if owner == owner.game.player:
-                msg = 'Your inventory is full, cannot pick up {0}.'
-                owner.game.log.message(msg.format(self.name), libtcod.red)
-            return False
-        else:
-            # Add to owner's inventory and remove from the map
-            self.owner = owner
-            owner.inventory.append(self)
-            if self in self.owner.game.stage.items:
-                self.owner.game.stage.items.remove(self)
-            if self.player_owned():
-                self.owner.game.log.message('You picked up a {0}!'
-                                            .format(self.name), libtcod.green)
-            return True
-
     # TODO Move behavior into DropAction
     def drop(self):
         # Remove from the inventory and add to the map.
@@ -136,11 +115,6 @@ class Equipment(Item):
             return "{0} (on {1})".format(self.name, self.slot)
         else:
             return self.name
-
-    def pick_up(self, owner):
-        if Item.pick_up(self, owner):
-            if get_equipped_in_slot(owner, self.slot) is None:
-                self.equip(owner)
 
     def drop(self):
         self.unequip()
