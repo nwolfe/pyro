@@ -1,4 +1,5 @@
-from pyro.engine import Action, ActionResult
+import abc
+from pyro.engine import Action, ActionResult, ItemLocation
 
 
 class PickUpAction(Action):
@@ -6,6 +7,7 @@ class PickUpAction(Action):
         Action.__init__(self)
 
     # TODO Do this properly; use self.actor not game.player
+    # TODO Move Item#pick_up() behavior here
     def on_perform(self):
         # Pick up first item in the player's tile
         for item in self.game.stage.items:
@@ -14,22 +16,38 @@ class PickUpAction(Action):
         return ActionResult.SUCCESS
 
 
-class DropAction(Action):
-    def __init__(self, item):
-        Action.__init__(self)
-        self.item = item
+# TODO class EquipAction
+# TODO class UnequipAction
 
+
+class ItemAction(Action):
+    __metaclass__ = abc.ABCMeta
+
+    # TODO Remove default location value
+    def __init__(self, item, location=ItemLocation.INVENTORY):
+        Action.__init__(self)
+        self._item = item
+        self._location = location
+
+
+class DropAction(ItemAction):
+    # TODO Location parameter
+    def __init__(self, item):
+        ItemAction.__init__(self, item)
+
+    # TODO Move Item#drop() behavior here
     def on_perform(self):
-        self.item.drop()
+        self._item.drop()
         return ActionResult.SUCCESS
 
 
-class UseAction(Action):
+class UseAction(ItemAction):
+    # TODO Location parameter
     def __init__(self, item, target=None):
-        Action.__init__(self)
-        self._item = item
+        ItemAction.__init__(self, item)
         self._target = target
 
+    # TODO Move Item#use() behavior here
     def on_perform(self):
         # TODO Implement the rest of this method from UseAction#onPerform()
         # TODO if item.can_equip() return alternate(EquipAction(loc, item))

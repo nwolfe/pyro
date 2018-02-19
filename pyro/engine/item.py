@@ -5,6 +5,10 @@ from pyro.spell import CastResult
 from pyro.engine import Action
 
 
+# Hauberk notes:
+# - The Item's "on_use" behavior is an Action, returned by use()
+
+
 class ItemUse:
     __metaclass__ = abc.ABCMeta
 
@@ -41,6 +45,7 @@ class Item:
     def requires_target(self):
         return self.on_use is not None and self.on_use.requires_target()
 
+    # TODO Move behavior into PickUpAction
     def pick_up(self, owner):
         if owner.inventory is None:
             return False
@@ -61,6 +66,7 @@ class Item:
                                             .format(self.name), libtcod.green)
             return True
 
+    # TODO Move behavior into DropAction
     def drop(self):
         # Remove from the inventory and add to the map.
         # Place at owner's coordinates.
@@ -71,12 +77,14 @@ class Item:
             self.owner.game.log.message(
                 'You dropped a {0}.'.format(self.name), libtcod.yellow)
 
+    # TODO Move behavior into UseAction
     def use(self, action, target=None):
         # Call the use_fn if we have one
         if self.on_use is None:
             self.owner.game.log.message('The {0} cannot be used.'.format(self.name))
         else:
             # Destroy after use, unless it was cancelled for some reason
+            # TODO This "destroy" behavior should live in UseAction
             result = self.on_use.use(action, self.owner, target)
             cancelled = result.type == CastResult.TYPE_CANCEL
             invalid_target = result.type == CastResult.TYPE_INVALID_TARGET
@@ -92,6 +100,7 @@ class Item:
 
     # TODO Replace use() with this action-based implementation
     def use2(self, target):
+        """Returns an Action."""
         return ItemAdapter(self, target)
 
 
