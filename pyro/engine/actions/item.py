@@ -74,7 +74,7 @@ class UseAction(ItemAction):
             return self.fail()
 
         # TODO Remove need for target parameter
-        action = self._item.use2(self._target)
+        action = self._item.use(self._target)
 
         # TODO if item.count == 0 then removeItem() else countChanged()
 
