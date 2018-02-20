@@ -1,7 +1,7 @@
 import os
 import json
 import tcod as libtcod
-from pyro.engine.item import Item, Equipment, SpellItemUse
+from pyro.engine.item import Item, SpellItemUse
 from pyro.engine.glyph import glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.engine import ai, Hero, Monster
@@ -23,7 +23,7 @@ def new_player(game):
         item = new_item(i)
         item.owner = hero
         hero.inventory.append(item)
-        if isinstance(item, Equipment):
+        if item.can_equip():
             item.is_equipped = True
     return hero
 
@@ -117,18 +117,19 @@ def _instantiate_monster(game, template):
 def _instantiate_item(template):
     name = template['name']
     glyph_ = glyph(template['glyph'], getattr(libtcod, template['color']))
+    item = Item(name, glyph_)
     if 'slot' in template:
-        equipment = Equipment(name, glyph_, slot=template['slot'])
+        item.equip_slot = template['slot']
         if 'power' in template:
-            equipment.power_bonus = template['power']
+            item.power_bonus = template['power']
         if 'defense' in template:
-            equipment.defense_bonus = template['defense']
+            item.defense_bonus = template['defense']
         if 'hp' in template:
-            equipment.max_hp_bonus = template['hp']
-        return equipment
+            item.max_hp_bonus = template['hp']
     elif 'on_use' in template:
         spell = _instantiate_spell(ITEM_USES[template['on_use']])
-        return Item(name, glyph_, on_use=SpellItemUse(spell))
+        item.on_use = SpellItemUse(spell)
+    return item
 
 
 def _instantiate_spell(template):

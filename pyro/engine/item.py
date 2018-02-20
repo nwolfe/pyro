@@ -32,15 +32,32 @@ class SpellItemUse(ItemUse):
 
 
 class Item:
-    def __init__(self, name, glyph, on_use=None):
+    def __init__(self, name, glyph, on_use=None, equip_slot=None):
+        """An Item can be either usable or equipment, but not both.
+        For a usable item, provide an ItemUse.
+        For equipment, provide an equip slot string."""
         self.name = name
         self.glyph = glyph
         self.pos = Position()
         self.on_use = on_use
         self.owner = None
+        self.equip_slot = equip_slot
+        self.power_bonus = 0
+        self.defense_bonus = 0
+        self.max_hp_bonus = 0
+        self.is_equipped = False
+
+    def can_equip(self):
+        return self.equip_slot is not None
+
+    def can_use(self):
+        return self.on_use is not None
 
     def __str__(self):
-        return self.name
+        if self.is_equipped:
+            return "{0} (on {1})".format(self.name, self.equip_slot)
+        else:
+            return self.name
 
     def requires_target(self):
         return self.on_use is not None and self.on_use.requires_target()
@@ -83,61 +100,11 @@ class ItemAdapter(Action):
             return self.fail()
 
 
-class Equipment(Item):
-    """An object that can be equipped, yielding bonuses. Automatically adds
-    the Item component."""
-
-    def __init__(self, name, glyph, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
-        Item.__init__(self, name, glyph)
-        self.type = Equipment
-        self.slot = slot
-        self.power_bonus = power_bonus
-        self.defense_bonus = defense_bonus
-        self.max_hp_bonus = max_hp_bonus
-        self.is_equipped = False
-
-    def __str__(self):
-        if self.is_equipped:
-            return "{0} (on {1})".format(self.name, self.slot)
-        else:
-            return self.name
-
-    def use(self, action, target=None):
-        self.toggle_equip()
-
-    def toggle_equip(self):
-        if self.is_equipped:
-            self.unequip()
-        else:
-            self.equip(self.owner)
-
-    def equip(self, owner):
-        """Equip object and show a message about it."""
-        self.owner = owner
-        replacing = get_equipped_in_slot(owner, self.slot)
-        if replacing is not None:
-            replacing.unequip()
-        self.is_equipped = True
-        if self.owner == self.owner.game.player:
-            msg = 'Equipped {0} on {1}.'.format(self.name, self.slot)
-            self.owner.game.log.message(msg, libtcod.light_green)
-
-    def unequip(self):
-        """Unequip object and show a message about it."""
-        if not self.is_equipped:
-            return
-        self.is_equipped = False
-        if self.owner == self.owner.game.player:
-            self.owner.game.log.message('Unequipped {0} from {1}.'.format(
-                self.name, self.slot), libtcod.light_yellow)
-
-
 def get_equipped_in_slot(item_owner, slot):
     if item_owner.inventory:
-        for obj in item_owner.inventory:
-            if isinstance(obj, Equipment):
-                if obj.slot == slot and obj.is_equipped:
-                    return obj
+        for item in item_owner.inventory:
+            if item.is_equipped and item.equip_slot == slot:
+                return item
     return None
 
 
@@ -145,7 +112,6 @@ def get_all_equipped(item_owner):
     equipped = []
     if item_owner.inventory:
         for item in item_owner.inventory:
-            if isinstance(item, Equipment):
-                if item.is_equipped:
-                    equipped.append(item)
+            if item.is_equipped:
+                equipped.append(item)
     return equipped

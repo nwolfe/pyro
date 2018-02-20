@@ -1,7 +1,6 @@
 import abc
 import tcod as libtcod
 from pyro.engine import Action, ItemLocation
-from pyro.engine.item import Equipment
 
 
 class ItemAction(Action):
@@ -36,10 +35,6 @@ class PickUpAction(ItemAction):
             return self.succeed()
 
 
-# TODO class EquipAction
-# TODO class UnequipAction
-
-
 class DropAction(ItemAction):
     # TODO Location parameter
     def __init__(self, item):
@@ -47,32 +42,36 @@ class DropAction(ItemAction):
 
     def on_perform(self):
         """Assumes only the player can drop items."""
-        # TODO Add support for dropping equipped items
         # TODO Add support for stacks of items
         self._item.owner.inventory.remove(self._item)
         self.game.stage.items.append(self._item)
         self._item.pos.copy(self._item.owner.pos)
 
-        # TODO Get rid of Equipment class and the need for this
-        if isinstance(self._item, Equipment):
-            self._item.unequip()
-
-        self.game.log.message('You dropped a {0}.'.format(self._item.name),
-                              libtcod.yellow)
+        if self._item.is_equipped:
+            self._item.is_equipped = False
+            msg = 'You take off and drop the {0}.'
+        else:
+            msg = 'You drop the {0}.'
+        self.game.log.message(msg.format(self._item.name), libtcod.yellow)
         return self.succeed()
 
 
 class UseAction(ItemAction):
     # TODO Location parameter
     def __init__(self, item, target=None):
+        """Assumes only the player can use items."""
         ItemAction.__init__(self, item)
         self._target = target
 
     # TODO Move Item#use() behavior here
     def on_perform(self):
         # TODO Implement the rest of this method from UseAction#onPerform()
-        # TODO if item.can_equip() return alternate(EquipAction(loc, item))
-        # TODO if not item.can_use() then return fail()
+        if self._item.can_equip():
+            return self.alternate(EquipAction(self._item))
+
+        if not self._item.can_use():
+            self.game.log.message("{0} can't be used.".format(self._item.name))
+            return self.fail()
 
         # TODO Remove need for target parameter
         action = self._item.use2(self._target)
@@ -80,3 +79,37 @@ class UseAction(ItemAction):
         # TODO if item.count == 0 then removeItem() else countChanged()
 
         return self.alternate(action)
+
+
+class EquipAction(ItemAction):
+    def __init__(self, equipment):
+        """Assumes only the player can equip items."""
+        ItemAction.__init__(self, equipment)
+
+    def on_perform(self):
+        if self._item.is_equipped:
+            return self.alternate(UnequipAction(self._item))
+
+        replaced = filter(
+            lambda i: i.is_equipped and i.equip_slot == self._item.equip_slot,
+            self._item.owner.inventory)
+        if len(replaced) == 1:
+            self.game.log.message('Unequipped {0}.'.format(replaced[0].name),
+                                  libtcod.light_yellow)
+
+        self._item.is_equipped = True
+        self.game.log.message('Equipped {0} on {1}.'.format(
+            self._item.name, self._item.equip_slot), libtcod.light_green)
+        return self.succeed()
+
+
+class UnequipAction(ItemAction):
+    def __init__(self, equipment):
+        """Assumes only the player can unequip items."""
+        ItemAction.__init__(self, equipment)
+
+    def on_perform(self):
+        self._item.is_equipped = False
+        self.game.log.message('Unequipped {0} from {1}'.format(
+            self._item.name, self._item.equip_slot), libtcod.light_yellow)
+        return self.succeed()
