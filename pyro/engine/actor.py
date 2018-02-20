@@ -1,7 +1,6 @@
 import abc
 from pyro.energy import Energy, NORMAL_SPEED
 from pyro.engine.game import Event
-from pyro.engine.item import get_all_equipped
 from pyro.position import Position
 from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR
 
@@ -68,20 +67,26 @@ class Actor:
 
     @property
     def power(self):
-        equipped = get_all_equipped(self)
-        bonus = sum(equipment.power_bonus for equipment in equipped)
+        bonus = 0
+        if self.inventory:
+            equipped = filter(lambda i: i.is_equipped, self.inventory)
+            bonus = sum(equipment.power_bonus for equipment in equipped)
         return self.base_power + bonus
 
     @property
     def defense(self):
-        equipped = get_all_equipped(self)
-        bonus = sum(equipment.defense_bonus for equipment in equipped)
+        bonus = 0
+        if self.inventory:
+            equipped = filter(lambda i: i.is_equipped, self.inventory)
+            bonus = sum(equipment.defense_bonus for equipment in equipped)
         return self.base_defense + bonus
 
     @property
     def max_hp(self):
-        equipped = get_all_equipped(self)
-        bonus = sum(equipment.max_hp_bonus for equipment in equipped)
+        bonus = 0
+        if self.inventory:
+            equipped = filter(lambda i: i.is_equipped, self.inventory)
+            bonus = sum(equipment.max_hp_bonus for equipment in equipped)
         return self.base_max_hp + bonus
 
     def take_damage(self, action, damage, attacker):

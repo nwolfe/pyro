@@ -89,20 +89,3 @@ class ItemActionAdapter(Action):
         elif invalid_target:
             self.game.log.message('Invalid target.', libtcod.orange)
         return self.fail()
-
-
-def get_equipped_in_slot(item_owner, slot):
-    if item_owner.inventory:
-        for item in item_owner.inventory:
-            if item.is_equipped and item.equip_slot == slot:
-                return item
-    return None
-
-
-def get_all_equipped(item_owner):
-    equipped = []
-    if item_owner.inventory:
-        for item in item_owner.inventory:
-            if item.is_equipped:
-                equipped.append(item)
-    return equipped

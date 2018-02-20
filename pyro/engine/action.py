@@ -40,6 +40,7 @@ class Action:
 class ActionResult:
     SUCCESS = None
     FAILURE = None
+    # TODO Add NOT_DONE for spells
     def __init__(self, succeeded=False, alternate=None, done=True):
         self.succeeded = succeeded
         self.alternate = alternate
