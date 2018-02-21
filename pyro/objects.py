@@ -1,7 +1,7 @@
 import os
 import json
 import tcod as libtcod
-from pyro.engine.item import Item, SpellItemUse
+from pyro.engine.item import Item
 from pyro.engine.glyph import glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt
 from pyro.engine import ai, Hero, Monster
@@ -128,7 +128,7 @@ def _instantiate_item(template):
             item.max_hp_bonus = template['hp']
     elif 'on_use' in template:
         spell = _instantiate_spell(ITEM_USES[template['on_use']])
-        item.on_use = SpellItemUse(spell)
+        item.on_use = spell
     return item
 
 

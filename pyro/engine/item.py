@@ -1,40 +1,14 @@
-import abc
 import tcod as libtcod
 from pyro.position import Position
 from pyro.spell import CastResult
 from pyro.engine import Action
 
 
-# Hauberk notes:
-# - The Item's "on_use" behavior is an Action, returned by use()
-
-
-class ItemUse:
-    __metaclass__ = abc.ABCMeta
-
-    def requires_target(self):
-        return False
-
-    @abc.abstractmethod
-    def use(self, action, actor, target=None):
-        pass
-
-
-class SpellItemUse(ItemUse):
-    def __init__(self, spell):
-        self.spell = spell
-
-    def requires_target(self):
-        return self.spell.requires_target()
-
-    def use(self, action, actor, target=None):
-        return self.spell.cast(action, actor, target)
-
-
 class Item:
+    # TODO Change on_use from a Spell to a more-general Action
     def __init__(self, name, glyph, on_use=None, equip_slot=None):
         """An Item can be either usable or equipment, but not both.
-        For a usable item, provide an ItemUse.
+        For a usable item, provide a Spell for on_use.
         For equipment, provide an equip slot string."""
         self.name = name
         self.glyph = glyph
@@ -80,7 +54,7 @@ class ItemActionAdapter(Action):
         """Removes the item from the inventory if the on_use succeeded."""
         # Destroy after use, unless it was cancelled for some reason
         # TODO This "destroy" behavior should live in UseAction
-        result = self._item.on_use.use(self, self._item.owner, self._target)
+        result = self._item.on_use.cast(self, self._item.owner, self._target)
         cancelled = result.type == CastResult.TYPE_CANCEL
         invalid_target = result.type == CastResult.TYPE_INVALID_TARGET
         if not cancelled and not invalid_target:
