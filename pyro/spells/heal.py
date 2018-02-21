@@ -1,11 +1,12 @@
 import tcod as libtcod
-from pyro.spell import Spell, CastResult
+from pyro.engine import Action
+from pyro.spell import ActionSpell, CastResult
 from pyro.settings import SPELL_HEAL_STRENGTH
 
 
-class Heal(Spell):
+class Heal(ActionSpell):
     def __init__(self):
-        Spell.__init__(self, 'Healing', Spell.TYPE_HEAL)
+        ActionSpell.__init__(self, 'Healing', ActionSpell.TYPE_HEAL)
         self.strength = SPELL_HEAL_STRENGTH
 
     def configure(self, settings):
@@ -29,3 +30,22 @@ class Heal(Spell):
 
     def requires_target(self):
         return False
+
+    def cast_action(self, target):
+        return HealAction(self.strength)
+
+
+class HealAction(Action):
+    def __init__(self, amount):
+        Action.__init__(self)
+        self._amount = amount
+
+    def on_perform(self):
+        """Heal the caster. Prints messages that assume caster is player."""
+        caster = self.actor
+        if (caster.hp < caster.max_hp) and self._amount > 0:
+            caster.heal(self._amount)
+            self.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
+        else:
+            self.game.log.message("You don't feel any different.")
+        return self.succeed()

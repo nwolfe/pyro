@@ -1,6 +1,5 @@
-import tcod as libtcod
 from pyro.position import Position
-from pyro.spell import CastResult
+from pyro.spell import ActionSpell
 from pyro.engine import Action
 
 
@@ -38,28 +37,21 @@ class Item:
 
     def use(self, target):
         """Returns an Action."""
-        return ItemActionAdapter(self, target)
+        if isinstance(self.on_use, ActionSpell):
+            return self.on_use.cast_action(target)
+        else:
+            # TODO Get rid of this else clause once all Spells return Actions
+            return SpellActionAdapter(self, target)
 
 
-# TODO Probably only able to get rid of this class once we redo the
-# TODO targeting system again and/or always consume items regardless
-# TODO of success/failure/invalid-target
-class ItemActionAdapter(Action):
+# TODO Delete class once all Spells return Actions
+class SpellActionAdapter(Action):
     def __init__(self, item, target):
         Action.__init__(self)
         self._item = item
         self._target = target
 
     def on_perform(self):
-        """Removes the item from the inventory if the on_use succeeded."""
-        # Destroy after use, unless it was cancelled for some reason
-        # TODO This "destroy" behavior should live in UseAction
-        result = self._item.on_use.cast(self, self._item.owner, self._target)
-        cancelled = result.type == CastResult.TYPE_CANCEL
-        invalid_target = result.type == CastResult.TYPE_INVALID_TARGET
-        if not cancelled and not invalid_target:
-            self._item.owner.inventory.remove(self._item)
-            return self.succeed()
-        elif invalid_target:
-            self.game.log.message('Invalid target.', libtcod.orange)
-        return self.fail()
+        self._item.on_use.cast(self, self._item.owner, self._target)
+        return self.succeed()
+

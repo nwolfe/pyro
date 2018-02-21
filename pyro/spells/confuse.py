@@ -25,4 +25,6 @@ class Confuse(Spell):
             target.ai.confuse(self.num_turns)
             return CastResult.hit(-1)
         else:
+            if caster.is_player():
+                action.game.log.message('Invalid target.', libtcod.orange)
             return CastResult.invalid_target()

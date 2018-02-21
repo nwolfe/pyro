@@ -26,6 +26,13 @@ class Spell:
         return True
 
 
+# TODO Get rid of this subclass once all Spells return Actions
+class ActionSpell(Spell):
+    @abc.abstractmethod
+    def cast_action(self, target):
+        pass
+
+
 class CastResult:
 
     TYPE_HIT = 'hit'

@@ -74,9 +74,9 @@ class UseAction(ItemAction):
             return self.fail()
 
         # TODO Remove need for target parameter
+        # TODO Add support for stacks of items
         action = self._item.use(self._target)
-
-        # TODO if item.count == 0 then removeItem() else countChanged()
+        self._item.owner.inventory.remove(self._item)
 
         return self.alternate(action)
 
