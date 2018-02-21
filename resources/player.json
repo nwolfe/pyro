@@ -7,6 +7,7 @@
   "power": 2,
   "starting_items": [
     "item.dagger",
+    "item.healing_potion",
     "item.lightning_bolt_scroll",
     "item.fireball_scroll",
     "item.confusion_scroll"

@@ -1,5 +1,5 @@
 import tcod as libtcod
-from pyro.engine import Action
+from pyro.engine import Action, Event
 from pyro.spell import ActionSpell, CastResult
 from pyro.settings import SPELL_HEAL_STRENGTH
 
@@ -45,6 +45,7 @@ class HealAction(Action):
         caster = self.actor
         if (caster.hp < caster.max_hp) and self._amount > 0:
             caster.heal(self._amount)
+            self.add_event(Event(Event.TYPE_HEAL, actor=caster))
             self.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
         else:
             self.game.log.message("You don't feel any different.")
