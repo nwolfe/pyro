@@ -99,6 +99,7 @@ class Event:
     TYPE_DEATH = 'death'
     TYPE_HIT = 'hit'
     TYPE_HEAL = 'heal'
+    TYPE_CONFUSE = 'confuse'
 
     def __init__(self, type_, actor=None, position=None, direction=None, other=None):
         self.type = type_

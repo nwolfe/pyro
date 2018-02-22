@@ -66,14 +66,32 @@ class HealEffect(ActorEffect):
 
     def color(self, frame):
         # Alternate between white and green for a cool visual effect
-        if frame <= 2:
-            return libtcod.white
-        elif frame <= 4:
-            return libtcod.green
-        elif frame <= 6:
-            return libtcod.white
-        else:
-            return libtcod.green
+        return [
+            libtcod.white,
+            libtcod.white,
+            libtcod.green,
+            libtcod.green,
+            libtcod.white,
+            libtcod.white,
+            libtcod.green,
+            libtcod.green,
+        ][frame]
+
+
+class ConfuseEffect(ActorEffect):
+    def num_frames(self):
+        return 4
+
+    def char(self, frame):
+        return '?'
+
+    def color(self, frame):
+        return [
+            libtcod.green,
+            libtcod.white,
+            libtcod.blue,
+            libtcod.yellow,
+        ][frame]
 
 
 class BoltEffect(Effect):
