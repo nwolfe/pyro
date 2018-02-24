@@ -10,6 +10,9 @@ class Position:
         self.x = other.x
         self.y = other.y
 
+    def clone(self):
+        return Position(self.x, self.y)
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 

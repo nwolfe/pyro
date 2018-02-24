@@ -36,11 +36,15 @@ class Action:
     def fail(self):
         return ActionResult.FAILURE
 
+    def not_done(self):
+        return ActionResult.NOT_DONE
+
 
 class ActionResult:
     SUCCESS = None
     FAILURE = None
-    # TODO Add NOT_DONE for spells
+    NOT_DONE = None
+
     def __init__(self, succeeded=False, alternate=None, done=True):
         self.succeeded = succeeded
         self.alternate = alternate
@@ -48,3 +52,4 @@ class ActionResult:
 
 ActionResult.SUCCESS = ActionResult(succeeded=True)
 ActionResult.FAILURE = ActionResult(succeeded=False)
+ActionResult.NOT_DONE = ActionResult(succeeded=True, done=False)

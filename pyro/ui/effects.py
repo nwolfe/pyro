@@ -14,12 +14,12 @@ class Effect:
         pass
 
 
-class ActorEffect(Effect):
-    """Renders a colored character over the top of the actor."""
+class PositionEffect(Effect):
+    """Renders a colored character over the top of the position."""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, actor):
-        self.actor = actor
+    def __init__(self, position):
+        self._position = position
         self._frame = 0
 
     def update(self, game):
@@ -29,7 +29,7 @@ class ActorEffect(Effect):
     def render(self, game, ui):
         char = self.char(self._frame)
         color = self.color(self._frame)
-        x, y = self.actor.pos.x, self.actor.pos.y
+        x, y = self._position.x, self._position.y
         libtcod.console_set_default_foreground(ui.console, color)
         libtcod.console_put_char(ui.console, x, y, char, libtcod.BKGND_NONE)
 
@@ -46,7 +46,21 @@ class ActorEffect(Effect):
         pass
 
 
-class HitEffect(ActorEffect):
+class BoltEffect(PositionEffect):
+    def num_frames(self):
+        return 2
+
+    def char(self, frame):
+        return '*'
+
+    def color(self, frame):
+        return libtcod.blue
+
+
+class HitEffect(PositionEffect):
+    def __init__(self, target):
+        PositionEffect.__init__(self, target.pos)
+
     def num_frames(self):
         return 4
 
@@ -57,7 +71,10 @@ class HitEffect(ActorEffect):
         return libtcod.dark_red
 
 
-class HealEffect(ActorEffect):
+class HealEffect(PositionEffect):
+    def __init__(self, target):
+        PositionEffect.__init__(self, target.pos)
+
     def num_frames(self):
         return 8
 
@@ -78,7 +95,10 @@ class HealEffect(ActorEffect):
         ][frame]
 
 
-class ConfuseEffect(ActorEffect):
+class ConfuseEffect(PositionEffect):
+    def __init__(self, target):
+        PositionEffect.__init__(self, target.pos)
+
     def num_frames(self):
         return 4
 
@@ -94,6 +114,3 @@ class ConfuseEffect(ActorEffect):
         ][frame]
 
 
-class BoltEffect(Effect):
-    def __init__(self):
-        Effect.__init__(self)

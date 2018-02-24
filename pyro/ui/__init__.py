@@ -1,2 +1,2 @@
-from effects import Effect, HitEffect, HealEffect, ConfuseEffect
+from effects import Effect, HitEffect, HealEffect, ConfuseEffect, BoltEffect
 from userinterface import Screen

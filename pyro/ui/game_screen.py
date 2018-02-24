@@ -5,7 +5,7 @@ from pyro.direction import Direction
 from pyro.engine.game import Event
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.map import make_map
-from pyro.ui import HitEffect, HealEffect, ConfuseEffect
+from pyro.ui import HitEffect, HealEffect, ConfuseEffect, BoltEffect
 from pyro.settings import *
 from pyro.ui.menu_screen import MenuScreen
 from pyro.ui.targetscreen import TargetScreen
@@ -108,6 +108,8 @@ class GameScreen(Screen):
                     self.effects.append(HealEffect(event.actor))
                 elif Event.TYPE_CONFUSE == event.type:
                     self.effects.append(ConfuseEffect(event.actor))
+                elif Event.TYPE_BOLT == event.type:
+                    self.effects.append(BoltEffect(event.position))
 
         self.effects = filter(lambda e: e.update(self.game), self.effects)
 
