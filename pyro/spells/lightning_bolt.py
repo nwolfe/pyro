@@ -2,6 +2,7 @@ import tcod as libtcod
 import pyro.utilities
 from pyro.engine import Event
 from pyro.engine.actions import LosAction
+from pyro.engine.element import Elements
 from pyro.spell import ActionSpell, CastResult
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 from pyro.target import Target
@@ -63,8 +64,7 @@ class LightningBoltAction(LosAction):
         return LosAction.on_perform(self)
 
     def on_step(self, position):
-        # TODO Generalize by adding an "element" type
-        self.add_event(Event(Event.TYPE_BOLT, position=position))
+        self.add_event(Event(Event.TYPE_BOLT, element=Elements.LIGHTNING, position=position))
 
     def on_target(self, target):
         target.actor.take_damage(self, self._damage, self.actor)

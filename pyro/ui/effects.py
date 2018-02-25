@@ -1,5 +1,18 @@
 import abc
 import tcod as libtcod
+from pyro.engine.element import Elements
+from pyro.engine import Event
+
+
+def add_effects(effects, event):
+    if Event.TYPE_HIT == event.type:
+        effects.append(HitEffect(event.actor))
+    elif Event.TYPE_HEAL == event.type:
+        effects.append(HealEffect(event.actor))
+    elif Event.TYPE_CONFUSE == event.type:
+        effects.append(ConfuseEffect(event.actor))
+    elif Event.TYPE_BOLT == event.type:
+        effects.append(BoltEffect(event.position, event.element))
 
 
 class Effect:
@@ -20,9 +33,11 @@ class PositionEffect(Effect):
 
     def __init__(self, position):
         self._position = position
+        # TODO are we accidentally skipping frame 0?
         self._frame = 0
 
     def update(self, game):
+        # TODO are we accidentally skipping frame 0?
         self._frame += 1
         return self._frame < self.num_frames()
 
@@ -46,15 +61,27 @@ class PositionEffect(Effect):
         pass
 
 
+_ELEMENTS = {
+    Elements.LIGHTNING: [['*'], [libtcod.blue]],
+    Elements.FIRE:      [['o'], [libtcod.red]]
+}
+
+
 class BoltEffect(PositionEffect):
+    def __init__(self, position, element):
+        PositionEffect.__init__(self, position)
+        self._element = _ELEMENTS[element]
+
     def num_frames(self):
         return 2
 
     def char(self, frame):
-        return '*'
+        chars = self._element[0]
+        return chars[frame % len(chars)]
 
     def color(self, frame):
-        return libtcod.blue
+        colors = self._element[1]
+        return colors[frame % len(colors)]
 
 
 class HitEffect(PositionEffect):

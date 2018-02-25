@@ -100,10 +100,12 @@ class Event:
     TYPE_HIT = 'hit'
     TYPE_HEAL = 'heal'
     TYPE_CONFUSE = 'confuse'
+    TYPE_EXPLODE = 'explode'
 
-    def __init__(self, type_, actor=None, position=None, direction=None, other=None):
+    def __init__(self, type_, actor=None, element=None, position=None, direction=None, other=None):
         self.type = type_
         self.actor = actor
+        self.element = element
         self.position = position
         self.direction = direction
         self.other = other
