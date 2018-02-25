@@ -31,7 +31,7 @@ class AIAdapterAction(Action):
 
     def on_perform(self):
         if self.monster_ai:
-            action = self.monster_ai.take_turn(self)
+            action = self.monster_ai.take_turn()
             if action:
                 return self.alternate(action)
         return ActionResult.SUCCESS

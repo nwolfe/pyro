@@ -33,9 +33,9 @@ class AI:
         else:
             self.__spells = None
 
-    def take_turn(self, action):
+    def take_turn(self):
         """Perform a single game turn."""
-        return self.behavior.take_turn(action, self)
+        return self.behavior.take_turn(self)
 
     def took_damage(self, action, damage, attacker):
         self.behavior.took_damage(action, damage, attacker, self)
@@ -54,7 +54,7 @@ class AI:
                 return True
         return False
 
-    def cast_spell(self, action, spell, target):
+    def cast_spell(self, spell, target):
         target = Target(actor=target)
         if Spell.TYPE_ATTACK == spell.type:
             # TODO move hit chance and messaging into Spell.cast()
@@ -74,7 +74,7 @@ class AI:
 
 
 class BehaviorStrategy:
-    def take_turn(self, action, ai):
+    def take_turn(self, ai):
         pass
 
     def took_damage(self, action, damage, attacker, ai):
@@ -85,7 +85,7 @@ class Aggressive(BehaviorStrategy):
     def __init__(self, target=None):
         self.target = target
 
-    def take_turn(self, action, ai):
+    def take_turn(self, ai):
         target = self.target if self.target else ai.monster.game.player
         if ai.monster.game.stage.map.is_in_fov(ai.monster.pos):
             # Move towards player if far away
@@ -99,14 +99,14 @@ class Aggressive(BehaviorStrategy):
 
 
 class AggressiveSpellcaster(BehaviorStrategy):
-    def take_turn(self, action, ai):
+    def take_turn(self, ai):
         player = ai.monster.game.player
         if ai.monster.game.stage.map.is_in_fov(ai.monster.pos):
             # Heal yourself if damaged
             if ai.monster.hp < ai.monster.max_hp:
                 heals = ai.get_spells(Spell.TYPE_HEAL)
                 if len(heals) > 0:
-                    return ai.cast_spell(action, heals[0], ai.monster)
+                    return ai.cast_spell(heals[0], ai.monster)
 
             # Move towards player if far away
             if not ai.in_range(player, Spell.TYPE_ATTACK):
@@ -118,11 +118,11 @@ class AggressiveSpellcaster(BehaviorStrategy):
                 attacks = ai.get_spells(Spell.TYPE_ATTACK)
                 if len(attacks) > 0:
                     random_attack = attacks[libtcod.random_get_int(0, 0, len(attacks)-1)]
-                    return ai.cast_spell(action, random_attack, player)
+                    return ai.cast_spell(random_attack, player)
 
 
 class PassiveAggressive(BehaviorStrategy):
-    def take_turn(self, action, ai):
+    def take_turn(self, ai):
         # 25% chance to move one square in a random direction
         if libtcod.random_get_int(0, 1, 4) == 1:
             direction = pyro.direction.random()
@@ -139,7 +139,7 @@ class Confused(BehaviorStrategy):
         self.restore_ai = restore_ai
         self.num_turns = num_turns
 
-    def take_turn(self, action, ai):
+    def take_turn(self, ai):
         if self.restore_ai is None or self.num_turns > 0:
             self.num_turns -= 1
             # Move in a random direction
