@@ -20,6 +20,9 @@ class Fireball(Spell):
         self.strength = settings.get('strength', self.strength)
         self.radius = settings.get('radius', self.radius)
 
+    def requires_target(self):
+        return self.target_select()
+
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range
 

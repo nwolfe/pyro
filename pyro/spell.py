@@ -1,4 +1,5 @@
 import abc
+from pyro.target import TargetRequire
 
 
 class Spell:
@@ -19,7 +20,21 @@ class Spell:
         pass
 
     def cast(self, target):
+        """Returns an Action."""
         pass
 
     def requires_target(self):
-        return True
+        """Override to declare target requirements."""
+        return self.target_none()
+
+    def target_none(self):
+        """Convenience for subclasses with no target."""
+        return TargetRequire.NONE
+
+    def target_self(self):
+        """Convenience for subclasses that target the caster."""
+        return TargetRequire.SELF
+
+    def target_select(self):
+        """Convenience for subclasses that ask the player to select a target."""
+        return TargetRequire.SELECT

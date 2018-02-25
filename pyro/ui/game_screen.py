@@ -2,13 +2,14 @@ import tcod as libtcod
 from itertools import chain
 from pyro.ui import Screen
 from pyro.direction import Direction
-from pyro.engine.game import Event
 from pyro.engine.actions import PickUpAction, WalkAction, CloseDoorAction, UseAction, DropAction
 from pyro.map import make_map
 from pyro.ui.effects import add_effects
-from pyro.settings import *
 from pyro.ui.menu_screen import MenuScreen
 from pyro.ui.targetscreen import TargetScreen
+from pyro.settings import *
+from pyro.target import Target, TargetRequire
+from pyro.utilities import closest_monster
 import pyro.ui.inputs as inputs
 
 
@@ -75,11 +76,19 @@ class GameScreen(Screen):
 
         if 'item.use' == tag:
             item = result.choice
-            if item.requires_target():
-                self.ui.push(TargetScreen(self),
-                             tag='item.select-target', data=item)
-            else:
+            require = item.requires_target()
+            if TargetRequire.NONE == require.type:
                 self.game.player.next_action = UseAction(item)
+            elif TargetRequire.TYPE_SELF == require.type:
+                self.game.player.next_action = UseAction(item, Target(self.game.player))
+            elif TargetRequire.TYPE_NEAREST == require.type:
+                nearest = closest_monster(self.game, require.range)
+                if nearest:
+                    self.game.player.next_action = UseAction(item, Target(nearest))
+                else:
+                    self.game.log.message(require.not_found_message, libtcod.red)
+            elif TargetRequire.TYPE_SELECT == require.type:
+                self.ui.push(TargetScreen(self), tag='item.select-target', data=item)
         elif 'item.select-target' == tag:
             item, target = data, result
             self.game.player.next_action = UseAction(item, target)

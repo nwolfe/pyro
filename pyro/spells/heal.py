@@ -16,23 +16,25 @@ class Heal(Spell):
         return caster.pos == target.pos
 
     def requires_target(self):
-        return False
+        return self.target_self()
 
     def cast(self, target):
-        return HealAction(self.strength)
+        return HealAction(target, self.strength)
 
 
 class HealAction(Action):
-    def __init__(self, amount):
+    def __init__(self, target, amount):
         Action.__init__(self)
+        self._target = target
         self._amount = amount
 
     def on_perform(self):
         """Heal the caster. Prints messages that assume caster is player."""
-        caster = self.actor
-        if (caster.hp < caster.max_hp) and self._amount > 0:
-            caster.heal(self._amount)
-            self.add_event(Event(Event.TYPE_HEAL, actor=caster))
+        # TODO Fix messaging to be correct for both player and monsters
+        target = self._target.actor
+        if (target.hp < target.max_hp) and self._amount > 0:
+            target.heal(self._amount)
+            self.add_event(Event(Event.TYPE_HEAL, actor=target))
             self.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
         else:
             self.game.log.message("You don't feel any different.")

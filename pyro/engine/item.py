@@ -1,4 +1,5 @@
 from pyro.position import Position
+from pyro.target import TargetRequire
 
 
 class Item:
@@ -31,7 +32,10 @@ class Item:
             return self.name
 
     def requires_target(self):
-        return self.on_use is not None and self.on_use.requires_target()
+        if self.on_use:
+            return self.on_use.requires_target()
+        else:
+            return TargetRequire.NONE
 
     def use(self, target):
         """Returns an Action."""

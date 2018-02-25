@@ -1,11 +1,10 @@
 import tcod as libtcod
-import pyro.utilities
 from pyro.engine import Event
 from pyro.engine.actions import LosAction
 from pyro.engine.element import Elements
 from pyro.spell import Spell
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
-from pyro.target import Target
+from pyro.target import TargetRequire
 
 
 class LightningBolt(Spell):
@@ -22,31 +21,17 @@ class LightningBolt(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def requires_target(self):
-        return False
+        return TargetRequire(TargetRequire.TYPE_NEAREST, range_=self.range,
+                             not_found_message='No enemy is close enough to strike.')
 
     def cast(self, target):
-        return LightningBoltAction(target, self.strength, self.range)
+        return LightningBoltAction(target, self.strength)
 
 
 class LightningBoltAction(LosAction):
-    def __init__(self, target, damage, range_):
+    def __init__(self, target, damage):
         LosAction.__init__(self, target)
-        self._range = range_
         self._damage = damage
-        self._needs_target = target is None
-
-    def on_perform(self):
-        """Hijack this method to obtain a target if we don't have one.
-        Once we have a target, delegate to the real behavior."""
-        if self._needs_target:
-            nearest = pyro.utilities.closest_monster(self.game, self._range)
-            if nearest is None:
-                self.game.log.message('No enemy is close enough to strike.', libtcod.red)
-                return self.succeed()
-            else:
-                self.target = Target(actor=nearest)
-                self._needs_target = False
-        return LosAction.on_perform(self)
 
     def on_step(self, position):
         self.add_event(Event(Event.TYPE_BOLT, element=Elements.LIGHTNING, position=position))
