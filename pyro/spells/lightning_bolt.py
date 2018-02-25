@@ -3,7 +3,7 @@ import pyro.utilities
 from pyro.engine import Event
 from pyro.engine.actions import LosAction
 from pyro.engine.element import Elements
-from pyro.spell import Spell, CastResult
+from pyro.spell import Spell
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 from pyro.target import Target
 
@@ -23,21 +23,6 @@ class LightningBolt(Spell):
 
     def requires_target(self):
         return False
-
-    def cast(self, action, caster, target):
-        if caster.is_player():
-            target = pyro.utilities.closest_monster(action.game, self.range)
-            if target is None:
-                action.game.log.message('No enemy is close enough to strike.', libtcod.red)
-                return CastResult.cancel()
-            msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
-            msg += 'The damage is {1} hit points.'
-            msg = msg.format(target.name, self.strength)
-            action.game.log.message(msg, libtcod.light_blue)
-            target.take_damage(action, self.strength, caster)
-        else:
-            target.actor.take_damage(action, self.strength, caster)
-        return CastResult.hit(self.strength)
 
     def cast_action(self, target):
         return LightningBoltAction(target, self.strength, self.range)
@@ -68,7 +53,7 @@ class LightningBoltAction(LosAction):
 
     def on_target(self, target):
         target.actor.take_damage(self, self._damage, self.actor)
-        msg = 'A lightning bolt strikes the {0} with a loud thunderclap! '
+        msg = 'The lightning bolt strikes the {0} with a loud thunderclap! '
         msg += 'The damage is {1} hit points.'
         msg = msg.format(target.actor.name, self._damage)
         self.game.log.message(msg, libtcod.light_blue)

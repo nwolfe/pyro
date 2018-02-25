@@ -57,20 +57,20 @@ class AI:
     def cast_spell(self, action, spell, target):
         target = Target(actor=target)
         if Spell.TYPE_ATTACK == spell.type:
+            # TODO move hit chance and messaging into Spell.cast()
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
-                result = spell.cast(action, self.monster, target)
-                msg = 'The {0} strikes you with a {1}! You take {2} damage.'
-                msg = msg.format(self.monster.name, spell.name, result.damage)
+                msg = 'The {0} casts a {1}!'.format(self.monster.name, spell.name)
                 self.monster.game.log.message('- ' + msg, libtcod.red)
+                return spell.cast_action(target)
             else:
                 msg = 'The {0} casts a {1} but it fizzles!'
                 msg = msg.format(self.monster.name, spell.name)
                 self.monster.game.log.message(msg)
         elif Spell.TYPE_HEAL == spell.type:
-            spell.cast(action, self.monster, target)
             msg = 'The {0} heals itself!'.format(self.monster.name)
             self.monster.game.log.message(msg)
+            return spell.cast_action(target)
 
 
 class BehaviorStrategy:
@@ -106,8 +106,7 @@ class AggressiveSpellcaster(BehaviorStrategy):
             if ai.monster.hp < ai.monster.max_hp:
                 heals = ai.get_spells(Spell.TYPE_HEAL)
                 if len(heals) > 0:
-                    ai.cast_spell(action, heals[0], ai.monster)
-                    return
+                    return ai.cast_spell(action, heals[0], ai.monster)
 
             # Move towards player if far away
             if not ai.in_range(player, Spell.TYPE_ATTACK):
@@ -119,7 +118,7 @@ class AggressiveSpellcaster(BehaviorStrategy):
                 attacks = ai.get_spells(Spell.TYPE_ATTACK)
                 if len(attacks) > 0:
                     random_attack = attacks[libtcod.random_get_int(0, 0, len(attacks)-1)]
-                    ai.cast_spell(action, random_attack, player)
+                    return ai.cast_spell(action, random_attack, player)
 
 
 class PassiveAggressive(BehaviorStrategy):

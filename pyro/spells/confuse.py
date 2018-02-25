@@ -1,6 +1,6 @@
 import tcod as libtcod
 from pyro.engine import Action, Event
-from pyro.spell import Spell, CastResult
+from pyro.spell import Spell
 from pyro.settings import SPELL_CONFUSE_RANGE, SPELL_CONFUSE_TURNS
 
 
@@ -16,19 +16,6 @@ class Confuse(Spell):
 
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range
-
-    def cast(self, action, caster, target):
-        target = target.actor
-        if target:
-            if caster.is_player():
-                msg = 'The eyes of the {0} look vacant as it stumbles around!'
-                action.game.log.message(msg.format(target.name), libtcod.light_green)
-            target.ai.confuse(self.num_turns)
-            return CastResult.hit(-1)
-        else:
-            if caster.is_player():
-                action.game.log.message('Invalid target.', libtcod.orange)
-            return CastResult.invalid_target()
 
     def cast_action(self, target):
         return ConfuseAction(self.num_turns, target)
