@@ -18,7 +18,7 @@ class Spell:
     def in_range(self, caster, target):
         pass
 
-    def cast_action(self, target):
+    def cast(self, target):
         pass
 
     def requires_target(self):

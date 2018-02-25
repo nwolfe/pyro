@@ -24,7 +24,7 @@ class LightningBolt(Spell):
     def requires_target(self):
         return False
 
-    def cast_action(self, target):
+    def cast(self, target):
         return LightningBoltAction(target, self.strength, self.range)
 
 

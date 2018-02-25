@@ -18,7 +18,7 @@ class Heal(Spell):
     def requires_target(self):
         return False
 
-    def cast_action(self, target):
+    def cast(self, target):
         return HealAction(self.strength)
 
 

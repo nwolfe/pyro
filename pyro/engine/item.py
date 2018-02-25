@@ -35,4 +35,4 @@ class Item:
 
     def use(self, target):
         """Returns an Action."""
-        return self.on_use.cast_action(target)
+        return self.on_use.cast(target)

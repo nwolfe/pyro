@@ -62,7 +62,7 @@ class AI:
             if libtcod.random_get_int(0, 1, 5) <= 2:
                 msg = 'The {0} casts a {1}!'.format(self.monster.name, spell.name)
                 self.monster.game.log.message('- ' + msg, libtcod.red)
-                return spell.cast_action(target)
+                return spell.cast(target)
             else:
                 msg = 'The {0} casts a {1} but it fizzles!'
                 msg = msg.format(self.monster.name, spell.name)
@@ -70,7 +70,7 @@ class AI:
         elif Spell.TYPE_HEAL == spell.type:
             msg = 'The {0} heals itself!'.format(self.monster.name)
             self.monster.game.log.message(msg)
-            return spell.cast_action(target)
+            return spell.cast(target)
 
 
 class BehaviorStrategy:

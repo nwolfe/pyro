@@ -17,7 +17,7 @@ class Confuse(Spell):
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range
 
-    def cast_action(self, target):
+    def cast(self, target):
         return ConfuseAction(self.num_turns, target)
 
 
