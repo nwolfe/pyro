@@ -7,8 +7,27 @@
   "power": 2,
   "starting_items": [
     "item.dagger",
+    "item.sword",
+    "item.shield",
+    "item.healing_potion",
+    "item.healing_potion",
+    "item.healing_potion",
+    "item.healing_potion",
+    "item.healing_potion",
+    "item.lightning_bolt_scroll",
+    "item.lightning_bolt_scroll",
+    "item.lightning_bolt_scroll",
+    "item.lightning_bolt_scroll",
     "item.lightning_bolt_scroll",
     "item.fireball_scroll",
+    "item.fireball_scroll",
+    "item.fireball_scroll",
+    "item.fireball_scroll",
+    "item.fireball_scroll",
+    "item.confusion_scroll",
+    "item.confusion_scroll",
+    "item.confusion_scroll",
+    "item.confusion_scroll",
     "item.confusion_scroll"
   ]
 }
