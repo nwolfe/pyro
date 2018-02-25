@@ -1,12 +1,12 @@
 import tcod as libtcod
 from pyro.engine import Action, Event
-from pyro.spell import ActionSpell, CastResult
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_HEAL_STRENGTH
 
 
-class Heal(ActionSpell):
+class Heal(Spell):
     def __init__(self):
-        ActionSpell.__init__(self, 'Healing', ActionSpell.TYPE_HEAL)
+        Spell.__init__(self, 'Healing', Spell.TYPE_HEAL)
         self.strength = SPELL_HEAL_STRENGTH
 
     def configure(self, settings):

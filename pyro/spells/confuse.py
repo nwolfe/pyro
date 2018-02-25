@@ -1,12 +1,12 @@
 import tcod as libtcod
 from pyro.engine import Action, Event
-from pyro.spell import ActionSpell, CastResult
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_CONFUSE_RANGE, SPELL_CONFUSE_TURNS
 
 
-class Confuse(ActionSpell):
+class Confuse(Spell):
     def __init__(self):
-        ActionSpell.__init__(self, 'Confusion', ActionSpell.TYPE_ATTACK)
+        Spell.__init__(self, 'Confusion', Spell.TYPE_ATTACK)
         self.range = SPELL_CONFUSE_RANGE
         self.num_turns = SPELL_CONFUSE_TURNS
 

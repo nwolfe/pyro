@@ -3,14 +3,14 @@ import pyro.utilities
 from pyro.engine import Event
 from pyro.engine.actions import LosAction
 from pyro.engine.element import Elements
-from pyro.spell import ActionSpell, CastResult
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
 from pyro.target import Target
 
 
-class LightningBolt(ActionSpell):
+class LightningBolt(Spell):
     def __init__(self):
-        ActionSpell.__init__(self, 'Lightning Bolt', ActionSpell.TYPE_ATTACK)
+        Spell.__init__(self, 'Lightning Bolt', Spell.TYPE_ATTACK)
         self.range = SPELL_LIGHTNING_BOLT_RANGE
         self.strength = SPELL_LIGHTNING_BOLT_STRENGTH
 

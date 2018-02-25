@@ -22,15 +22,11 @@ class Spell:
     def cast(self, action, caster, target):
         pass
 
-    def requires_target(self):
-        return True
-
-
-# TODO Get rid of this subclass once all Spells return Actions
-class ActionSpell(Spell):
-    @abc.abstractmethod
     def cast_action(self, target):
         pass
+
+    def requires_target(self):
+        return True
 
 
 class CastResult:

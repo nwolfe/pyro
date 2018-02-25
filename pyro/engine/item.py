@@ -1,6 +1,4 @@
 from pyro.position import Position
-from pyro.spell import ActionSpell
-from pyro.engine import Action
 
 
 class Item:
@@ -37,21 +35,4 @@ class Item:
 
     def use(self, target):
         """Returns an Action."""
-        if isinstance(self.on_use, ActionSpell):
-            return self.on_use.cast_action(target)
-        else:
-            # TODO Get rid of this else clause once all Spells return Actions
-            return SpellActionAdapter(self, target)
-
-
-# TODO Delete class once all Spells return Actions
-class SpellActionAdapter(Action):
-    def __init__(self, item, target):
-        Action.__init__(self)
-        self._item = item
-        self._target = target
-
-    def on_perform(self):
-        self._item.on_use.cast(self, self._item.owner, self._target)
-        return self.succeed()
-
+        return self.on_use.cast_action(target)

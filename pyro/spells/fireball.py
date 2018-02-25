@@ -3,14 +3,14 @@ from pyro.engine import Event
 from pyro.engine.actions import LosAction
 from pyro.engine.element import Elements
 from pyro.position import Position
-from pyro.spell import ActionSpell, CastResult
+from pyro.spell import Spell, CastResult
 from pyro.settings import SPELL_FIREBALL_RANGE, SPELL_FIREBALL_STRENGTH, SPELL_FIREBALL_RADIUS
 from pyro.tile import Tile
 
 
-class Fireball(ActionSpell):
+class Fireball(Spell):
     def __init__(self):
-        ActionSpell.__init__(self, 'Fireball', ActionSpell.TYPE_ATTACK)
+        Spell.__init__(self, 'Fireball', Spell.TYPE_ATTACK)
         self.range = SPELL_FIREBALL_RANGE
         self.strength = SPELL_FIREBALL_STRENGTH
         self.radius = SPELL_FIREBALL_RADIUS
