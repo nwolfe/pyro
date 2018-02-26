@@ -4,7 +4,6 @@ from pyro.engine.actions import LosAction
 from pyro.engine.element import Elements
 from pyro.spell import Spell
 from pyro.settings import SPELL_LIGHTNING_BOLT_RANGE, SPELL_LIGHTNING_BOLT_STRENGTH
-from pyro.target import TargetRequire
 
 
 class LightningBolt(Spell):
@@ -21,8 +20,7 @@ class LightningBolt(Spell):
         return caster.pos.distance_to(target.pos) <= self.range
 
     def requires_target(self):
-        return TargetRequire(TargetRequire.TYPE_NEAREST, range_=self.range,
-                             not_found_message='No enemy is close enough to strike.')
+        return self.target_nearest(self.range, 'No enemy is close enough to strike.')
 
     def cast(self, target):
         return LightningBoltAction(target, self.strength)

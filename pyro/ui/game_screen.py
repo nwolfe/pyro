@@ -88,7 +88,8 @@ class GameScreen(Screen):
                 else:
                     self.game.log.message(require.not_found_message, libtcod.red)
             elif TargetRequire.TYPE_SELECT == require.type:
-                self.ui.push(TargetScreen(self), tag='item.select-target', data=item)
+                self.ui.push(TargetScreen(self, require.range),
+                             tag='item.select-target', data=item)
         elif 'item.select-target' == tag:
             item, target = data, result
             self.game.player.next_action = UseAction(item, target)

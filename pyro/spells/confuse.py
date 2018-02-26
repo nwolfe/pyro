@@ -15,7 +15,7 @@ class Confuse(Spell):
         self.num_turns = settings.get('turns', self.num_turns)
 
     def requires_target(self):
-        return self.target_select()
+        return self.target_select(self.range)
 
     def in_range(self, caster, target):
         return caster.pos.distance_to(target.pos) <= self.range

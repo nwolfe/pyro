@@ -6,10 +6,11 @@ from pyro.target import Target
 
 
 class TargetScreen(Screen):
-    def __init__(self, game_screen):
+    def __init__(self, game_screen, range_=None):
         Screen.__init__(self)
         self.transparent = True
         self._game_screen = game_screen
+        self._range = range_
         game_screen.game.log.message('Left-click to select a target, or right-click to cancel',
                                     libtcod.light_cyan)
 
@@ -18,12 +19,22 @@ class TargetScreen(Screen):
             self.__cancel()
             return
 
+        # Assume it's a left-click
+
         pos = Position(mouse.cx, mouse.cy)
-        if mouse.lbutton_pressed and self._game_screen.game.stage.map.is_in_fov(pos):
+        if self._range is not None:
+            distance = self._game_screen.game.player.pos.distance_to(pos)
+            if distance > self._range:
+                self._game_screen.game.log.message(
+                    'Out of range. Select again.', libtcod.light_blue)
+                return
+
+        target = Target(position=pos)
+        if self._game_screen.game.stage.map.is_in_fov(pos):
             monster = self.__monster_at(pos)
-            self.ui.pop(Target(monster, pos))
-        else:
-            self.ui.pop()
+            target.actor = monster
+
+        self.ui.pop(target)
 
     def handle_key_press(self, key):
         if key == Key.ESCAPE:
