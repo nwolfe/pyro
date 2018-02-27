@@ -30,10 +30,14 @@ class Action:
         action.bind(self.actor, self.consumes_energy)
         return ActionResult(alternate=action)
 
-    def succeed(self):
+    def succeed(self, message=None, noun1=None, noun2=None, noun3=None):
+        if message:
+            self.log(message, noun1, noun2, noun3)
         return ActionResult.SUCCESS
 
-    def fail(self):
+    def fail(self, message=None, noun1=None, noun2=None, noun3=None):
+        if message:
+            self.error(message, noun1, noun2, noun3)
         return ActionResult.FAILURE
 
     def not_done(self):
@@ -42,6 +46,10 @@ class Action:
     def log(self, message, noun1=None, noun2=None, noun3=None):
         # TODO if !actor.isVisibleToHero return (to eliminate off-screen noise)
         self.game.log.message2(message, noun1, noun2, noun3)
+
+    def error(self, message, noun1=None, noun2=None, noun3=None):
+        # TODO if !actor.isVisibleToHero return (to eliminate off-screen noise)
+        self.game.log.error(message, noun1, noun2, noun3)
 
 
 class ActionResult:

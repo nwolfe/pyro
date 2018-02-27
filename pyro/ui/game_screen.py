@@ -15,7 +15,8 @@ import pyro.ui.inputs as inputs
 
 
 _MESSAGE_COLORS = {
-    LogType.MESSAGE: libtcod.light_purple,
+    LogType.MESSAGE: libtcod.light_gray,
+    LogType.ERROR: libtcod.red,
 }
 
 

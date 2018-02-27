@@ -31,6 +31,7 @@ class Noun:
 
 class LogType:
     MESSAGE = 'message'
+    ERROR = 'error'
     # TODO more log types for different appearances
 
 
@@ -61,7 +62,13 @@ class Log:
 
     def message2(self, message, noun1=None, noun2=None, noun3=None):
         # TODO self.add(LogType.MESSAGE, message, noun1, noun2, noun3)
-        self.message(_format(message, noun1, noun2, noun3), color=None)
+        self.message(_format(message, noun1, noun2, noun3),
+                     color=None, type_=LogType.MESSAGE)
+
+    def error(self, message, noun1=None, noun2=None, noun3=None):
+        # TODO self.add(LogType.ERROR, message, noun1, noun2, noun3)
+        self.message(_format(message, noun1, noun2, noun3),
+                     color=None, type_=LogType.ERROR)
 
     # def add(self, type_, message, noun1=None, noun2=None, noun3=None):
     #     message = _format(message, noun1, noun2, noun3)
@@ -220,9 +227,34 @@ def _categorize(text, first, force=False):
         after = text[match.end():]
         if first:
             # Use the first form
-            text = '%s%s%s' % (before, match.group(0), after)
+            text = '%s%s%s' % (before, match.group(1), after)
         else:
             # Use the second form
-            text = '%s%s%s' % (before, match.group(1), after)
+            text = '%s%s%s' % (before, match.group(2), after)
 
     return text
+
+
+def quantify(text, count):
+    """
+    Quantifies the noun pattern in [text] to create a noun phrase for that
+    number. Examples:
+    
+        quantify("bunn[y|ies]", 1) => "a bunny"
+        quantify("bunn[y|ies]", 2) => "2 bunnies"
+        quantify("(a) unicorn", 1) => "a unicorn"
+        quantify("ocelot", 1)      => "an ocelot"
+    """
+    if count == 1:
+        # Handle irregular nouns that start with a vowel but use "a",
+        # like "a unicorn"
+        if text.startswith('(a) '):
+            quantity = 'a'
+            text = text[4:]
+        elif text[0] in 'aeiou':
+            quantity = 'an'
+        else:
+            quantity = 'a'
+    else:
+        quantity = '%d' % count
+    return '%s %s' % (quantity, _categorize(text, first=count == 1, force=True))

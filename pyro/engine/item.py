@@ -1,8 +1,9 @@
 from pyro.position import Position
 from pyro.target import TargetRequire
+from pyro.engine.log import Noun, Pronoun, quantify
 
 
-class Item:
+class Item(Noun):
     # TODO Change on_use from a Spell to a more-general Action
     def __init__(self, name, glyph, on_use=None, equip_slot=None):
         """An Item can be either usable or equipment, but not both.
@@ -18,6 +19,15 @@ class Item:
         self.defense_bonus = 0
         self.max_hp_bonus = 0
         self.is_equipped = False
+
+    def noun_text(self):
+        # TODO prefix
+        # TODO suffix
+        # TODO item stacks
+        return quantify(self.name, 1)
+
+    def pronoun(self):
+        return Pronoun.IT
 
     def can_equip(self):
         return self.equip_slot is not None

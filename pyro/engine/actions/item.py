@@ -9,7 +9,7 @@ class ItemAction(Action):
     # TODO Remove default location value
     def __init__(self, item, location=ItemLocation.INVENTORY):
         Action.__init__(self)
-        self._item = item
+        self.item = item
         self._location = location
 
 
@@ -22,17 +22,13 @@ class PickUpAction(ItemAction):
         # TODO Add support for stacks of items
         owner = self.game.player
         if len(owner.inventory) >= 26:
-            msg = 'Your inventory is full, cannot pick up {0}.'
-            self.game.log.message(msg.format(self._item.name), libtcod.red)
-            return self.fail()
+            return self.fail("{1} [don't|doesn't] have room for {2}.", self.actor, self.item)
         else:
-            self._item.owner = owner
-            owner.inventory.append(self._item)
-            if self._item in self.game.stage.items:
-                self.game.stage.items.remove(self._item)
-            self.game.log.message('You picked up a {0}!'.format(self._item.name),
-                                  libtcod.green)
-            return self.succeed()
+            self.item.owner = owner
+            owner.inventory.append(self.item)
+            if self.item in self.game.stage.items:
+                self.game.stage.items.remove(self.item)
+            return self.succeed('{1} pick[s] up {2}.', self.actor, self.item)
 
 
 class DropAction(ItemAction):
@@ -43,16 +39,16 @@ class DropAction(ItemAction):
     def on_perform(self):
         """Assumes only the player can drop items."""
         # TODO Add support for stacks of items
-        self._item.owner.inventory.remove(self._item)
-        self.game.stage.items.append(self._item)
-        self._item.pos.copy(self._item.owner.pos)
+        self.item.owner.inventory.remove(self.item)
+        self.game.stage.items.append(self.item)
+        self.item.pos.copy(self.item.owner.pos)
 
-        if self._item.is_equipped:
-            self._item.is_equipped = False
+        if self.item.is_equipped:
+            self.item.is_equipped = False
             msg = 'You take off and drop the {0}.'
         else:
             msg = 'You drop the {0}.'
-        self.game.log.message(msg.format(self._item.name), libtcod.yellow)
+        self.game.log.message(msg.format(self.item.name), libtcod.yellow)
         return self.succeed()
 
 
@@ -66,17 +62,17 @@ class UseAction(ItemAction):
     # TODO Move Item#use() behavior here
     def on_perform(self):
         # TODO Implement the rest of this method from UseAction#onPerform()
-        if self._item.can_equip():
-            return self.alternate(EquipAction(self._item))
+        if self.item.can_equip():
+            return self.alternate(EquipAction(self.item))
 
-        if not self._item.can_use():
-            self.game.log.message("{0} can't be used.".format(self._item.name))
+        if not self.item.can_use():
+            self.game.log.message("{0} can't be used.".format(self.item.name))
             return self.fail()
 
         # TODO Remove need for target parameter
         # TODO Add support for stacks of items
-        action = self._item.use(self._target)
-        self._item.owner.inventory.remove(self._item)
+        action = self.item.use(self._target)
+        self.item.owner.inventory.remove(self.item)
 
         return self.alternate(action)
 
@@ -87,19 +83,19 @@ class EquipAction(ItemAction):
         ItemAction.__init__(self, equipment)
 
     def on_perform(self):
-        if self._item.is_equipped:
-            return self.alternate(UnequipAction(self._item))
+        if self.item.is_equipped:
+            return self.alternate(UnequipAction(self.item))
 
         replaced = filter(
-            lambda i: i.is_equipped and i.equip_slot == self._item.equip_slot,
-            self._item.owner.inventory)
+            lambda i: i.is_equipped and i.equip_slot == self.item.equip_slot,
+            self.item.owner.inventory)
         if len(replaced) == 1:
             self.game.log.message('Unequipped {0}.'.format(replaced[0].name),
                                   libtcod.light_yellow)
 
-        self._item.is_equipped = True
+        self.item.is_equipped = True
         self.game.log.message('Equipped {0} on {1}.'.format(
-            self._item.name, self._item.equip_slot), libtcod.light_green)
+            self.item.name, self.item.equip_slot), libtcod.light_green)
         return self.succeed()
 
 
@@ -109,7 +105,7 @@ class UnequipAction(ItemAction):
         ItemAction.__init__(self, equipment)
 
     def on_perform(self):
-        self._item.is_equipped = False
+        self.item.is_equipped = False
         self.game.log.message('Unequipped {0} from {1}'.format(
-            self._item.name, self._item.equip_slot), libtcod.light_yellow)
+            self.item.name, self.item.equip_slot), libtcod.light_yellow)
         return self.succeed()
