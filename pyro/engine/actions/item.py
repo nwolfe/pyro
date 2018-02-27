@@ -45,11 +45,10 @@ class DropAction(ItemAction):
 
         if self.item.is_equipped:
             self.item.is_equipped = False
-            msg = 'You take off and drop the {0}.'
+            message = '{1} take[s] off and drop[s] {2}.'
         else:
-            msg = 'You drop the {0}.'
-        self.game.log.message(msg.format(self.item.name), libtcod.yellow)
-        return self.succeed()
+            message = '{1} drop[s] {2}.'
+        return self.succeed(message, self.actor, self.item)
 
 
 class UseAction(ItemAction):
