@@ -98,6 +98,7 @@ class Aggressive(BehaviorStrategy):
                 return AttackAction(target)
 
 
+# TODO Return a new CastAction so it's just like returning a WalkAction or AttackAction?
 class AggressiveSpellcaster(BehaviorStrategy):
     def take_turn(self, ai):
         player = ai.monster.game.player

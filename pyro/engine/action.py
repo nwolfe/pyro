@@ -39,6 +39,10 @@ class Action:
     def not_done(self):
         return ActionResult.NOT_DONE
 
+    def log(self, message, noun1=None, noun2=None, noun3=None):
+        # TODO if !actor.isVisibleToHero return (to eliminate off-screen noise)
+        self.game.log.message2(message, noun1, noun2, noun3)
+
 
 class ActionResult:
     SUCCESS = None

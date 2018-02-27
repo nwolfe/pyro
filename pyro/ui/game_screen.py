@@ -10,7 +10,13 @@ from pyro.ui.targetscreen import TargetScreen
 from pyro.settings import *
 from pyro.target import Target, TargetRequire
 from pyro.utilities import closest_monster
+from pyro.engine.log import LogType
 import pyro.ui.inputs as inputs
+
+
+_MESSAGE_COLORS = {
+    LogType.MESSAGE: libtcod.light_purple,
+}
 
 
 class GameScreen(Screen):
@@ -185,10 +191,12 @@ class GameScreen(Screen):
 
         # Print game messages, one line at a time
         y = 1
-        for (line, color) in self.game.log.messages:
+        for (message, color) in self.game.log.messages:
+            if color is None:
+                color = _MESSAGE_COLORS[message.type]
             libtcod.console_set_default_foreground(self.ui.panel, color)
             libtcod.console_print_ex(self.ui.panel, MSG_X, y, libtcod.BKGND_NONE,
-                                     libtcod.LEFT, line)
+                                     libtcod.LEFT, message.text)
             y += 1
 
         # Show player's stats

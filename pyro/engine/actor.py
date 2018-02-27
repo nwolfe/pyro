@@ -1,13 +1,11 @@
-import abc
 from pyro.energy import Energy, NORMAL_SPEED
 from pyro.engine.game import Event
+from pyro.engine.log import Noun
 from pyro.position import Position
 from pyro.settings import LEVEL_UP_BASE, LEVEL_UP_FACTOR
 
 
-class Actor:
-    __metaclass__ = abc.ABCMeta
-
+class Actor(Noun):
     def __init__(self, game):
         self.name = None
         self.glyph = None
@@ -43,9 +41,8 @@ class Actor:
             action.bind(self, True)
         return action
 
-    @abc.abstractmethod
     def on_get_action(self):
-        pass
+        raise Exception('implement in subclass')
 
     def finish_turn(self, action):
         self.energy.spend()
@@ -55,9 +52,8 @@ class Actor:
         self.modify_hit(hit)
         return hit
 
-    @abc.abstractmethod
     def on_create_melee_hit(self):
-        pass
+        raise Exception('implement in subclass')
 
     def modify_hit(self, hit):
         self.on_modify_hit(hit)
@@ -97,6 +93,9 @@ class Actor:
             action.add_event(Event(Event.TYPE_DEATH, actor=self, other=attacker))
             attacker.on_killed(self)
             self.on_death(attacker)
+
+    def on_give_damage(self, action, defender, damage):
+        pass
 
     def on_damaged(self, action, damage, attacker):
         pass

@@ -1,12 +1,21 @@
 import pyro.engine.corpse
 from pyro.engine import Actor, Action, ActionResult
 from pyro.engine.attack import Hit
+from pyro.engine.log import Pronoun
 
 
 class Monster(Actor):
     def __init__(self, game):
         Actor.__init__(self, game)
         self.ai = None
+
+    def noun_text(self):
+        # TODO defer to breed
+        return 'the ' + self.name
+
+    def pronoun(self):
+        # TODO defer to breed
+        return Pronoun.IT
 
     def on_get_action(self):
         # TODO Implement
