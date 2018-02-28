@@ -1,5 +1,4 @@
 import abc
-import tcod as libtcod
 from pyro.engine import Action, ItemLocation
 
 
@@ -88,13 +87,10 @@ class EquipAction(ItemAction):
             lambda i: i.is_equipped and i.equip_slot == self.item.equip_slot,
             self.item.owner.inventory)
         if len(replaced) == 1:
-            self.game.log.message('Unequipped {0}.'.format(replaced[0].name),
-                                  libtcod.light_yellow)
+            self.log('{1} unequip[s] {2}.', self.actor, replaced[0])
 
         self.item.is_equipped = True
-        self.game.log.message('Equipped {0} on {1}.'.format(
-            self.item.name, self.item.equip_slot), libtcod.light_green)
-        return self.succeed()
+        return self.succeed('{1} equip[s] {2}.', self.actor, self.item)
 
 
 class UnequipAction(ItemAction):
@@ -104,6 +100,4 @@ class UnequipAction(ItemAction):
 
     def on_perform(self):
         self.item.is_equipped = False
-        self.game.log.message('Unequipped {0} from {1}'.format(
-            self.item.name, self.item.equip_slot), libtcod.light_yellow)
-        return self.succeed()
+        return self.succeed('{1} unequip[s] {2}.', self.actor, self.item)

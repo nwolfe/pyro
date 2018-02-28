@@ -84,7 +84,7 @@ class GameScreen(Screen):
         if 'item.use' == tag:
             item = result.choice
             require = item.requires_target()
-            if TargetRequire.NONE == require.type:
+            if TargetRequire.TYPE_NONE == require.type:
                 self.game.player.next_action = UseAction(item)
             elif TargetRequire.TYPE_SELF == require.type:
                 self.game.player.next_action = UseAction(item, Target(self.game.player))
