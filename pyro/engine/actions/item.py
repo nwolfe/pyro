@@ -65,8 +65,7 @@ class UseAction(ItemAction):
             return self.alternate(EquipAction(self.item))
 
         if not self.item.can_use():
-            self.game.log.message("{0} can't be used.".format(self.item.name))
-            return self.fail()
+            return self.fail("{1} can't be used.", self.item)
 
         # TODO Remove need for target parameter
         # TODO Add support for stacks of items
