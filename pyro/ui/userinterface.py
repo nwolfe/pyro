@@ -1,10 +1,13 @@
-from itertools import chain
 import tcod as libtcod
 from pyro.settings import SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WIDTH, MAP_HEIGHT
-from pyro.settings import PANEL_HEIGHT, MSG_X, BAR_WIDTH, PANEL_Y
+from pyro.settings import PANEL_HEIGHT
 from pyro.ui.keys import key_for_int, Key
 
 
+# Game loop:
+#     while ui.is_running():
+#         ui.refresh()
+#         ui.handle_input()
 class UserInterface:
     def __init__(self):
         self.screens = []
@@ -13,6 +16,10 @@ class UserInterface:
         self.mouse = libtcod.Mouse()
         self.console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
         self.panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
+        self._dirty = True
+
+    def dirty(self):
+        self._dirty = True
 
     def bind_key(self, key, input_):
         self._keybindings[key] = input_
@@ -34,8 +41,8 @@ class UserInterface:
     def refresh(self):
         for screen in self.screens:
             screen.update()
-        # TODO Only render if dirty?
-        self.render()
+        if self._dirty:
+            self.render()
 
     def render(self):
         libtcod.console_clear(self.console)
@@ -54,27 +61,30 @@ class UserInterface:
             self.screens[index].render()
             index += 1
 
-        # TODO reset dirty flag here
+        self._dirty = False
         libtcod.console_flush()
 
     def handle_input(self):
         screen = self.top_screen()
-
-        key = self._check_for_keypress()
-        if key:
-            if key in self._keybindings:
-                if screen.handle_input(self._keybindings[key]):
-                    return
-            screen.handle_key_press(key)
-
+        self._handle_keypress(screen)
         if self.mouse.lbutton_pressed or self.mouse.rbutton_pressed:
             screen.handle_mouse_click(self.mouse)
+        if self.mouse.dx != 0 or self.mouse.dy != 0:
+            screen.handle_mouse_move(self.mouse)
 
     def top_screen(self):
         return self.screens[len(self.screens) - 1]
 
     def is_running(self):
         return not libtcod.console_is_window_closed() and len(self.screens) > 0
+
+    def _handle_keypress(self, screen):
+        key = self._check_for_keypress()
+        if key:
+            if key in self._keybindings:
+                if screen.handle_input(self._keybindings[key]):
+                    return
+            screen.handle_key_press(key)
 
     def _check_for_keypress(self):
         result = None
@@ -120,6 +130,10 @@ class Screen:
     def render(self):
         pass
 
+    def dirty(self):
+        if self.ui:
+            self.ui.dirty()
+
     def handle_input(self, input_):
         return False
 
@@ -127,6 +141,9 @@ class Screen:
         pass
 
     def handle_mouse_click(self, mouse):
+        pass
+
+    def handle_mouse_move(self, mouse):
         pass
 
 

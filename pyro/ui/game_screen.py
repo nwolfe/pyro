@@ -64,6 +64,7 @@ class GameScreen(Screen):
                 action = PickUpAction(items_at_player[0])
             else:
                 self.game.log.message('There is nothing here.')
+                self.dirty()
         elif inputs.INVENTORY == input_:
             # Show the inventory; if an item is selected, use it
             msg = 'Select an item to use it, or any other key to cancel.\n'
@@ -94,6 +95,7 @@ class GameScreen(Screen):
                     self.game.player.next_action = UseAction(item, Target(nearest))
                 else:
                     self.game.log.message(require.not_found_message, libtcod.red)
+                    self.dirty()
             elif TargetRequire.TYPE_SELECT == require.type:
                 self.ui.push(TargetScreen(self, require.range),
                              tag='item.select-target', data=item)
@@ -116,12 +118,21 @@ class GameScreen(Screen):
             if self.game.player.can_level_up():
                 self._level_up_player()
 
+            if len(self.effects) > 0:
+                self.dirty()
+
             result = self.game.update()
 
             for event in result.events:
                 add_effects(self.effects, event)
 
+            if result.needs_refresh():
+                self.dirty()
+
         self.effects = filter(lambda e: e.update(self.game), self.effects)
+
+    def handle_mouse_move(self, mouse):
+        self.dirty()
 
     def _level_up_player(self):
         # Only push one level-up screen at a time
@@ -132,6 +143,7 @@ class GameScreen(Screen):
         self.game.player.level_up()
         msg = 'Your battle skills grow stronger! You reached level {}!'
         self.game.log.message(msg.format(self.game.player.level), libtcod.yellow)
+        self.dirty()
         options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, self.game.player.base_max_hp),
                    'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, self.game.player.base_power),
                    'Agility (+{0} defense, from {1})'.format(LEVEL_UP_STAT_DEFENSE, self.game.player.base_defense)]
@@ -236,6 +248,7 @@ class GameScreen(Screen):
         self.game.dungeon_level += 1
 
         make_map(self.game)
+        self.dirty()
 
 
 def render_ui_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):

@@ -40,6 +40,9 @@ class TargetScreen(Screen):
         if key == Key.ESCAPE:
             self.__cancel()
 
+    def handle_mouse_move(self, mouse):
+        self.dirty()
+
     def __cancel(self):
         self._game_screen.game.log.message('Cancelled', libtcod.light_blue)
         self.ui.pop()
