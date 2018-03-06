@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.ui.userinterface import Screen
 from pyro.ui.keys import Key
 from pyro.position import Position

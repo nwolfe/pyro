@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.settings import SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WIDTH, MAP_HEIGHT
 from pyro.settings import PANEL_HEIGHT
 from pyro.ui.keys import key_for_int, Key

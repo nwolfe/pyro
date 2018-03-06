@@ -1,5 +1,5 @@
 import abc
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine.element import Elements
 from pyro.engine import Event
 

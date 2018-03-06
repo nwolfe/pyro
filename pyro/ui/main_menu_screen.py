@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro import objects
 from pyro.engine.game import Game
 from pyro.map import make_map

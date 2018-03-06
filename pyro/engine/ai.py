@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 import pyro.astar
 import pyro.direction
 from pyro.spell import Spell

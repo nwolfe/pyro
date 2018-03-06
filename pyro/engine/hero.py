@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine import Actor
 from pyro.engine.attack import Hit
 from pyro.engine.log import Pronoun

@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine import Event
 from pyro.engine.actions import LosAction
 from pyro.engine.element import Elements

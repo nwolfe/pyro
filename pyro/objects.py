@@ -1,6 +1,6 @@
 import os
 import json
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine.item import Item
 from pyro.engine.glyph import glyph
 from pyro.spells import Confuse, Fireball, Heal, LightningBolt

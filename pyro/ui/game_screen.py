@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from itertools import chain
 from pyro.ui import Screen
 from pyro.direction import Direction

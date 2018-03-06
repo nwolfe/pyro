@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 import re
 from textwrap import wrap
 from pyro.settings import MSG_WIDTH, MSG_HEIGHT

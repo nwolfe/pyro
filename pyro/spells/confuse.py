@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine import Action, Event
 from pyro.spell import Spell
 from pyro.settings import SPELL_CONFUSE_RANGE, SPELL_CONFUSE_TURNS

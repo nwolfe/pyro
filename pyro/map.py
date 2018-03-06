@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 import pyro.objects as objects
 from pyro.engine.game import Stage
 from pyro.utilities import is_blocked

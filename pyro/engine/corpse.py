@@ -1,5 +1,5 @@
 from collections import namedtuple
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine.glyph import glyph
 
 

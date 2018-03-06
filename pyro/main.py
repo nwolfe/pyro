@@ -1,4 +1,4 @@
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.settings import SCREEN_HEIGHT, SCREEN_WIDTH, LIMIT_FPS
 from pyro.ui.main_menu_screen import MainMenuScreen
 from pyro.ui.userinterface import UserInterface

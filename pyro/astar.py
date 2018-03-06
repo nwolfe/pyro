@@ -1,5 +1,5 @@
 import math
-import tcod as libtcod
+import libtcodpy as libtcod
 import pyro.direction
 
 

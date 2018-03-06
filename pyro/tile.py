@@ -1,5 +1,5 @@
 from collections import namedtuple
-import tcod as libtcod
+import libtcodpy as libtcod
 from pyro.engine.glyph import glyph
 from pyro.settings import COLOR_LIGHT_GROUND, COLOR_DARK_GROUND, COLOR_LIGHT_WALL, COLOR_DARK_WALL, COLOR_LIGHT_GRASS
 
