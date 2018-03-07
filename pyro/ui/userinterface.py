@@ -12,7 +12,7 @@ class UserInterface:
     def __init__(self):
         self.screens = []
         self._keybindings = {}
-        self.keyboard = libtcod.Key()
+        self._keyboard = libtcod.Key()
         self.mouse = libtcod.Mouse()
         self.console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
         self.panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
@@ -65,6 +65,8 @@ class UserInterface:
         libtcod.console_flush()
 
     def handle_input(self):
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE,
+                                    self._keyboard, self.mouse)
         screen = self.top_screen()
         self._handle_keypress(screen)
         if self.mouse.lbutton_pressed or self.mouse.rbutton_pressed:
@@ -87,24 +89,24 @@ class UserInterface:
             screen.handle_key_press(key)
 
     def _check_for_keypress(self):
-        result = None
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS |
-                                    libtcod.EVENT_MOUSE, self.keyboard, self.mouse)
-        k = libtcod.console_check_for_keypress()
-        if k.vk != libtcod.KEY_NONE:
-            result = key_for_int(self.keyboard.c)
-        elif libtcod.KEY_LEFT == self.keyboard.vk:
+        vk = self._keyboard.vk
+        if libtcod.KEY_NONE == vk:
+            return None
+
+        if libtcod.KEY_LEFT == vk:
             result = Key.LEFT
-        elif libtcod.KEY_RIGHT == self.keyboard.vk:
+        elif libtcod.KEY_RIGHT == vk:
             result = Key.RIGHT
-        elif libtcod.KEY_UP == self.keyboard.vk:
+        elif libtcod.KEY_UP == vk:
             result = Key.UP
-        elif libtcod.KEY_DOWN == self.keyboard.vk:
+        elif libtcod.KEY_DOWN == vk:
             result = Key.DOWN
-        elif libtcod.KEY_ENTER == self.keyboard.vk:
-            result = Key.ENTER
-        elif libtcod.KEY_ESCAPE == self.keyboard.vk:
+        elif libtcod.KEY_ESCAPE == vk:
             result = Key.ESCAPE
+        elif libtcod.KEY_ENTER == vk:
+            result = Key.ENTER
+        else:
+            result = key_for_int(self._keyboard.c)
         return result
 
 
