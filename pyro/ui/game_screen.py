@@ -16,7 +16,7 @@ import pyro.ui.inputs as inputs
 
 
 _MESSAGE_COLORS = {
-    LogType.MESSAGE: libtcod.light_gray,
+    LogType.MESSAGE: libtcod.white,
     LogType.ERROR: libtcod.red,
     LogType.NOTIFY: libtcod.cyan,
     LogType.GAIN: libtcod.light_green,
@@ -217,6 +217,11 @@ class GameScreen(Screen):
             libtcod.console_set_default_foreground(self.ui.panel, color)
             libtcod.console_print_ex(self.ui.panel, MSG_X, y, libtcod.BKGND_NONE,
                                      libtcod.LEFT, message.text)
+            if message.count > 1:
+                count = '(%d)' % message.count
+                libtcod.console_set_default_foreground(self.ui.panel, libtcod.gray)
+                libtcod.console_print_ex(self.ui.panel, MSG_X + len(message.text), y,
+                                         libtcod.BKGND_NONE, libtcod.LEFT, count)
             y += 1
 
         # Show player's stats

@@ -1,7 +1,5 @@
-import libtcodpy as libtcod
 import re
-from textwrap import wrap
-from pyro.settings import MSG_WIDTH, MSG_HEIGHT
+from pyro.settings import MSG_HEIGHT
 
 
 class Pronoun:
@@ -70,12 +68,12 @@ class Log:
     def add(self, type_, message, noun1=None, noun2=None, noun3=None, element=None):
         message = _format(message, noun1, noun2, noun3)
 
-        # TODO See if it's a repeat of the last message
-        # if len(self.messages) > 0:
-        #     last = self.messages[len(self.messages) - 1]
-        #     if last.text == message:
-        #         last.count += 1
-        #         return
+        # See if it's a repeat of the last message
+        if len(self.messages) > 0:
+            last = self.messages[len(self.messages) - 1]
+            if last.text == message:
+                last.count += 1
+                return
 
         # It's a new message
         self.messages.append(Message(type_, message, element))
