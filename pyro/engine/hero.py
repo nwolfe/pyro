@@ -37,6 +37,6 @@ class Hero(Actor):
         self.game.stage.corpses.append(pyro.engine.corpse.for_hero(self))
 
     def on_killed(self, defender):
-        self.game.log.message('{1} is dead! {2} gain %d experience points.'
-                              % defender.xp, defender, self)
+        self.game.log.gain('{1} is dead! {2} gain %d experience points.'
+                           % defender.xp, defender, self)
         self.xp += defender.xp

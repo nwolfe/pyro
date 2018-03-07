@@ -22,7 +22,7 @@ _MESSAGE_COLORS = {
     LogType.GAIN: libtcod.light_green,
     LogType.ELEMENTAL: None,
     Elements.FIRE: libtcod.orange,
-    Elements.LIGHTNING: libtcod.blue
+    Elements.LIGHTNING: libtcod.light_blue
 }
 
 
