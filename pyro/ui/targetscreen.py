@@ -11,8 +11,7 @@ class TargetScreen(Screen):
         self.transparent = True
         self._game_screen = game_screen
         self._range = range_
-        game_screen.game.log.message('Left-click to select a target, or right-click to cancel',
-                                    libtcod.light_cyan)
+        game_screen.game.log.notify('Left-click to select a target, or right-click to cancel')
 
     def handle_mouse_click(self, mouse):
         if mouse.rbutton_pressed:
@@ -25,8 +24,7 @@ class TargetScreen(Screen):
         if self._range is not None:
             distance = self._game_screen.game.player.pos.distance_to(pos)
             if distance > self._range:
-                self._game_screen.game.log.message(
-                    'Out of range. Select again.', libtcod.light_blue)
+                self._game_screen.game.log.notify('Out of range. Select again.')
                 return
 
         target = Target(position=pos)
@@ -44,7 +42,7 @@ class TargetScreen(Screen):
         self.dirty()
 
     def __cancel(self):
-        self._game_screen.game.log.message('Cancelled', libtcod.light_blue)
+        self._game_screen.game.log.notify('Cancelled')
         self.ui.pop()
 
     def __monster_at(self, pos):

@@ -60,16 +60,14 @@ class AI:
             # TODO move hit chance and messaging into Spell.cast()
             # Only 40% chance to hit
             if libtcod.random_get_int(0, 1, 5) <= 2:
-                msg = 'The {0} casts a {1}!'.format(self.monster.name, spell.name)
-                self.monster.game.log.message('- ' + msg, libtcod.red)
+                self.monster.game.log.message2('{1} casts a %s' %
+                                               spell.name, self.monster)
                 return spell.cast(target)
             else:
-                msg = 'The {0} casts a {1} but it fizzles!'
-                msg = msg.format(self.monster.name, spell.name)
-                self.monster.game.log.message(msg)
+                self.monster.game.log.message2('{1} casts a %s but it fizzles!' %
+                                               spell.name, self.monster)
         elif Spell.TYPE_HEAL == spell.type:
-            msg = 'The {0} heals itself!'.format(self.monster.name)
-            self.monster.game.log.message(msg)
+            self.monster.game.log.message2('{1} heals {2 him}self!', self.monster, self.monster)
             return spell.cast(target)
 
 
@@ -150,5 +148,4 @@ class Confused(BehaviorStrategy):
         else:
             # Restore normal AI
             ai.behavior = self.restore_ai
-            msg = 'The {0} is no longer confused!'.format(ai.monster.name)
-            ai.monster.game.log.message(msg, libtcod.red)
+            ai.monster.game.log.message2('{1} is no longer confused!', ai.monster)

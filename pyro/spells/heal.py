@@ -29,13 +29,12 @@ class HealAction(Action):
         self._amount = amount
 
     def on_perform(self):
-        """Heal the caster. Prints messages that assume caster is player."""
-        # TODO Fix messaging to be correct for both player and monsters
+        """Heal the target, which can be the player or a monster."""
         target = self._target.actor
         if (target.hp < target.max_hp) and self._amount > 0:
             target.heal(self._amount)
             self.add_event(Event(Event.TYPE_HEAL, actor=target))
-            self.game.log.message('Your wounds start to feel better!', libtcod.light_violet)
+            self.log('{1} feel[s] better.', target)
         else:
-            self.game.log.message("You don't feel any different.")
+            self.log("{1} [don't|doesn't] feel any different.", target)
         return self.succeed()

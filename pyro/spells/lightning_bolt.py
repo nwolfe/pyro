@@ -35,9 +35,8 @@ class LightningBoltAction(LosAction):
         self.add_event(Event(Event.TYPE_BOLT, element=Elements.LIGHTNING, position=position))
 
     def on_target(self, target):
+        self.game.log.elemental(
+            '{1} strikes {2} with a bolt of lightning! The damage is %d hit points.' %
+            self._damage, Elements.LIGHTNING, self.actor, self.target.actor)
         target.actor.take_damage(self, self._damage, self.actor)
-        msg = 'The lightning bolt strikes the {0} with a loud thunderclap! '
-        msg += 'The damage is {1} hit points.'
-        msg = msg.format(target.actor.name, self._damage)
-        self.game.log.message(msg, libtcod.light_blue)
 

@@ -40,12 +40,12 @@ class FireballAction(LosAction):
         self.add_event(Event(Event.TYPE_BOLT, element=Elements.FIRE, position=position))
 
     def on_target(self, target):
-        self.game.log.message('The fireball explodes, burning everything within {0} tiles!'.
-                              format(self._radius), libtcod.orange)
+        self.game.log.elemental('The fireball explodes, burning everything within %d tiles!' %
+                                self._radius, Elements.FIRE)
         for actor in self.game.stage.actors:
             if actor.pos.distance_to(target.pos) <= self._radius:
-                self.game.log.message('The {0} gets burned for {1} hit points.'.
-                                      format(actor.name, self._damage), libtcod.orange)
+                self.game.log.elemental('{1} gets burned for %d hit points.' %
+                                        self._damage, Elements.FIRE, actor)
                 actor.take_damage(self, self._damage, self.actor)
 
         # Send events for the UI to render the explosion

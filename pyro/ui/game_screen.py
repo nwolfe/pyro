@@ -11,12 +11,18 @@ from pyro.settings import *
 from pyro.target import Target, TargetRequire
 from pyro.utilities import closest_monster
 from pyro.engine.log import LogType
+from pyro.engine.element import Elements
 import pyro.ui.inputs as inputs
 
 
 _MESSAGE_COLORS = {
     LogType.MESSAGE: libtcod.light_gray,
     LogType.ERROR: libtcod.red,
+    LogType.NOTIFY: libtcod.cyan,
+    LogType.GAIN: libtcod.light_green,
+    LogType.ELEMENTAL: None,
+    Elements.FIRE: libtcod.orange,
+    Elements.LIGHTNING: libtcod.blue
 }
 
 
@@ -63,7 +69,7 @@ class GameScreen(Screen):
             if len(items_at_player) > 0:
                 action = PickUpAction(items_at_player[0])
             else:
-                self.game.log.message('There is nothing here.')
+                self.game.log.error('There is nothing here.')
                 self.dirty()
         elif inputs.INVENTORY == input_:
             # Show the inventory; if an item is selected, use it
@@ -94,7 +100,7 @@ class GameScreen(Screen):
                 if nearest:
                     self.game.player.next_action = UseAction(item, Target(nearest))
                 else:
-                    self.game.log.message(require.not_found_message, libtcod.red)
+                    self.game.log.error(require.not_found_message)
                     self.dirty()
             elif TargetRequire.TYPE_SELECT == require.type:
                 self.ui.push(TargetScreen(self, require.range),
@@ -142,7 +148,7 @@ class GameScreen(Screen):
         # Ding! Level up!
         self.game.player.level_up()
         msg = 'Your battle skills grow stronger! You reached level {}!'
-        self.game.log.message(msg.format(self.game.player.level), libtcod.yellow)
+        self.game.log.gain(msg.format(self.game.player.level))
         self.dirty()
         options = ['Constitution (+{0} HP, from {1})'.format(LEVEL_UP_STAT_HP, self.game.player.base_max_hp),
                    'Strength (+{0} attack, from {1})'.format(LEVEL_UP_STAT_POWER, self.game.player.base_power),
@@ -207,6 +213,8 @@ class GameScreen(Screen):
         for (message, color) in self.game.log.messages:
             if color is None:
                 color = _MESSAGE_COLORS[message.type]
+                if message.type == LogType.ELEMENTAL:
+                    color = _MESSAGE_COLORS[message.element]
             libtcod.console_set_default_foreground(self.ui.panel, color)
             libtcod.console_print_ex(self.ui.panel, MSG_X, y, libtcod.BKGND_NONE,
                                      libtcod.LEFT, message.text)
@@ -238,13 +246,11 @@ class GameScreen(Screen):
         # TODO Push all this down into a Game#next_level() method?
         # Advance to the next level
         # Heal the player by 50%
-        self.game.log.message('You take a moment to rest, and recover your strength.',
-                              libtcod.light_violet)
+        self.game.log.message2('{1} take[s] a moment to rest, and recover strength.', self.game.player)
         self.game.player.heal(self.game.player.max_hp / 2)
 
-        msg = 'After a rare moment of peace, you descend deeper into the heart '
-        msg += 'of the dungeon...'
-        self.game.log.message(msg, libtcod.red)
+        msg = 'After a rare moment of peace, {1} descend deeper into the heart of the dungeon...'
+        self.game.log.message2(msg, self.game.player)
         self.game.dungeon_level += 1
 
         make_map(self.game)

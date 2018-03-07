@@ -32,7 +32,11 @@ class Noun:
 class LogType:
     MESSAGE = 'message'
     ERROR = 'error'
-    # TODO more log types for different appearances
+    NOTIFY = 'notify'
+    GAIN = 'gain'
+    ELEMENTAL = 'elemental'
+    # TODO quest?
+    # TODO help?
 
 
 class Message:
@@ -40,6 +44,7 @@ class Message:
         """LogType, text, and number of times this message has been repeated."""
         self.type = type_
         self.text = text
+        self.element = None
         self.count = 1
 
 
@@ -47,7 +52,7 @@ class Log:
     def __init__(self, messages=None):
         self.messages = messages or []
 
-    def message(self, text, color=libtcod.white, type_=LogType.MESSAGE):
+    def message(self, text, color=libtcod.white, type_=LogType.MESSAGE, element=None):
         # Split the message if necessary, among multiple lines
         new_msg_lines = wrap(text, MSG_WIDTH)
 
@@ -58,6 +63,7 @@ class Log:
 
             # Add the new line as a tuple, with the text and color
             message = Message(type_, line)
+            message.element = element
             self.messages.append((message, color))
 
     def message2(self, message, noun1=None, noun2=None, noun3=None):
@@ -69,6 +75,21 @@ class Log:
         # TODO self.add(LogType.ERROR, message, noun1, noun2, noun3)
         self.message(_format(message, noun1, noun2, noun3),
                      color=None, type_=LogType.ERROR)
+
+    def notify(self, message, noun1=None, noun2=None, noun3=None):
+        # TODO self.add(LogType.NOTIFY, message, noun1, noun2, noun3)
+        self.message(_format(message, noun1, noun2, noun3),
+                     color=None, type_=LogType.NOTIFY)
+
+    def gain(self, message, noun1=None, noun2=None, noun3=None):
+        # TODO self.add(LogType.GAIN, message, noun1, noun2, noun3)
+        self.message(_format(message, noun1, noun2, noun3),
+                     color=None, type_=LogType.GAIN)
+
+    def elemental(self, message, element, noun1=None, noun2=None, noun3=None):
+        # TODO self.add(LogType.ELEMENTAL, message, noun1, noun2, noun3)
+        self.message(_format(message, noun1, noun2, noun3),
+                     color=None, type_=LogType.ELEMENTAL, element=element)
 
     # def add(self, type_, message, noun1=None, noun2=None, noun3=None):
     #     message = _format(message, noun1, noun2, noun3)

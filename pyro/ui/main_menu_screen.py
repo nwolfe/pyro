@@ -34,7 +34,6 @@ def _new_game():
     game.player = player
     make_map(game)
 
-    m = 'Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings!'
-    game.log.message(m, libtcod.red)
+    game.log.error('Prepare to perish!')
 
     return game

@@ -37,9 +37,8 @@ class ConfuseAction(Action):
         if target:
             target.ai.confuse(self._num_turns)
             self.add_event(Event(Event.TYPE_CONFUSE, actor=target))
-            msg = 'The eyes of the {0} look vacant as it stumbles around!'
-            self.game.log.message(msg.format(target.name), libtcod.light_green)
+            self.log('The eyes of {1} look vacant as {2 he} stumbles around!', target, target)
         else:
-            self.game.log.message('Invalid target.', libtcod.orange)
+            self.error('Invalid target.')
         return self.succeed()
 
