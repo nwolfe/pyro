@@ -45,7 +45,7 @@ class Action:
 
     def log(self, message, noun1=None, noun2=None, noun3=None):
         # TODO if !actor.isVisibleToHero return (to eliminate off-screen noise)
-        self.game.log.message2(message, noun1, noun2, noun3)
+        self.game.log.message(message, noun1, noun2, noun3)
 
     def error(self, message, noun1=None, noun2=None, noun3=None):
         # TODO if !actor.isVisibleToHero return (to eliminate off-screen noise)

@@ -210,11 +210,10 @@ class GameScreen(Screen):
 
         # Print game messages, one line at a time
         y = 1
-        for (message, color) in self.game.log.messages:
-            if color is None:
-                color = _MESSAGE_COLORS[message.type]
-                if message.type == LogType.ELEMENTAL:
-                    color = _MESSAGE_COLORS[message.element]
+        for message in self.game.log.messages:
+            color = _MESSAGE_COLORS[message.type]
+            if message.type == LogType.ELEMENTAL:
+                color = _MESSAGE_COLORS[message.element]
             libtcod.console_set_default_foreground(self.ui.panel, color)
             libtcod.console_print_ex(self.ui.panel, MSG_X, y, libtcod.BKGND_NONE,
                                      libtcod.LEFT, message.text)
@@ -246,11 +245,11 @@ class GameScreen(Screen):
         # TODO Push all this down into a Game#next_level() method?
         # Advance to the next level
         # Heal the player by 50%
-        self.game.log.message2('{1} take[s] a moment to rest, and recover strength.', self.game.player)
+        self.game.log.message('{1} take[s] a moment to rest, and recover strength.', self.game.player)
         self.game.player.heal(self.game.player.max_hp / 2)
 
         msg = 'After a rare moment of peace, {1} descend deeper into the heart of the dungeon...'
-        self.game.log.message2(msg, self.game.player)
+        self.game.log.message(msg, self.game.player)
         self.game.dungeon_level += 1
 
         make_map(self.game)

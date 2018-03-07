@@ -40,11 +40,11 @@ class LogType:
 
 
 class Message:
-    def __init__(self, type_, text):
+    def __init__(self, type_, text, element=None):
         """LogType, text, and number of times this message has been repeated."""
         self.type = type_
         self.text = text
-        self.element = None
+        self.element = element
         self.count = 1
 
 
@@ -52,58 +52,35 @@ class Log:
     def __init__(self, messages=None):
         self.messages = messages or []
 
-    def message(self, text, color=libtcod.white, type_=LogType.MESSAGE, element=None):
-        # Split the message if necessary, among multiple lines
-        new_msg_lines = wrap(text, MSG_WIDTH)
-
-        for line in new_msg_lines:
-            # If the buffer is full, remove the first line to make room
-            if len(self.messages) == MSG_HEIGHT:
-                del self.messages[0]
-
-            # Add the new line as a tuple, with the text and color
-            message = Message(type_, line)
-            message.element = element
-            self.messages.append((message, color))
-
-    def message2(self, message, noun1=None, noun2=None, noun3=None):
-        # TODO self.add(LogType.MESSAGE, message, noun1, noun2, noun3)
-        self.message(_format(message, noun1, noun2, noun3),
-                     color=None, type_=LogType.MESSAGE)
+    def message(self, message, noun1=None, noun2=None, noun3=None):
+        self.add(LogType.MESSAGE, message, noun1, noun2, noun3)
 
     def error(self, message, noun1=None, noun2=None, noun3=None):
-        # TODO self.add(LogType.ERROR, message, noun1, noun2, noun3)
-        self.message(_format(message, noun1, noun2, noun3),
-                     color=None, type_=LogType.ERROR)
+        self.add(LogType.ERROR, message, noun1, noun2, noun3)
 
     def notify(self, message, noun1=None, noun2=None, noun3=None):
-        # TODO self.add(LogType.NOTIFY, message, noun1, noun2, noun3)
-        self.message(_format(message, noun1, noun2, noun3),
-                     color=None, type_=LogType.NOTIFY)
+        self.add(LogType.NOTIFY, message, noun1, noun2, noun3)
 
     def gain(self, message, noun1=None, noun2=None, noun3=None):
-        # TODO self.add(LogType.GAIN, message, noun1, noun2, noun3)
-        self.message(_format(message, noun1, noun2, noun3),
-                     color=None, type_=LogType.GAIN)
+        self.add(LogType.GAIN, message, noun1, noun2, noun3)
 
     def elemental(self, message, element, noun1=None, noun2=None, noun3=None):
-        # TODO self.add(LogType.ELEMENTAL, message, noun1, noun2, noun3)
-        self.message(_format(message, noun1, noun2, noun3),
-                     color=None, type_=LogType.ELEMENTAL, element=element)
+        self.add(LogType.ELEMENTAL, message, noun1, noun2, noun3, element)
 
-    # def add(self, type_, message, noun1=None, noun2=None, noun3=None):
-    #     message = _format(message, noun1, noun2, noun3)
-    #
-    #     # See if it's a repeat of the last message
-    #     if len(self.messages) > 0:
-    #         last = self.messages[len(self.messages) - 1]
-    #         if last.text == message:
-    #             last.count += 1
-    #             return
-    #
-    #     # It's a new message
-    #     self.message(message, color=None, type_=type_)
-    #     # TODO implement max number of messages?
+    def add(self, type_, message, noun1=None, noun2=None, noun3=None, element=None):
+        message = _format(message, noun1, noun2, noun3)
+
+        # TODO See if it's a repeat of the last message
+        # if len(self.messages) > 0:
+        #     last = self.messages[len(self.messages) - 1]
+        #     if last.text == message:
+        #         last.count += 1
+        #         return
+
+        # It's a new message
+        self.messages.append(Message(type_, message, element))
+        if len(self.messages) == MSG_HEIGHT+1:
+            del self.messages[0]
 
 
 def _format(text, noun1=None, noun2=None, noun3=None):
