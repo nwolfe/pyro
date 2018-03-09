@@ -32,6 +32,9 @@ class Monster(Actor):
         self.game.stage.remove_actor(self)
         self.game.stage.corpses.append(pyro.engine.corpse.for_monster(self))
 
+    def on_killed(self, defender):
+        self.game.log.message('{1} kills {2}!', self, defender)
+
 
 class AIAdapterAction(Action):
     def __init__(self, monster_ai):
