@@ -10,22 +10,26 @@ _BACKGROUND_IMAGE = libtcod.image_load('resources/menu_background.png')
 
 
 class MainMenuScreen(Screen):
-    def __init__(self):
-        Screen.__init__(self)
-        self._options = ['Play a new game', 'Quit']
-
     def handle_key_press(self, key):
         index = key.ord - ord('a')
         if index == 0:
-            game = _new_game()
-            self.ui.push(GameScreen(game))
+            self.ui.push(GameScreen(_new_game()))
         elif index == 1:
             self.ui.pop()
 
     def render(self):
         # Show the image at twice the regular console resolution
         libtcod.image_blit_2x(_BACKGROUND_IMAGE, 0, 0, 0)
-        draw_menu(self.ui.console, '', self._options, 24)
+        draw_menu(self.ui.console, '', ['New Game', 'Quit'], 24)
+
+    def activate(self, result=None, tag=None, data=None):
+        # This index comes from PauseScreen
+        if result == 1:
+            # New Game
+            self.ui.push(GameScreen(_new_game()))
+        elif result == 2:
+            # Quit
+            self.ui.pop()
 
 
 def _new_game():

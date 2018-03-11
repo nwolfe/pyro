@@ -7,6 +7,7 @@ from pyro.map import make_map
 from pyro.ui.effects import add_effects
 from pyro.ui.menu_screen import MenuScreen
 from pyro.ui.targetscreen import TargetScreen
+from pyro.ui.pausescreen import PauseScreen
 from pyro.settings import *
 from pyro.target import Target, TargetRequire
 from pyro.utilities import closest_monster
@@ -35,7 +36,7 @@ class GameScreen(Screen):
     def handle_input(self, input_):
         action = None
         if inputs.EXIT == input_:
-            self.ui.pop()
+            self.ui.push(PauseScreen(), tag='game.pause')
         elif inputs.NORTH == input_:
             action = WalkAction(Direction.NORTH)
         elif inputs.SOUTH == input_:
@@ -118,6 +119,9 @@ class GameScreen(Screen):
                 self.game.player.base_power += LEVEL_UP_STAT_POWER
             elif result.index == 2:
                 self.game.player.base_defense += LEVEL_UP_STAT_DEFENSE
+        elif 'game.pause' == tag:
+                # New Game or Quit was selected; exit and pass along choice
+                self.ui.pop(result)
 
     def update(self):
         if self.game.player.is_alive():
