@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 from pyro.ui.userinterface import Screen, draw_menu, Key
+from pyro.ui.controlscreen import ControlScreen
 
 
 _BACKGROUND_IMAGE = libtcod.image_load('resources/menu_background.png')
@@ -15,10 +16,13 @@ class PauseScreen(Screen):
             # New Game
             self.ui.pop(index)
         elif index == 2:
+            # Controls
+            self.ui.push(ControlScreen())
+        elif index == 3:
             # Quit
             self.ui.pop(index)
 
     def render(self):
         libtcod.image_blit_2x(_BACKGROUND_IMAGE, 0, 0, 0)
-        options = ['Continue', 'New Game', 'Quit']
+        options = ['Continue', 'New Game', 'Controls', 'Quit']
         draw_menu(self.ui.console, '', options, 24)

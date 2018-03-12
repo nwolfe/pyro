@@ -11,7 +11,7 @@ from pyro.ui.keys import key_for_int, Key
 class UserInterface:
     def __init__(self):
         self.screens = []
-        self._keybindings = {}
+        self.keybindings = {}
         self._keyboard = libtcod.Key()
         self.mouse = libtcod.Mouse()
         self.console = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
@@ -22,7 +22,7 @@ class UserInterface:
         self._dirty = True
 
     def bind_key(self, key, input_):
-        self._keybindings[key] = input_
+        self.keybindings[key] = input_
 
     def push(self, screen, tag=None, data=None):
         screen.tag = tag
@@ -83,8 +83,8 @@ class UserInterface:
     def _handle_keypress(self, screen):
         key = self._check_for_keypress()
         if key:
-            if key in self._keybindings:
-                if screen.handle_input(self._keybindings[key]):
+            if key in self.keybindings:
+                if screen.handle_input(self.keybindings[key]):
                     return
             screen.handle_key_press(key)
 
@@ -151,7 +151,8 @@ class Screen:
 
 # TODO This seems inappropriate in this userinterface module.
 # Where should this function live?
-def draw_menu(console, header, options, width, empty_text=None):
+def draw_menu(console, header, options, width,
+              empty_text=None, keys=None, format_=None):
     if len(options) > 26:
         raise ValueError('Cannot have a menu with more than 26 options.')
 
@@ -176,10 +177,18 @@ def draw_menu(console, header, options, width, empty_text=None):
                                   libtcod.BKGND_NONE, libtcod.LEFT, header)
 
     # Print all the options
+    if format_:
+        fmt = format_
+    else:
+        fmt = '(%s) %s'
     y = header_height
     letter_index = ord('a')
-    for option in options:
-        text = '({0}) {1}'.format(chr(letter_index), option)
+    for i in range(len(options)):
+        if keys:
+            key = keys[i]
+        else:
+            key = chr(letter_index)
+        text = fmt % (key, options[i])
         libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
         y += 1
         letter_index += 1
