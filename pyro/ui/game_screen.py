@@ -49,7 +49,6 @@ class GameScreen(Screen):
             pos = self.game.player.pos
             if self.game.stage.map.tile(pos).type.is_exit:
                 self.next_dungeon_level()
-                libtcod.console_clear(self.ui.console)
         elif inputs.HERO_INFO == input_:
             info = character_info(self.game.player)
             self.ui.push(MenuScreen(info, [], CHARACTER_SCREEN_WIDTH))
